@@ -1,4 +1,4 @@
-package lab.lucka.demo
+package lab.lucka.linep
 
 import android.content.Context
 import android.content.pm.PackageManager
