@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Demo</string>
+    <string name="action_settings">设置</string>
+    <string name="action_start">开始</string>
+    <string name="action_stop">停止</string>
+
+    <string name="format_date">yyyy-MM-dd HH:mm:ss</string>
+    <string name="format_angle">%d° %d′ %.2f″</string>
+
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="submit">提交</string>
+    <string name="unavailable">不可用</string>
+
+    <string name="alert_warning_title">警告</string>
+    <string name="alert_permission_title">请求权限</string>
+    <string name="alert_location_service_unavailable">定位功能不可用</string>
+    <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
+
+    <string name="location">位置</string>
+    <string name="longitude">经度</string>
+    <string name="latitude">纬度</string>
+    <string name="time">时间</string>
+    <string name="description">描述</string>
+    <string name="description_enter">输入描述</string>
+    <string name="mission_title">任务</string>
+
+    <string name="alert_reach_waypoint_title">已到达 Waypoint</string>
+    <string name="alert_reach_waypoint_message">请检查 %s</string>
+    <string name="alert_reach_waypoint_checked">正常</string>
+    <string name="alert_reach_waypoint_report">报告</string>
+</resources>
