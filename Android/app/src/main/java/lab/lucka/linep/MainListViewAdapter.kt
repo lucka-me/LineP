@@ -49,9 +49,9 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val layoutInflater = LayoutInflater.from(context)
         var rowView: View = when {
-            position == MainListIndex.coordinate.row         -> layoutInflater.inflate(MainListIndex.coordinate.resource, viewGroup, false)
-            position == MainListIndex.mission.row -> layoutInflater.inflate(MainListIndex.mission.resource, viewGroup, false)
-            position >= MainListIndex.waypoint.row           -> layoutInflater.inflate(MainListIndex.waypoint.resource, viewGroup, false)
+            position == MainListIndex.coordinate.row -> layoutInflater.inflate(MainListIndex.coordinate.resource, viewGroup, false)
+            position == MainListIndex.mission.row    -> layoutInflater.inflate(MainListIndex.mission.resource,    viewGroup, false)
+            position >= MainListIndex.waypoint.row   -> layoutInflater.inflate(MainListIndex.waypoint.resource,   viewGroup, false)
             else -> View(context)
         }
         // Set up the rows
