@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // MissionManager
-    var mission: MissionManager = MissionManager()
+    var mission: MissionManager = MissionManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
