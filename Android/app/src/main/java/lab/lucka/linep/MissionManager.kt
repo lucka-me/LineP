@@ -36,40 +36,33 @@ class MissionManager(context: Context) {
                 "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpsies=\"http://www.gpsies.com/GPX/1/0\" creator=\"GPSies http://www.gpsies.com - GPSies Track\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.gpsies.com/GPX/1/0 http://www.gpsies.com/gpsies.xsd\">\n" +
                 "    <metadata>\n" +
                 "        <name>MissionID</name>\n" +
+                "        <time>2018-02-02T09:20:58Z</time>\n" +
                 "    </metadata>\n" +
-                "    <wpt lat=\"34.22487014\" lon=\"108.9424628\">\n" +
+                "    <wpt lat=\"25.84987276\" lon=\"114.9045065\">\n" +
                 "        <name>Waypoint 01</name>\n" +
                 "        <desc>Description 01</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22402739\" lon=\"108.9424198\">\n" +
+                "    <wpt lat=\"25.84995483\" lon=\"114.9040451\">\n" +
                 "        <name>Waypoint 02</name>\n" +
                 "        <desc>Description 02</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22329109\" lon=\"108.9424413\">\n" +
+                "    <wpt lat=\"25.85006104\" lon=\"114.9034389\">\n" +
                 "        <name>Waypoint 03</name>\n" +
                 "        <desc>Description 03</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22265236\" lon=\"108.9424306\">\n" +
+                "    <wpt lat=\"25.85036518\" lon=\"114.9035033\">\n" +
                 "        <name>Waypoint 04</name>\n" +
                 "        <desc>Description 04</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22202250\" lon=\"108.9423555\">\n" +
+                "    <wpt lat=\"25.85070311\" lon=\"114.9035409\">\n" +
                 "        <name>Waypoint 05</name>\n" +
                 "        <desc>Description 05</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22144587\" lon=\"108.9424091\">\n" +
+                "    <wpt lat=\"25.85110380\" lon=\"114.9035462\">\n" +
                 "        <name>Waypoint 06</name>\n" +
                 "        <desc>Description 06</desc>\n" +
                 "    </wpt>\n" +
-                "    <wpt lat=\"34.22078051\" lon=\"108.9423984\">\n" +
-                "        <name>Waypoint 07</name>\n" +
-                "        <desc>Description 07</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"34.22013290\" lon=\"108.9424306\">\n" +
-                "        <name>Waypoint 08</name>\n" +
-                "        <desc>Description 08</desc>\n" +
-                "    </wpt>\n" +
-                "</gpx>\n"
+                "</gpx>"
         var filename: String = "MissionID.gpx"
         var outputFile: File = File(context.filesDir, filename)
         outputFile.writeText(testGPXStr, Charset.defaultCharset())
@@ -160,7 +153,7 @@ class MissionManager(context: Context) {
         var reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
             if (waypointList[scanner].location != null) {
-                if (!waypointList[scanner].isChecked and !waypointList[scanner].isAbnormal and (location.distanceTo(waypointList[scanner].location) <= 10)) {
+                if (!waypointList[scanner].isChecked and !waypointList[scanner].isAbnormal and (location.distanceTo(waypointList[scanner].location) <= 30)) {
                     reachedList.add(scanner)
                 }
             }

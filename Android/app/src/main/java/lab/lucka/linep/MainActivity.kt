@@ -40,11 +40,16 @@ class MainActivity : AppCompatActivity() {
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
+    // To avoid multi alert when reaching a waypoint
+    private var isChecking = false
 
     private val locationListener: LocationListener = object :LocationListener {
+
         override fun onLocationChanged(location: Location?) {
+
             mainListViewAdapter.refreshWith(locationManager)
-            if (mission.isStarted and (location != null)) {
+            if (mission.isStarted and (location != null) and !isChecking) {
+                isChecking = true
                 var reachedList = mission.reach(location as Location)
                 if (reachedList.isNotEmpty()) {
                     for (index: Int in reachedList) {
@@ -53,15 +58,31 @@ class MainActivity : AppCompatActivity() {
                         alert.setMessage(String.format(getString(R.string.alert_reach_waypoint_message), mission.waypointList[index].title))
                         alert.setCancelable(false)
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
-                            mission.waypointList[index].isChecked = true})
+                            mission.waypointList[index].isChecked = true
+                            var isAllChecked = true
+                            for (checkIndex: Int in reachedList) {
+                                if (!mission.waypointList[checkIndex].isChecked and !mission.waypointList[checkIndex].isAbnormal) {
+                                    isAllChecked = false
+                                    break
+                                }
+                            }
+                            isChecking = if (isAllChecked) false else true
+                        })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
                             mission.waypointList[index].isAbnormal = true
+                            var isAllChecked = true
+                            for (checkIndex: Int in reachedList) {
+                                if (!mission.waypointList[checkIndex].isChecked and !mission.waypointList[checkIndex].isAbnormal) {
+                                    isAllChecked = false
+                                    break
+                                }
+                            }
+                            isChecking = if (isAllChecked) false else true
                             reportIssue() })
                         alert.show()
                     }
                     mainListViewAdapter.refreshWith(mission.waypointList)
                 }
-
             }
         }
 
@@ -130,19 +151,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
+
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(locationListener)
         }
+        super.onPause()
     }
     // Set Location Update
     //   Refrence: https://kotlintc.com/articles/921
     override fun onResume() {
-        super.onResume()
+
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
             mainListViewAdapter.refreshWith(locationManager)
         }
+        super.onResume()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

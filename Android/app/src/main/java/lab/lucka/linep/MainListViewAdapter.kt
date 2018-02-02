@@ -82,7 +82,7 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
             position == MainListIndex.mission.row -> {
                 var finishedCount = 0
                 for (waypoint in waypointList) {
-                    finishedCount += if (waypoint.isChecked) 1 else 0
+                    finishedCount += if (waypoint.isChecked or waypoint.isAbnormal) 1 else 0
                 }
 
                 var progressBar = rowView.findViewById<ProgressBar>(R.id.progressBar)
@@ -95,8 +95,16 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
             }
             position >= MainListIndex.waypoint.row -> {
                 val waypointTitle = rowView.findViewById<TextView>(R.id.waypointTitle)
+                val distanceText = rowView.findViewById<TextView>(R.id.distanceText)
                 val checkBox = rowView.findViewById<CheckBox>(R.id.checkBox)
                 waypointTitle.text = waypointList[position - MainListIndex.waypoint.row].title
+                if ((waypointList[position - MainListIndex.waypoint.row].location != null) and
+                        (location != null)) {
+                    val tempLocation: Location = waypointList[position - MainListIndex.waypoint.row].location as Location
+                    distanceText.text = String.format("距离 %.2f 米", tempLocation.distanceTo(location))
+                } else {
+                    distanceText.text = context.getString(R.string.unavailable)
+                }
                 if (waypointList[position - MainListIndex.waypoint.row].isAbnormal) {
                     waypointTitle.setTextColor(context.getColor(R.color.colorWarning))
                 }
