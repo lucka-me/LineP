@@ -76,6 +76,8 @@ class MissionManager(context: Context) {
 
     fun pause() {
         // Serialize and save the waypointList
+        //   Refrence: https://developer.android.com/training/basics/data-storage/files.html
+        //   Refrence: http://blog.csdn.net/u011240877/article/details/72455715
         if (!isStarted) {
             return
         }

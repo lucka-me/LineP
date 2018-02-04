@@ -34,6 +34,11 @@ class MainActivity : AppCompatActivity() {
         reportIssue(1)
     }
 
+    private enum class MainMenu(val index: Int, val id: Int) {
+        startStop(0, R.id.action_start_stop),
+        settings(1, R.id.action_settings)
+    }
+
     // MainListView
     private lateinit var mainListView: ListView
     private lateinit var mainListViewAdapter: MainListViewAdapter
@@ -121,7 +126,11 @@ class MainActivity : AppCompatActivity() {
         mainListView = findViewById<ListView>(R.id.mainListView)
         mainListView.adapter = mainListViewAdapter
 
-        buttonTakePhoto.hide()
+        if (mission.isStarted) {
+            buttonTakePhoto.show()
+        } else {
+            buttonTakePhoto.hide()
+        }
         buttonTakePhoto.setOnClickListener { _ ->
             reportIssue()
         }
@@ -184,6 +193,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        var menuStartStop: MenuItem = menu.getItem(MainMenu.startStop.index)
+        if (mission.isStarted) {
+            menuStartStop.setTitle(R.string.action_stop)
+        } else {
+            menuStartStop.setTitle(R.string.action_start)
+        }
         return true
     }
 
@@ -193,7 +208,7 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_start_stop -> {
+            MainMenu.startStop.id -> {
                 if (mission.isStarted) {
                     mission.stop()
                     mainListViewAdapter.refreshWith(mission.waypointList)
