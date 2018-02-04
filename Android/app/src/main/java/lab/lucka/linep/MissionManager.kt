@@ -2,12 +2,10 @@ package lab.lucka.linep
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.location.Location
-import java.io.File
-import java.io.FileOutputStream
-import android.content.Context.MODE_PRIVATE
+import java.io.*
 import java.nio.charset.Charset
+import java.util.*
 
 
 /**
@@ -74,6 +72,57 @@ class MissionManager(context: Context) {
     fun stop() {
         isStarted = false
         waypointList.clear()
+    }
+
+    fun pause() {
+        // Serialize and save the waypointList
+        if (!isStarted) {
+            return
+        }
+        val filename = "mission.temp"
+        val file: File = File(context.filesDir, filename)
+        val fileOutputStream: FileOutputStream
+        val objectOutputStream: ObjectOutputStream
+
+        try {
+            fileOutputStream = FileOutputStream(file)
+            objectOutputStream = ObjectOutputStream(fileOutputStream)
+            objectOutputStream.writeObject(waypointList)
+            objectOutputStream.close()
+            fileOutputStream.close()
+        } catch (error: Exception) {
+            val alert = AlertDialog.Builder(context)
+            alert.setTitle(context.getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(context.getString(R.string.confirm), null)
+            alert.show()
+        }
+
+    }
+
+    fun resume() {
+        val filename = "mission.temp"
+        val file: File = File(context.filesDir, filename)
+        val fileInputStream: FileInputStream
+        val objectInputStream: ObjectInputStream
+
+        try {
+            fileInputStream = FileInputStream(file)
+            objectInputStream = ObjectInputStream(fileInputStream)
+            waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
+            objectInputStream.close()
+            fileInputStream.close()
+            isStarted = true
+        } catch (error: Exception) {
+            val alert = AlertDialog.Builder(context)
+            alert.setTitle(context.getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(context.getString(R.string.confirm), null)
+            alert.show()
+            isStarted = false
+        }
     }
 
     fun decodeGPX(file: File): ArrayList<Waypoint> {
@@ -152,8 +201,8 @@ class MissionManager(context: Context) {
     fun reach(location: Location): ArrayList<Int> {
         var reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
-            if (waypointList[scanner].location != null) {
-                if (!waypointList[scanner].isChecked and !waypointList[scanner].isAbnormal and (location.distanceTo(waypointList[scanner].location) <= 30)) {
+            if (waypointList[scanner].location() != null) {
+                if (!waypointList[scanner].isChecked and (location.distanceTo(waypointList[scanner].location()) <= 30)) {
                     reachedList.add(scanner)
                 }
             }

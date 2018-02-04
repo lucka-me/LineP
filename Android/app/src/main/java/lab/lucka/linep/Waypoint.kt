@@ -1,21 +1,41 @@
 package lab.lucka.linep
 
 import android.location.Location
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import java.io.Serializable
 
 /**
  * Created by lucka on 24/1/2018.
  */
-class Waypoint(title: String, description: String, isChecked: Boolean, location: Location?) {
+
+class Waypoint(title: String, description: String, isChecked: Boolean, location: Location?): Serializable {
     var title: String
     var description: String
     var isChecked: Boolean
-    var isAbnormal: Boolean = false
-    var location: Location? = null
+    var longitude: Double
+    var latitude: Double
 
     init {
         this.title = title
         this.description = description
         this.isChecked = isChecked
-        this.location = location
+        if (location != null) {
+            longitude = location.longitude
+            latitude = location.latitude
+        } else {
+            longitude = 181.0
+            latitude = 91.0
+        }
+    }
+
+    fun location(): Location? {
+        var location: Location? = null
+        if ((longitude < 180.5) and (latitude < 90.5)) {
+            location = Location("")
+            location.longitude = longitude
+            location.latitude = latitude
+        }
+        return location
     }
 }

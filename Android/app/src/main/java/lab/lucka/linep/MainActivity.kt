@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                             mission.waypointList[index].isChecked = true
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
-                                if (!mission.waypointList[checkIndex].isChecked and !mission.waypointList[checkIndex].isAbnormal) {
+                                if (!mission.waypointList[checkIndex].isChecked) {
                                     isAllChecked = false
                                     break
                                 }
@@ -69,10 +69,10 @@ class MainActivity : AppCompatActivity() {
                             isChecking = if (isAllChecked) false else true
                         })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
-                            mission.waypointList[index].isAbnormal = true
+                            mission.waypointList[index].isChecked = true
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
-                                if (!mission.waypointList[checkIndex].isChecked and !mission.waypointList[checkIndex].isAbnormal) {
+                                if (!mission.waypointList[checkIndex].isChecked) {
                                     isAllChecked = false
                                     break
                                 }
@@ -113,6 +113,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        // Try to resume the misssion
+        mission.resume()
+
         // Handel the Main List View
         mainListViewAdapter = MainListViewAdapter(this, mission.waypointList)
         mainListView = findViewById<ListView>(R.id.mainListView)
@@ -148,6 +151,9 @@ class MainActivity : AppCompatActivity() {
             mainListViewAdapter.refreshWith(locationManager)
         }
 
+
+
+
     }
 
     override fun onPause() {
@@ -155,6 +161,7 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(locationListener)
         }
+        mission.pause()
         super.onPause()
     }
     // Set Location Update
@@ -165,7 +172,13 @@ class MainActivity : AppCompatActivity() {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
             mainListViewAdapter.refreshWith(locationManager)
         }
+        mission.resume()
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        mission.pause()
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
