@@ -7,7 +7,7 @@
     <string name="format_date">yyyy-MM-dd HH:mm:ss</string>
     <string name="format_angle">%d° %d′ %.2f″</string>
 
-    <string name="server_url">http://192.168.10.121:3000/</string>
+    <string name="server_url">https://lucka.moe/LineP/Server/</string>
 
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>

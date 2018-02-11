@@ -66,7 +66,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     private fun requestMission(): MissionData {
         var missionData: MissionData = MissionData("", "", "")
-        val jsonURL = context.getString(R.string.server_url) + "Mission"
+        val jsonURL = context.getString(R.string.server_url) + "Mission.json"
         var jsonString: String = ""
         try {
             jsonString = URL(jsonURL).readText()
@@ -83,7 +83,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     private fun requestMissionGPX(missionData: MissionData): File {
         // Download the GPX file from server
-        val gpxURL = context.getString(R.string.server_url) + missionData.ID + ".gpx"
+        val gpxURL = context.getString(R.string.server_url) + "GPX/" + missionData.ID + ".gpx"
         val gpxString = URL(gpxURL).readText()
         // Save the GPX file
         //   Refrence: https://developer.android.com/guide/topics/data/data-storage.html?hl=zh-cn

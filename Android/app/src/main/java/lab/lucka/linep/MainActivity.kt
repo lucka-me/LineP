@@ -120,11 +120,13 @@ class MainActivity : AppCompatActivity() {
     // MissionManager
     val missionListener: MissionListener = object :MissionListener {
         override fun didStartedSuccess(missionData: MissionData) {
+            mainListViewAdapter.finishLoading()
             mainListViewAdapter.refreshWith(mission.waypointList)
             buttonReportIssue.show()
         }
 
         override fun didStartedFailed(error: Exception) {
+            mainListViewAdapter.finishLoading()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(error.message)
@@ -251,6 +253,7 @@ class MainActivity : AppCompatActivity() {
                     item.setTitle(getString(R.string.action_start))
                     buttonReportIssue.hide()
                 } else {
+                    mainListViewAdapter.startLoading()
                     mission.start()
                     item.setTitle(getString(R.string.action_stop))
                 }
@@ -333,13 +336,6 @@ class MainActivity : AppCompatActivity() {
             location = null
         }
         if (!File(mission.issueImagePath).exists()) {
-            val alert = AlertDialog.Builder(this)
-            alert.setTitle(getString(R.string.alert_warning_title))
-            alert.setMessage("图片不存在")
-            alert.setCancelable(false)
-            alert.setNegativeButton(getString(R.string.cancel), null)
-            alert.setPositiveButton(getString(R.string.confirm), null)
-            alert.show()
             return
         }
         val imageBitmap = BitmapFactory.decodeFile(mission.issueImagePath)

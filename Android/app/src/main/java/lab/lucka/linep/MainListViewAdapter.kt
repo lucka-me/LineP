@@ -24,15 +24,18 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
     private val context: Context
     private var location: Location?
     private var waypointList: ArrayList<Waypoint>
+    private var isLoading: Boolean
 
     init {
         this.context = context
         this.location = null
         this.waypointList = waypointList
+        isLoading = false
     }
 
     override fun getCount(): Int {
         var rowCount = 1
+        rowCount += if (waypointList.isEmpty() and isLoading) 1 else 0
         rowCount += if (waypointList.isNotEmpty()) waypointList.size + 1 else 0
         return rowCount
     }
@@ -47,7 +50,7 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
 
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val layoutInflater = LayoutInflater.from(context)
-        var rowView: View = when {
+        val rowView: View = when {
             position == MainListIndex.coordinate.row -> layoutInflater.inflate(MainListIndex.coordinate.resource, viewGroup, false)
             position == MainListIndex.mission.row    -> layoutInflater.inflate(MainListIndex.mission.resource,    viewGroup, false)
             position >= MainListIndex.waypoint.row   -> layoutInflater.inflate(MainListIndex.waypoint.resource,   viewGroup, false)
@@ -56,8 +59,8 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
         // Set up the rows
         when {
             position == MainListIndex.coordinate.row -> {
-                var longitudeText = rowView.findViewById<TextView>(R.id.longitudeText)
-                var latitudeText = rowView.findViewById<TextView>(R.id.latitudeText)
+                val longitudeText = rowView.findViewById<TextView>(R.id.longitudeText)
+                val latitudeText = rowView.findViewById<TextView>(R.id.latitudeText)
                 if (location == null) {
                     longitudeText.text = context.getText(R.string.unavailable)
                     latitudeText.text = context.getString(R.string.unavailable)
@@ -79,18 +82,27 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
 
             }
             position == MainListIndex.mission.row -> {
-                var finishedCount = 0
-                for (waypoint in waypointList) {
-                    finishedCount += if (waypoint.isChecked) 1 else 0
-                }
+                if (waypointList.isEmpty() and isLoading) {
+                    val progressBar = rowView.findViewById<ProgressBar>(R.id.missionProgressBar)
+                    progressBar.isIndeterminate = true
+                    val progressText = rowView.findViewById<TextView>(R.id.progressText)
+                    progressText.setText("正在载入")
+                    val percentText = rowView.findViewById<TextView>(R.id.percentText)
+                    percentText.setText("")
+                } else {
+                    var finishedCount = 0
+                    for (waypoint in waypointList) {
+                        finishedCount += if (waypoint.isChecked) 1 else 0
+                    }
 
-                var progressBar = rowView.findViewById<ProgressBar>(R.id.progressBar)
-                progressBar.max = waypointList.size
-                progressBar.progress = finishedCount
-                var progressText = rowView.findViewById<TextView>(R.id.progressText)
-                progressText.setText(String.format("%d/%d", finishedCount, waypointList.size))
-                var percentText = rowView.findViewById<TextView>(R.id.percentText)
-                percentText.setText(String.format("%.2f%%", (finishedCount.toDouble() / waypointList.size.toDouble()) * 100.0))
+                    val progressBar = rowView.findViewById<ProgressBar>(R.id.missionProgressBar)
+                    progressBar.max = waypointList.size
+                    progressBar.incrementProgressBy(finishedCount - progressBar.progress)
+                    val progressText = rowView.findViewById<TextView>(R.id.progressText)
+                    progressText.setText(String.format("%d/%d", finishedCount, waypointList.size))
+                    val percentText = rowView.findViewById<TextView>(R.id.percentText)
+                    percentText.setText(String.format("%.2f%%", (finishedCount.toDouble() / waypointList.size.toDouble()) * 100.0))
+                }
             }
             position >= MainListIndex.waypoint.row -> {
                 val waypointTitle = rowView.findViewById<TextView>(R.id.waypointTitle)
@@ -127,10 +139,13 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
         this.notifyDataSetChanged()
     }
 
-    fun refreshWith(checkedAt: Int) {
-        if (checkedAt >= 0 && checkedAt < waypointList.size) {
-            waypointList[checkedAt].isChecked = true
-        }
+    fun startLoading() {
+        isLoading = true
+        this.notifyDataSetChanged()
+    }
+
+    fun finishLoading() {
+        isLoading = false
         this.notifyDataSetChanged()
     }
 }
