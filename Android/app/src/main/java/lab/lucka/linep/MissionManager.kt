@@ -2,8 +2,13 @@ package lab.lucka.linep
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
+import com.google.gson.Gson
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.io.*
+import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 
@@ -12,61 +17,69 @@ import java.util.*
  * Created by lucka on 27/1/2018.
  */
 
-class MissionManager(context: Context) {
+class MissionManager(context: Context, missionListener: MissionListener) {
 
     private var context: Context
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
+    var photoPath: String = ""
+    var missionData: MissionData? = null
+    private var missionListener: MissionListener
 
     init {
         this.context = context
+        this.missionListener = missionListener
     }
 
     fun start() {
         isStarted = true
 
+        if (context.checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+            val alert = AlertDialog.Builder(context)
+            alert.setTitle(context.getString(R.string.alert_warning_title))
+            alert.setMessage(context.getString(R.string.alert_permission_internet))
+            alert.setPositiveButton(context.getString(R.string.confirm), null)
+            alert.show()
+        }
+
+        doAsync {
+            // Get the Mission Data from the server
+            missionData = requestMission()
+            // Get the GPX file
+            if (missionData == null) {
+                uiThread {
+                    val error: Exception = Exception(context.getString(R.string.error_request_mission_failed))
+                    missionListener.didStartedFailed(error)
+                }
+                return@doAsync
+            }
+            val gpxFile: File = requestMissionGPX(missionData as MissionData)
+            uiThread {
+                waypointList = decodeGPX(gpxFile)
+                isStarted = true
+                missionListener.didStartedSuccess(missionData as MissionData)
+            }
+        }
+    }
+
+    private fun requestMission(): MissionData {
+        val jsonURL = context.getString(R.string.server_url) + "Mission"
+        val jsonString = URL(jsonURL).readText()
+        val missionData: MissionData = Gson().fromJson(jsonString, MissionData::class.java)
+        return missionData
+    }
+
+    private fun requestMissionGPX(missionData: MissionData): File {
         // Download the GPX file from server
+        val gpxURL = context.getString(R.string.server_url) + missionData.ID + ".gpx"
+        val gpxString = URL(gpxURL).readText()
         // Save the GPX file
         //   Refrence: https://developer.android.com/guide/topics/data/data-storage.html?hl=zh-cn
         //   Refrence: https://developer.android.com/training/data-storage/files.html#WriteInternalStorage
-        // For test only
-        val testGPXStr: String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpsies=\"http://www.gpsies.com/GPX/1/0\" creator=\"GPSies http://www.gpsies.com - GPSies Track\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.gpsies.com/GPX/1/0 http://www.gpsies.com/gpsies.xsd\">\n" +
-                "    <metadata>\n" +
-                "        <name>MissionID</name>\n" +
-                "        <time>2018-02-02T09:20:58Z</time>\n" +
-                "    </metadata>\n" +
-                "    <wpt lat=\"25.84987276\" lon=\"114.9045065\">\n" +
-                "        <name>Waypoint 01</name>\n" +
-                "        <desc>Description 01</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"25.84995483\" lon=\"114.9040451\">\n" +
-                "        <name>Waypoint 02</name>\n" +
-                "        <desc>Description 02</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"25.85006104\" lon=\"114.9034389\">\n" +
-                "        <name>Waypoint 03</name>\n" +
-                "        <desc>Description 03</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"25.85036518\" lon=\"114.9035033\">\n" +
-                "        <name>Waypoint 04</name>\n" +
-                "        <desc>Description 04</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"25.85070311\" lon=\"114.9035409\">\n" +
-                "        <name>Waypoint 05</name>\n" +
-                "        <desc>Description 05</desc>\n" +
-                "    </wpt>\n" +
-                "    <wpt lat=\"25.85110380\" lon=\"114.9035462\">\n" +
-                "        <name>Waypoint 06</name>\n" +
-                "        <desc>Description 06</desc>\n" +
-                "    </wpt>\n" +
-                "</gpx>"
-        var filename: String = "MissionID.gpx"
-        var outputFile: File = File(context.filesDir, filename)
-        outputFile.writeText(testGPXStr, Charset.defaultCharset())
-        var inputFile: File = File(context.filesDir, filename)
-        // Decode the GPX file
-        waypointList = decodeGPX(inputFile)
+        val filename: String = missionData.ID + ".gpx"
+        val gpxFile: File = File(context.filesDir, filename)
+        gpxFile.writeText(gpxString, Charset.defaultCharset())
+        return gpxFile
     }
 
     fun stop() {
@@ -168,13 +181,6 @@ class MissionManager(context: Context) {
                 if (locationStringList.size == 2) {
                     location.latitude = locationStringList[0].toDouble()
                     location.longitude = locationStringList[1].toDouble()
-                } else {
-                    val alert = AlertDialog.Builder(context)
-                    alert.setTitle(context.getString(R.string.alert_warning_title))
-                    alert.setMessage(locationString)
-                    alert.setCancelable(false)
-                    alert.setPositiveButton(context.getString(R.string.confirm), null)
-                    alert.show()
                 }
             } else if (line.contains("<name>")) {
                 title = line
@@ -212,4 +218,15 @@ class MissionManager(context: Context) {
 
         return reachedList
     }
+
+    fun submitIssue() {
+
+    }
 }
+
+public interface MissionListener {
+    fun didStartedSuccess(missionData: MissionData)
+    fun didStartedFailed(error: Exception)
+}
+
+data class MissionData(val ID: String, val Token: String, val Description: String)

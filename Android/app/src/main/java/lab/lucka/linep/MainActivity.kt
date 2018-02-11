@@ -10,7 +10,9 @@ import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -21,13 +23,16 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.support.v4.content.FileProvider
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
 
     private enum class PermissionRequest(val code: Int, val permission: String) {
         locationCoarse(1, android.Manifest.permission.ACCESS_COARSE_LOCATION),
-        locationFine(2, android.Manifest.permission.ACCESS_FINE_LOCATION)
+        locationFine(2, android.Manifest.permission.ACCESS_FINE_LOCATION),
+        internet(3, android.Manifest.permission.INTERNET)
     }
 
     private enum class ActivityRequest(val code: Int) {
@@ -41,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     // MainListView
     private lateinit var mainListView: ListView
-    private lateinit var mainListViewAdapter: MainListViewAdapter
+    lateinit var mainListViewAdapter: MainListViewAdapter
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
@@ -111,7 +116,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     // MissionManager
-    var mission: MissionManager = MissionManager(this)
+    val missionListener: MissionListener = object :MissionListener {
+        override fun didStartedSuccess(missionData: MissionData) {
+            mainListViewAdapter.refreshWith(mission.waypointList)
+            buttonReportIssue.show()
+        }
+
+        override fun didStartedFailed(error: Exception) {
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
+        }
+    }
+    var mission: MissionManager = MissionManager(this, missionListener)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,11 +147,11 @@ class MainActivity : AppCompatActivity() {
         mainListView.adapter = mainListViewAdapter
 
         if (mission.isStarted) {
-            buttonTakePhoto.show()
+            buttonReportIssue.show()
         } else {
-            buttonTakePhoto.hide()
+            buttonReportIssue.hide()
         }
-        buttonTakePhoto.setOnClickListener { _ ->
+        buttonReportIssue.setOnClickListener { _ ->
             reportIssue()
         }
 
@@ -143,7 +163,6 @@ class MainActivity : AppCompatActivity() {
             // Explain if the permission was denied before
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.locationFine.permission)) {
                 // Explain
-                TODO("Add listeners")
                 val alert = AlertDialog.Builder(this)
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_location))
@@ -159,8 +178,22 @@ class MainActivity : AppCompatActivity() {
         } else {
             mainListViewAdapter.refreshWith(locationManager)
         }
-
-
+        // Check the Internet permission
+        if (ContextCompat.checkSelfPermission(this, PermissionRequest.internet.permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.internet.permission)) {
+                val alert = AlertDialog.Builder(this)
+                alert.setTitle(getString(R.string.alert_permission_title))
+                alert.setMessage(getString(R.string.alert_permission_internet))
+                alert.setCancelable(false)
+                alert.setNegativeButton(getString(R.string.cancel), null)
+                alert.setPositiveButton(getString(R.string.confirm), null)
+                alert.show()
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        arrayOf(PermissionRequest.internet.permission),
+                        PermissionRequest.internet.code)
+            }
+        }
 
 
     }
@@ -173,6 +206,7 @@ class MainActivity : AppCompatActivity() {
         mission.pause()
         super.onPause()
     }
+    
     // Set Location Update
     //   Refrence: https://kotlintc.com/articles/921
     override fun onResume() {
@@ -213,14 +247,11 @@ class MainActivity : AppCompatActivity() {
                     mission.stop()
                     mainListViewAdapter.refreshWith(mission.waypointList)
                     item.setTitle(getString(R.string.action_start))
-                    buttonTakePhoto.hide()
+                    buttonReportIssue.hide()
                 } else {
                     mission.start()
-                    mainListViewAdapter.refreshWith(mission.waypointList)
                     item.setTitle(getString(R.string.action_stop))
-                    buttonTakePhoto.show()
                 }
-
             }
         }
         return when (item.itemId) {
@@ -264,7 +295,7 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             location = null
                         }
-                        submit(location, imageBitmap)
+                        submitIssue(location, imageBitmap)
 
                     }
 
@@ -281,12 +312,21 @@ class MainActivity : AppCompatActivity() {
     fun reportIssue() {
         val takePhotoIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePhotoIntent.resolveActivity(getPackageManager()) != null) {
+            /*
+            val timeStamp = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
+            val imageFileName = "ISS_" + timeStamp
+            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
+            mission.photoPath = imageFile.getAbsolutePath()
+            var photoURI: Uri = FileProvider.getUriForFile(this, packageName + ".fileprovider", imageFile)
+            takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            */
             startActivityForResult(takePhotoIntent, ActivityRequest.reportIssue.code)
         }
     }
 
     // Submit
-    fun submit(location: Location?, imageBitmap: Bitmap) {
+    fun submitIssue(location: Location?, imageBitmap: Bitmap) {
 
         val dialog = AlertDialog.Builder(this)
         // Get the layout inflater

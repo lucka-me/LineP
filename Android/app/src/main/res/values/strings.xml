@@ -7,6 +7,8 @@
     <string name="format_date">yyyy-MM-dd HH:mm:ss</string>
     <string name="format_angle">%d° %d′ %.2f″</string>
 
+    <string name="server_url">http://192.168.0.127:3000/</string>
+
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="submit">提交</string>
@@ -16,6 +18,7 @@
     <string name="alert_permission_title">请求权限</string>
     <string name="alert_location_service_unavailable">定位功能不可用</string>
     <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
+    <string name="alert_permission_internet">本应用需要连接互联网以提供服务。</string>
 
     <string name="location">位置</string>
     <string name="longitude">经度</string>
@@ -29,4 +32,6 @@
     <string name="alert_reach_waypoint_message">请检查 %s</string>
     <string name="alert_reach_waypoint_checked">正常</string>
     <string name="alert_reach_waypoint_report">报告</string>
+
+    <string name="error_request_mission_failed">获取任务失败</string>
 </resources>

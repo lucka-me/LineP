@@ -23,7 +23,7 @@
     <include layout="@layout/content_main" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/buttonTakePhoto"
+        android:id="@+id/buttonReportIssue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -31,6 +31,6 @@
         android:tint="@android:color/white"
         app:backgroundTint="@color/colorAccent"
         app:rippleColor="@color/colorAccentDark"
-        app:srcCompat="@android:drawable/stat_sys_upload" />
+        app:srcCompat="@drawable/upload" />
 
 </android.support.design.widget.CoordinatorLayout>
