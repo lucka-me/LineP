@@ -22,8 +22,9 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     private var context: Context
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
-    var photoPath: String = ""
-    var missionData: MissionData? = null
+    var issueSN: Int = 0
+    var issueImagePath: String = ""
+    var missionData: MissionData = MissionData("", "", "")
     private var missionListener: MissionListener
 
     init {
@@ -32,7 +33,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     fun start() {
-        isStarted = true
+        issueSN = 1
 
         if (context.checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             val alert = AlertDialog.Builder(context)
@@ -40,13 +41,14 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             alert.setMessage(context.getString(R.string.alert_permission_internet))
             alert.setPositiveButton(context.getString(R.string.confirm), null)
             alert.show()
+            return
         }
 
         doAsync {
             // Get the Mission Data from the server
             missionData = requestMission()
             // Get the GPX file
-            if (missionData == null) {
+            if (missionData.ID == "") {
                 uiThread {
                     val error: Exception = Exception(context.getString(R.string.error_request_mission_failed))
                     missionListener.didStartedFailed(error)
@@ -63,9 +65,19 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     private fun requestMission(): MissionData {
+        var missionData: MissionData = MissionData("", "", "")
         val jsonURL = context.getString(R.string.server_url) + "Mission"
-        val jsonString = URL(jsonURL).readText()
-        val missionData: MissionData = Gson().fromJson(jsonString, MissionData::class.java)
+        var jsonString: String = ""
+        try {
+            jsonString = URL(jsonURL).readText()
+        } catch (error: Exception) {
+            return missionData
+        }
+        try {
+            missionData = Gson().fromJson(jsonString, MissionData::class.java)
+        } catch (error: Exception) {
+            return missionData
+        }
         return missionData
     }
 
@@ -84,6 +96,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     fun stop() {
         isStarted = false
+        issueSN = 0
         waypointList.clear()
     }
 
@@ -102,6 +115,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         try {
             fileOutputStream = FileOutputStream(file)
             objectOutputStream = ObjectOutputStream(fileOutputStream)
+            objectOutputStream.writeObject(missionData)
+            objectOutputStream.writeInt(issueSN)
             objectOutputStream.writeObject(waypointList)
             objectOutputStream.close()
             fileOutputStream.close()
@@ -122,9 +137,15 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         val fileInputStream: FileInputStream
         val objectInputStream: ObjectInputStream
 
+        if (!file.exists()) {
+            return
+        }
+
         try {
             fileInputStream = FileInputStream(file)
             objectInputStream = ObjectInputStream(fileInputStream)
+            missionData = objectInputStream.readObject() as MissionData
+            issueSN = objectInputStream.readInt()
             waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
             objectInputStream.close()
             fileInputStream.close()
@@ -153,7 +174,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         */
 
         waypointList = ArrayList(0)
-        var lineList: List<String> = file.readLines()
+        val lineList: List<String> = file.readLines()
 
         var title: String = ""
         var description: String = ""
@@ -177,7 +198,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 locationString = locationString.replace(">", "")
                 locationString = locationString.replace("\"", "")
                 locationString = locationString.trim()
-                var locationStringList: List<String> =  locationString.split(" ")
+                val locationStringList: List<String> =  locationString.split(" ")
                 if (locationStringList.size == 2) {
                     location.latitude = locationStringList[0].toDouble()
                     location.longitude = locationStringList[1].toDouble()
@@ -195,7 +216,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 description = description.trim()
                 continue
             } else if (line.contains("</wpt>")) {
-                var waypoint: Waypoint = Waypoint(title, description, false, location)
+                val waypoint: Waypoint = Waypoint(title, description, false, location)
                 waypointList.add(waypoint)
                 title = ""
                 description = ""
@@ -207,7 +228,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     fun reach(location: Location): ArrayList<Int> {
-        var reachedList: ArrayList<Int> = ArrayList(0)
+        val reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
             if (waypointList[scanner].location() != null) {
                 if (!waypointList[scanner].isChecked and (location.distanceTo(waypointList[scanner].location()) <= 30)) {
@@ -220,7 +241,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     fun submitIssue() {
-
+        issueSN += 1
     }
 }
 
@@ -229,4 +250,4 @@ public interface MissionListener {
     fun didStartedFailed(error: Exception)
 }
 
-data class MissionData(val ID: String, val Token: String, val Description: String)
+data class MissionData(val ID: String, val Token: String, val Description: String): Serializable

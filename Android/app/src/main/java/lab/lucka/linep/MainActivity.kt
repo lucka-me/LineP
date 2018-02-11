@@ -7,10 +7,10 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -21,10 +21,12 @@ import android.view.*
 
 import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.support.v4.content.FileProvider
-import java.io.File
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -60,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             mainListViewAdapter.refreshWith(locationManager)
             if (mission.isStarted and (location != null) and !isChecking) {
                 isChecking = true
-                var reachedList = mission.reach(location as Location)
+                val reachedList = mission.reach(location as Location)
                 if (reachedList.isNotEmpty()) {
                     for (index: Int in reachedList) {
                         val alert = AlertDialog.Builder(this@MainActivity)
@@ -206,7 +208,7 @@ class MainActivity : AppCompatActivity() {
         mission.pause()
         super.onPause()
     }
-    
+
     // Set Location Update
     //   Refrence: https://kotlintc.com/articles/921
     override fun onResume() {
@@ -285,18 +287,7 @@ class MainActivity : AppCompatActivity() {
                 when (resultCode) {
 
                     Activity.RESULT_OK -> {
-                        data as Intent
-                        val extras = data.getExtras()
-                        val imageBitmap = extras.get("data") as Bitmap
-                        val location: Location?
-                        if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED &&
-                                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                        } else {
-                            location = null
-                        }
-                        submitIssue(location, imageBitmap)
-
+                        submitIssue()
                     }
 
                 }
@@ -310,23 +301,48 @@ class MainActivity : AppCompatActivity() {
     // Take photo to report issue
     //   Refrence: https://developer.android.com/training/camera/photobasics.html#TaskPhotoView
     fun reportIssue() {
-        val takePhotoIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePhotoIntent.resolveActivity(getPackageManager()) != null) {
-            /*
-            val timeStamp = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
-            val imageFileName = "ISS_" + timeStamp
-            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-            val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
-            mission.photoPath = imageFile.getAbsolutePath()
-            var photoURI: Uri = FileProvider.getUriForFile(this, packageName + ".fileprovider", imageFile)
-            takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            */
-            startActivityForResult(takePhotoIntent, ActivityRequest.reportIssue.code)
+        // Take photo and get full size photo
+        //   Refrence: https://developer.android.com/training/camera/photobasics.html
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            var imageFile: File? = null
+            try {
+                val imageFilename = "ISS_" + mission.missionData.ID + mission.issueSN
+                val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                imageFile = File.createTempFile(imageFilename, ".jpg", storageDir)
+                mission.issueImagePath = imageFile.absolutePath
+            } catch (error: Exception) {
+
+            }
+            if (imageFile != null) {
+                val photoURI = FileProvider.getUriForFile(this, "lab.lucka.linep.fileprovider", imageFile)
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                startActivityForResult(takePictureIntent, ActivityRequest.reportIssue.code)
+            }
         }
     }
 
     // Submit
-    fun submitIssue(location: Location?, imageBitmap: Bitmap) {
+    fun submitIssue() {
+        // Get location and image
+        val location: Location?
+        if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED &&
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        } else {
+            location = null
+        }
+        if (!File(mission.issueImagePath).exists()) {
+            val alert = AlertDialog.Builder(this)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage("图片不存在")
+            alert.setCancelable(false)
+            alert.setNegativeButton(getString(R.string.cancel), null)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
+            return
+        }
+        val imageBitmap = BitmapFactory.decodeFile(mission.issueImagePath)
 
         val dialog = AlertDialog.Builder(this)
         // Get the layout inflater
@@ -356,14 +372,15 @@ class MainActivity : AppCompatActivity() {
                     (((setLocation.latitude - setLocation.latitude.toInt()) * 60) - ((setLocation.latitude - setLocation.latitude.toInt()) * 60).toInt()) * 60
             )
         }
-        val current = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat(getString(R.string.format_date))
-        timeText.text = dateFormat.format(current.time)
-        imageView.setImageBitmap(imageBitmap)
+        timeText.text = SimpleDateFormat(getString(R.string.format_date)).format(Date())
+        if (imageBitmap != null) {
+            imageView.setImageBitmap(imageBitmap)
+        }
 
         dialog.setView(dialogView)
         dialog.setTitle(getString(R.string.submit))
-        dialog.setPositiveButton(getString(R.string.confirm), null)
+        dialog.setPositiveButton(getString(R.string.confirm), DialogInterface.OnClickListener { _, _ ->
+            mission.submitIssue() })
         dialog.setNegativeButton(getString(R.string.cancel),null)
         dialog.show()
 
