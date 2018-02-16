@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Build
+import android.support.v4.app.ActivityCompat
 import com.google.gson.Gson
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -34,8 +36,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     fun start() {
         issueSN = 1
-
-        if (context.checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
             alert.setMessage(context.getString(R.string.alert_permission_internet))
@@ -43,6 +44,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             alert.show()
             return
         }
+
 
         doAsync {
             // Get the Mission Data from the server
@@ -97,6 +99,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun stop() {
         isStarted = false
         issueSN = 0
+        missionData = MissionData("", "", "")
         waypointList.clear()
     }
 
@@ -104,9 +107,6 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         // Serialize and save the waypointList
         //   Refrence: https://developer.android.com/training/basics/data-storage/files.html
         //   Refrence: http://blog.csdn.net/u011240877/article/details/72455715
-        if (!isStarted) {
-            return
-        }
         val filename = "mission.temp"
         val file: File = File(context.filesDir, filename)
         val fileOutputStream: FileOutputStream
@@ -138,6 +138,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         val objectInputStream: ObjectInputStream
 
         if (!file.exists()) {
+            isStarted = false
             return
         }
 
@@ -149,7 +150,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
             objectInputStream.close()
             fileInputStream.close()
-            isStarted = true
+            if (missionData.ID == "") {
+                isStarted = false
+            } else {
+                isStarted = true
+            }
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))

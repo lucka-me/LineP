@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -163,7 +164,7 @@ class MainActivity : AppCompatActivity() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         // Check the location permission
         //   Refrence: https://developer.android.com/training/permissions/requesting.html?hl=zh-cn#perm-request
-        if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) != PackageManager.PERMISSION_GRANTED) {
             // Explain if the permission was denied before
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.locationFine.permission)) {
                 // Explain
@@ -183,6 +184,7 @@ class MainActivity : AppCompatActivity() {
             mainListViewAdapter.refreshWith(locationManager)
         }
         // Check the Internet permission
+        /*
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.internet.permission) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.internet.permission)) {
                 val alert = AlertDialog.Builder(this)
@@ -198,6 +200,7 @@ class MainActivity : AppCompatActivity() {
                         PermissionRequest.internet.code)
             }
         }
+        */
 
 
     }
@@ -207,6 +210,7 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(locationListener)
         }
+
         mission.pause()
         super.onPause()
     }
@@ -219,6 +223,7 @@ class MainActivity : AppCompatActivity() {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
             mainListViewAdapter.refreshWith(locationManager)
         }
+
         mission.resume()
         super.onResume()
     }

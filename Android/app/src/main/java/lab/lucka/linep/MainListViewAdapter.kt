@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
+import android.support.v4.app.ActivityCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -125,7 +127,8 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
 
     // Refresh the list with something
     fun refreshWith(locationManager: LocationManager) {
-        if (context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+
+        if ((ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         } else {
