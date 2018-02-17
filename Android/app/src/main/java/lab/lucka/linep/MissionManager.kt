@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Build
 import android.support.v4.app.ActivityCompat
 import com.google.gson.Gson
 import org.jetbrains.anko.doAsync

@@ -31,6 +31,6 @@
         android:tint="@android:color/white"
         app:backgroundTint="@color/colorAccent"
         app:rippleColor="@color/colorAccentDark"
-        app:srcCompat="@drawable/upload" />
+        app:srcCompat="@drawable/ic_report" />
 
 </android.support.design.widget.CoordinatorLayout>

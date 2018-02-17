@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
-import android.os.Build
 import android.support.v4.app.ActivityCompat
 import android.view.LayoutInflater
 import android.view.View
@@ -88,7 +87,7 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
                     val progressBar = rowView.findViewById<ProgressBar>(R.id.missionProgressBar)
                     progressBar.isIndeterminate = true
                     val progressText = rowView.findViewById<TextView>(R.id.progressText)
-                    progressText.setText("正在载入")
+                    progressText.setText(context.getString(R.string.loading))
                     val percentText = rowView.findViewById<TextView>(R.id.percentText)
                     percentText.setText("")
                 } else {
@@ -114,7 +113,11 @@ class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): 
                 if ((waypointList[position - MainListIndex.waypoint.row].location() != null) and
                         (location != null)) {
                     val tempLocation: Location = waypointList[position - MainListIndex.waypoint.row].location() as Location
-                    distanceText.text = String.format("距离 %.2f 米", tempLocation.distanceTo(location))
+                    if (tempLocation.distanceTo(location) < 1000.0) {
+                        distanceText.text = String.format(context.getString(R.string.distanceMetre), tempLocation.distanceTo(location))
+                    } else {
+                        distanceText.text = String.format(context.getString(R.string.distanceKM), tempLocation.distanceTo(location) / 1000.0)
+                    }
                 } else {
                     distanceText.text = context.getString(R.string.unavailable)
                 }

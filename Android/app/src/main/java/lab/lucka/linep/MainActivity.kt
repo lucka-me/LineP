@@ -1,17 +1,16 @@
 package lab.lucka.linep
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -236,7 +235,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
-        var menuStartStop: MenuItem = menu.getItem(MainMenu.startStop.index)
+        val menuStartStop: MenuItem = menu.getItem(MainMenu.startStop.index)
         if (mission.isStarted) {
             menuStartStop.setTitle(R.string.action_stop)
         } else {
@@ -263,11 +262,21 @@ class MainActivity : AppCompatActivity() {
                     item.setTitle(getString(R.string.action_stop))
                 }
             }
+
+            MainMenu.settings.id -> {
+                val intent: Intent = Intent(this, SettingsActivity::class.java).apply {  }
+                startActivity(intent)
+            }
         }
         return when (item.itemId) {
             R.id.action_start_stop, R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    // Open the settings activity
+    fun openSettings() {
+
     }
 
     // Handle the permissions request response
@@ -323,7 +332,7 @@ class MainActivity : AppCompatActivity() {
 
             }
             if (imageFile != null) {
-                val photoURI = FileProvider.getUriForFile(this, "lab.lucka.linep.fileprovider", imageFile)
+                val photoURI = FileProvider.getUriForFile(this, getString(R.string.imageProviderAthority), imageFile)
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                 startActivityForResult(takePictureIntent, ActivityRequest.reportIssue.code)
             }
