@@ -1,6 +1,5 @@
 package lab.lucka.linep
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private enum class MainMenu(val index: Int, val id: Int) {
         startStop(0, R.id.action_start_stop),
-        settings(1, R.id.action_settings)
+        preference(1, R.id.action_preference)
     }
 
     // MainListView
@@ -162,7 +161,7 @@ class MainActivity : AppCompatActivity() {
         // Handel the Location Service
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         // Check the location permission
-        //   Refrence: https://developer.android.com/training/permissions/requesting.html?hl=zh-cn#perm-request
+        //   Reference: https://developer.android.com/training/permissions/requesting.html?hl=zh-cn#perm-request
         if (ActivityCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) != PackageManager.PERMISSION_GRANTED) {
             // Explain if the permission was denied before
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.locationFine.permission)) {
@@ -215,7 +214,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Set Location Update
-    //   Refrence: https://kotlintc.com/articles/921
+    //   Reference: https://kotlintc.com/articles/921
     override fun onResume() {
 
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
@@ -263,20 +262,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            MainMenu.settings.id -> {
-                val intent: Intent = Intent(this, SettingsActivity::class.java).apply {  }
+            MainMenu.preference.id -> {
+                val intent: Intent = Intent(this, PreferenceActivity::class.java).apply {  }
                 startActivity(intent)
             }
         }
         return when (item.itemId) {
-            R.id.action_start_stop, R.id.action_settings -> true
+            MainMenu.startStop.id, MainMenu.preference.id -> true
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    // Open the settings activity
-    fun openSettings() {
-
     }
 
     // Handle the permissions request response
@@ -316,10 +310,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Take photo to report issue
-    //   Refrence: https://developer.android.com/training/camera/photobasics.html#TaskPhotoView
+    //   Reference: https://developer.android.com/training/camera/photobasics.html#TaskPhotoView
     fun reportIssue() {
         // Take photo and get full size photo
-        //   Refrence: https://developer.android.com/training/camera/photobasics.html
+        //   Reference: https://developer.android.com/training/camera/photobasics.html
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             var imageFile: File? = null
