@@ -1,7 +1,7 @@
 package lab.lucka.linep
 
 import android.os.Bundle
-import android.preference.PreferenceFragment
+import android.support.v7.preference.PreferenceFragmentCompat
 
 
 /**
@@ -10,11 +10,13 @@ import android.preference.PreferenceFragment
 // Preference Activity
 //   Reference: https://developer.android.com/guide/topics/ui/settings.html
 //   Reference: https://www.jianshu.com/p/f5f8834ee9af
+// Use PreferenceFragmentCompact instead of PreferenceFragment
+//   Refrence: https://twitter.com/mariotaku/status/965522876546740224
+//   Refrence: https://medium.com/@JakobUlbrich/building-a-settings-screen-for-android-part-1-5959aa49337c
+//   Refrence: http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2017/0502/7901.html
+class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
 
-class PreferenceFragmentCustomized: PreferenceFragment() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preference)
     }
 }
