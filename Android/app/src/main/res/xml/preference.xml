@@ -1,21 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <android.support.v7.preference.PreferenceCategory
-        android:key=""
-        android:title="@string/pref_category_user_title">
-        <android.support.v7.preference.EditTextPreference
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/pref_user_category_title">
+
+        <EditTextPreference
             android:dialogIcon="@drawable/ic_pref_user_id"
             android:icon="@drawable/ic_pref_user_id"
             android:inputType="textVisiblePassword"
-            android:key="@string/pref_user_id_key"
+            android:key="pref_user_id"
             android:summary="@string/pref_user_id_summary"
-            android:title="@string/pref_user_id_title" />
-        <android.support.v7.preference.EditTextPreference
+            android:title="@string/pref_user_id_title"
+            tools:targetApi="m" />
+
+        <EditTextPreference
             android:dialogIcon="@drawable/ic_pref_user_token"
             android:icon="@drawable/ic_pref_user_token"
             android:inputType="textPassword"
-            android:key="@string/pref_user_token_key"
+            android:key="pref_user_token_key"
             android:summary="@string/pref_user_token_summary"
             android:title="@string/pref_user_token_title" />
-    </android.support.v7.preference.PreferenceCategory>
-</android.support.v7.preference.PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_about_category_title">
+
+        <Preference
+            android:key="pref_about"
+            android:title="@string/pref_about_title"
+            android:icon="@drawable/ic_pref_about_about">
+            <!--
+            Open activity
+              Reference: https://stackoverflow.com/questions/5330677/android-preferences-onclick-event
+            -->
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="lab.lucka.linep"
+                android:targetClass="lab.lucka.linep.PreferenceAboutActivity" />
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

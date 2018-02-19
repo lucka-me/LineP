@@ -2,6 +2,7 @@ package lab.lucka.linep
 
 import android.os.Bundle
 import android.support.v7.preference.PreferenceFragmentCompat
+import android.view.MenuItem
 
 
 /**
@@ -17,6 +18,15 @@ import android.support.v7.preference.PreferenceFragmentCompat
 class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.preference)
+        setPreferencesFromResource(R.xml.preference, rootKey)
     }
+
+}
+
+class PreferenceAboutFragment : PreferenceFragmentCompat() {
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.pref_about, rootKey)
+    }
+
 }

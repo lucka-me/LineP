@@ -24,8 +24,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.support.v4.content.FileProvider
-
-
+import java.text.DateFormat
 
 
 class MainActivity : AppCompatActivity() {
@@ -333,7 +332,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Submit
+// Submit
     fun submitIssue() {
         // Get location and image
         val location: Location?
@@ -376,7 +375,7 @@ class MainActivity : AppCompatActivity() {
                     (((setLocation.latitude - setLocation.latitude.toInt()) * 60) - ((setLocation.latitude - setLocation.latitude.toInt()) * 60).toInt()) * 60
             )
         }
-        timeText.text = SimpleDateFormat(getString(R.string.format_date)).format(Date())
+        timeText.text = DateFormat.getDateTimeInstance().format(Date())
         if (imageBitmap != null) {
             imageView.setImageBitmap(imageBitmap)
         }

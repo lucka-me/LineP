@@ -7,7 +7,6 @@
     <string name="action_prefrence">设置</string>
 
     <!-- Format -->
-    <string name="format_date">yyyy-MM-dd HH:mm:ss</string>
     <string name="format_angle">%d° %d′ %.2f″</string>
 
     <!-- Path -->
@@ -48,12 +47,35 @@
 
     <!-- Preference -->
     <string name="pref_title">设置</string>
-    <string name="pref_category_user_title">用户</string>
-    <string name="pref_user_id_key">pref_user_id</string>
+    <string name="pref_user_category_title">用户</string>
     <string name="pref_user_id_title">ID</string>
     <string name="pref_user_id_summary">点击以设置用户 ID</string>
-    <string name="pref_user_token_key">pref_user_token</string>
     <string name="pref_user_token_title">Token</string>
     <string name="pref_user_token_summary">点击以设置用户 Token</string>
+    <string name="pref_about_category_title">关于</string>
+    <!-- about -->
+    <string name="pref_about_title">关于</string>
+    <string name="pref_about_summary_category_title">关于</string>
+    <string name="pref_about_summary_version_title">版本</string>
+    <string name="pref_about_summary_version_summary">0.1</string>
+    <string name="pref_about_summary_github_title">GitHub</string>
+    <string name="pref_about_summary_github_url">https://github.com/lucka-me/LineP</string>
+
+    <string name="pref_about_developer_category_title">开发者</string>
+    <string name="pref_about_developer_lucka_title">Lucka</string>
+    <string name="pref_about_developer_lucka_url">https://lucka.moe</string>
+
+    <string name="pref_about_dependency_category_title">依赖组件</string>
+    <string name="pref_about_dependency_gson_title">google-gson</string>
+    <string name="pref_about_dependency_gson_summary">A Java serialization/deserialization library</string>
+    <string name="pref_about_dependency_gson_url">https://github.com/google/gson</string>
+    <string name="pref_about_dependency_anko_title">Anko</string>
+    <string name="pref_about_dependency_anko_summary">Pleasant Android application development</string>
+    <string name="pref_about_dependency_anko_url">https://github.com/Kotlin/anko</string>
+    <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
+    <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
+    <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
+    <!-- License -->
+    <string name="pref_license_title">许可证</string>
 
 </resources>

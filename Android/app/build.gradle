@@ -8,7 +8,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "lab.lucka.linep"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "0.1"

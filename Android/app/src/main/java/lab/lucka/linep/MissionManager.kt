@@ -35,6 +35,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     fun start() {
         issueSN = 1
+        /*
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -42,7 +43,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             alert.setPositiveButton(context.getString(R.string.confirm), null)
             alert.show()
             return
-        }
+        }*/
 
 
         doAsync {

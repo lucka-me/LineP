@@ -27,6 +27,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".PreferenceActivity"
+            android:label="@string/pref_title"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".PreferenceAboutActivity"
+            android:label="@string/pref_about_title"
+            android:parentActivityName=".PreferenceActivity" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="lab.lucka.linep.fileprovider"
@@ -37,11 +47,7 @@
                 android:resource="@xml/paths" />
         </provider>
 
-        <activity
-            android:name=".PreferenceActivity"
-            android:label="@string/pref_title"
-            android:parentActivityName=".MainActivity" >
-        </activity>
+
     </application>
 
 </manifest>
