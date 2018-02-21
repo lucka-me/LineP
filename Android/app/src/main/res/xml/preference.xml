@@ -35,8 +35,8 @@
             -->
             <intent
                 android:action="android.intent.action.MAIN"
-                android:targetPackage="lab.lucka.linep"
-                android:targetClass="lab.lucka.linep.PreferenceAboutActivity" />
+                android:targetPackage="lab.chd.linep"
+                android:targetClass="lab.chd.linep.PreferenceAboutActivity" />
         </Preference>
 
     </PreferenceCategory>

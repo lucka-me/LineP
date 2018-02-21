@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="lab.lucka.linep.PreferenceAboutActivity">
+    tools:context="lab.chd.linep.PreferenceAboutActivity">
 
     <FrameLayout
         android:id="@+id/preferenceAboutFrame"

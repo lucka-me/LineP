@@ -1,11 +1,8 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.support.v7.preference.PreferenceFragmentCompat
-import android.support.v7.preference.PreferenceScreen
-
 
 class PreferenceActivity : AppCompatActivity() {
 

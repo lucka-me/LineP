@@ -1,4 +1,4 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle

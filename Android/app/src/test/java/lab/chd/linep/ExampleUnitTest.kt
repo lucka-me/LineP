@@ -1,4 +1,4 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import org.junit.Test
 

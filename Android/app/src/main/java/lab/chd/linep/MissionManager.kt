@@ -1,10 +1,8 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
-import android.support.v4.app.ActivityCompat
 import com.google.gson.Gson
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -23,6 +21,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     private var context: Context
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
+    var isLoading: Boolean = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
     var missionData: MissionData = MissionData("", "", "")
@@ -35,6 +34,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     fun start() {
         issueSN = 1
+        isLoading = true
         /*
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             val alert = AlertDialog.Builder(context)
@@ -53,6 +53,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             if (missionData.ID == "") {
                 uiThread {
                     val error: Exception = Exception(context.getString(R.string.error_request_mission_failed))
+                    isLoading = false
                     missionListener.didStartedFailed(error)
                 }
                 return@doAsync
@@ -60,6 +61,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             val gpxFile: File = requestMissionGPX(missionData as MissionData)
             uiThread {
                 waypointList = decodeGPX(gpxFile)
+                isLoading = false
                 isStarted = true
                 missionListener.didStartedSuccess(missionData as MissionData)
             }

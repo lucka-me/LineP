@@ -1,4 +1,4 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -17,11 +17,9 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.*
-
 import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.*
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 import android.support.v4.content.FileProvider
 import java.text.DateFormat
@@ -44,9 +42,9 @@ class MainActivity : AppCompatActivity() {
         preference(1, R.id.action_preference)
     }
 
-    // MainListView
-    private lateinit var mainListView: ListView
-    lateinit var mainListViewAdapter: MainListViewAdapter
+    // MainList
+    private lateinit var mainList: ListView
+    lateinit var mainListAdapter: MainListAdapter
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
@@ -57,7 +55,9 @@ class MainActivity : AppCompatActivity() {
 
         override fun onLocationChanged(location: Location?) {
 
-            mainListViewAdapter.refreshWith(locationManager)
+            if (!mission.isLoading) {
+                mainListAdapter.refreshWith(locationManager)
+            }
             if (mission.isStarted and (location != null) and !isChecking) {
                 isChecking = true
                 val reachedList = mission.reach(location as Location)
@@ -91,17 +91,17 @@ class MainActivity : AppCompatActivity() {
                             reportIssue() })
                         alert.show()
                     }
-                    mainListViewAdapter.refreshWith(mission.waypointList)
+                    mainListAdapter.refreshWith(mission.waypointList)
                 }
             }
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            mainListViewAdapter.refreshWith(locationManager)
+            mainListAdapter.refreshWith(locationManager)
         }
 
         override fun onProviderEnabled(provider: String?) {
-            mainListViewAdapter.refreshWith(locationManager)
+            mainListAdapter.refreshWith(locationManager)
         }
 
         override fun onProviderDisabled(provider: String?) {
@@ -111,20 +111,20 @@ class MainActivity : AppCompatActivity() {
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
-            mainListViewAdapter.refreshWith(locationManager)
+            mainListAdapter.refreshWith(locationManager)
         }
     }
 
     // MissionManager
     val missionListener: MissionListener = object :MissionListener {
         override fun didStartedSuccess(missionData: MissionData) {
-            mainListViewAdapter.finishLoading()
-            mainListViewAdapter.refreshWith(mission.waypointList)
+            mainListAdapter.finishLoading()
+            mainListAdapter.refreshWith(mission.waypointList)
             buttonReportIssue.show()
         }
 
         override fun didStartedFailed(error: Exception) {
-            mainListViewAdapter.finishLoading()
+            mainListAdapter.finishLoading()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(error.message)
@@ -144,9 +144,9 @@ class MainActivity : AppCompatActivity() {
         mission.resume()
 
         // Handel the Main List View
-        mainListViewAdapter = MainListViewAdapter(this, mission.waypointList)
-        mainListView = findViewById<ListView>(R.id.mainListView)
-        mainListView.adapter = mainListViewAdapter
+        mainListAdapter = MainListAdapter(this, mission.waypointList)
+        mainList = findViewById<ListView>(R.id.mainListView)
+        mainList.adapter = mainListAdapter
 
         if (mission.isStarted) {
             buttonReportIssue.show()
@@ -178,11 +178,11 @@ class MainActivity : AppCompatActivity() {
                         PermissionRequest.locationFine.code)
             }
         } else {
-            mainListViewAdapter.refreshWith(locationManager)
+            mainListAdapter.refreshWith(locationManager)
         }
         // Check the Internet permission
         /*
-        if (ContextCompat.checkSelfPermission(this, PermissionRequest.internet.permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, PermissionRequest.internet.permission) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.internet.permission)) {
                 val alert = AlertDialog.Builder(this)
                 alert.setTitle(getString(R.string.alert_permission_title))
@@ -218,7 +218,7 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
-            mainListViewAdapter.refreshWith(locationManager)
+            mainListAdapter.refreshWith(locationManager)
         }
 
         mission.resume()
@@ -251,11 +251,11 @@ class MainActivity : AppCompatActivity() {
             MainMenu.startStop.id -> {
                 if (mission.isStarted) {
                     mission.stop()
-                    mainListViewAdapter.refreshWith(mission.waypointList)
+                    mainListAdapter.refreshWith(mission.waypointList)
                     item.setTitle(getString(R.string.action_start))
                     buttonReportIssue.hide()
                 } else {
-                    mainListViewAdapter.startLoading()
+                    mainListAdapter.startLoading()
                     mission.start()
                     item.setTitle(getString(R.string.action_stop))
                 }
@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             PermissionRequest.locationFine.code -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mainListViewAdapter.refreshWith(locationManager)
+                    mainListAdapter.refreshWith(locationManager)
                 } else {
 
                 }

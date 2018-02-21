@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="lab.lucka.linep">
+    package="lab.chd.linep">
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="lab.chd.linep.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -28,18 +28,18 @@
         </activity>
 
         <activity
-            android:name=".PreferenceActivity"
+            android:name="lab.chd.linep.PreferenceActivity"
             android:label="@string/pref_title"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="lab.chd.linep.MainActivity" />
 
         <activity
-            android:name=".PreferenceAboutActivity"
+            android:name="lab.chd.linep.PreferenceAboutActivity"
             android:label="@string/pref_about_title"
-            android:parentActivityName=".PreferenceActivity" />
+            android:parentActivityName="lab.chd.linep.PreferenceActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="lab.lucka.linep.fileprovider"
+            android:authorities="lab.chd.linep.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

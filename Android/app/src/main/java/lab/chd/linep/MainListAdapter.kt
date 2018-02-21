@@ -1,4 +1,4 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -9,12 +9,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import android.widget.TextView
+
+
 
 /**
  * Created by lucka on 25/1/2018.
  */
 
-class MainListViewAdapter(context: Context, waypointList: ArrayList<Waypoint>): BaseAdapter() {
+
+class MainListAdapter(context: Context, waypointList: ArrayList<Waypoint>): BaseAdapter() {
 
     private enum class MainListIndex(val row: Int, val resource: Int) {
         coordinate(0, R.layout.row_location),

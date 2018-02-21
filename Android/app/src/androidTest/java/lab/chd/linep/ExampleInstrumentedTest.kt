@@ -1,4 +1,4 @@
-package lab.lucka.linep
+package lab.chd.linep
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

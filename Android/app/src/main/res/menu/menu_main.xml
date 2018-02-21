@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="lab.lucka.linep.MainActivity">
+    tools:context="lab.chd.linep.MainActivity">
     <item
         android:id="@+id/action_start_stop"
         android:title="@string/action_start"
