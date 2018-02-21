@@ -22,6 +22,8 @@ import android.widget.*
 import java.io.File
 import java.util.*
 import android.support.v4.content.FileProvider
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import java.text.DateFormat
 
 
@@ -43,8 +45,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     // MainList
-    private lateinit var mainList: ListView
-    lateinit var mainListAdapter: MainListAdapter
+    //private lateinit var mainList: ListView
+    //lateinit var mainListAdapter: MainListAdapter
+    private lateinit var mainRecyclerView: RecyclerView
+    lateinit var mainRecyclerViewAdapter: MainRecyclerViewAdapter
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
@@ -56,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         override fun onLocationChanged(location: Location?) {
 
             if (!mission.isLoading) {
-                mainListAdapter.refreshWith(locationManager)
+                mainRecyclerViewAdapter.refreshWith(locationManager)
             }
             if (mission.isStarted and (location != null) and !isChecking) {
                 isChecking = true
@@ -91,17 +95,17 @@ class MainActivity : AppCompatActivity() {
                             reportIssue() })
                         alert.show()
                     }
-                    mainListAdapter.refreshWith(mission.waypointList)
+                    mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                 }
             }
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            mainListAdapter.refreshWith(locationManager)
+            mainRecyclerViewAdapter.refreshWith(locationManager)
         }
 
         override fun onProviderEnabled(provider: String?) {
-            mainListAdapter.refreshWith(locationManager)
+            mainRecyclerViewAdapter.refreshWith(locationManager)
         }
 
         override fun onProviderDisabled(provider: String?) {
@@ -111,20 +115,20 @@ class MainActivity : AppCompatActivity() {
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
-            mainListAdapter.refreshWith(locationManager)
+            mainRecyclerViewAdapter.refreshWith(locationManager)
         }
     }
 
     // MissionManager
     val missionListener: MissionListener = object :MissionListener {
         override fun didStartedSuccess(missionData: MissionData) {
-            mainListAdapter.finishLoading()
-            mainListAdapter.refreshWith(mission.waypointList)
+            mainRecyclerViewAdapter.finishLoading()
+            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
             buttonReportIssue.show()
         }
 
         override fun didStartedFailed(error: Exception) {
-            mainListAdapter.finishLoading()
+            mainRecyclerViewAdapter.finishLoading()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(error.message)
@@ -144,10 +148,12 @@ class MainActivity : AppCompatActivity() {
         mission.resume()
 
         // Handel the Main List View
-        mainListAdapter = MainListAdapter(this, mission.waypointList)
-        mainList = findViewById<ListView>(R.id.mainListView)
-        mainList.adapter = mainListAdapter
+        mainRecyclerView = findViewById<RecyclerView>(R.id.mainRecyclerView)
+        mainRecyclerViewAdapter = MainRecyclerViewAdapter(this, mission.waypointList)
+        mainRecyclerView.layoutManager = LinearLayoutManager(this)
+        mainRecyclerView.adapter = mainRecyclerViewAdapter
 
+        // Setup the fab
         if (mission.isStarted) {
             buttonReportIssue.show()
         } else {
@@ -156,6 +162,22 @@ class MainActivity : AppCompatActivity() {
         buttonReportIssue.setOnClickListener { _ ->
             reportIssue()
         }
+        // FAB hide when scrolling
+        //   Reference: https://stackoverflow.com/questions/31617398/floatingactionbutton-hide-on-list-scroll
+        // Use object to define a listener directly
+        //   Reference: https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/zai_wo_men_de_app_zhong_shi_xian_yi_ge_li_zi.html
+        mainRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                if (mission.isStarted) {
+                    if ((dy > 0) and buttonReportIssue.isShown) {
+                        buttonReportIssue.hide()
+                    } else if ((dy < 0) and !buttonReportIssue.isShown) {
+                        buttonReportIssue.show()
+                    }
+                }
+                super.onScrolled(recyclerView, dx, dy)
+            }
+        })
 
         // Handel the Location Service
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -178,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                         PermissionRequest.locationFine.code)
             }
         } else {
-            mainListAdapter.refreshWith(locationManager)
+            mainRecyclerViewAdapter.refreshWith(locationManager)
         }
         // Check the Internet permission
         /*
@@ -218,7 +240,7 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
-            mainListAdapter.refreshWith(locationManager)
+            mainRecyclerViewAdapter.refreshWith(locationManager)
         }
 
         mission.resume()
@@ -251,11 +273,11 @@ class MainActivity : AppCompatActivity() {
             MainMenu.startStop.id -> {
                 if (mission.isStarted) {
                     mission.stop()
-                    mainListAdapter.refreshWith(mission.waypointList)
+                    mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                     item.setTitle(getString(R.string.action_start))
                     buttonReportIssue.hide()
                 } else {
-                    mainListAdapter.startLoading()
+                    mainRecyclerViewAdapter.startLoading()
                     mission.start()
                     item.setTitle(getString(R.string.action_stop))
                 }
@@ -278,7 +300,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             PermissionRequest.locationFine.code -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mainListAdapter.refreshWith(locationManager)
+                    mainRecyclerViewAdapter.refreshWith(locationManager)
                 } else {
 
                 }
@@ -332,7 +354,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-// Submit
+    // Submit
     fun submitIssue() {
         // Get location and image
         val location: Location?

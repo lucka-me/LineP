@@ -59,10 +59,12 @@
     <string name="pref_about_summary_version_title">版本</string>
     <string name="pref_about_summary_version_summary">0.1</string>
     <string name="pref_about_summary_github_title">GitHub</string>
+    <string name="pref_about_summary_github_summary">应用源代码</string>
     <string name="pref_about_summary_github_url">https://github.com/lucka-me/LineP</string>
 
     <string name="pref_about_developer_category_title">开发者</string>
     <string name="pref_about_developer_lucka_title">Lucka</string>
+    <string name="pref_about_developer_lucka_summary">个人网站</string>
     <string name="pref_about_developer_lucka_url">https://lucka.moe</string>
 
     <string name="pref_about_dependency_category_title">依赖组件</string>

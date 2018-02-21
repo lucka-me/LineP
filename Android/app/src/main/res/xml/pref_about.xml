@@ -9,7 +9,8 @@
 
         <Preference
             android:icon="@drawable/ic_pref_about_github"
-            android:title="@string/pref_about_summary_github_title" >
+            android:title="@string/pref_about_summary_github_title"
+            android:summary="@string/pref_about_summary_github_summary" >
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="@string/pref_about_summary_github_url" />
@@ -21,7 +22,8 @@
 
         <Preference
             android:icon="@drawable/ic_pref_about_website"
-            android:title="@string/pref_about_developer_lucka_title" >
+            android:title="@string/pref_about_developer_lucka_title"
+            android:summary="@string/pref_about_developer_lucka_summary" >
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="@string/pref_about_developer_lucka_url" />

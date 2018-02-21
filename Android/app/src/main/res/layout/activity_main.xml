@@ -31,8 +31,6 @@
         android:layout_margin="@dimen/fab_margin"
         android:tint="@android:color/white"
         app:backgroundTint="@color/colorAccent"
-        app:layout_anchor="@id/mainListView"
-        app:layout_anchorGravity="bottom|right|end"
         app:rippleColor="@color/colorAccentDark"
         app:srcCompat="@drawable/ic_report" />
 
