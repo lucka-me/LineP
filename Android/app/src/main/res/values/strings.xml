@@ -11,7 +11,7 @@
 
     <!-- Path -->
     <string name="server_url">https://lucka.moe/LineP/Server/</string>
-    <string name="imageProviderAthority">lab.lucka.linep.fileprovider</string>
+    <string name="imageProviderAthority">lab.chd.linep.fileprovider</string>
 
     <!-- Dialog -->
     <string name="confirm">确认</string>
@@ -55,7 +55,7 @@
     <string name="pref_about_category_title">关于</string>
     <!-- about -->
     <string name="pref_about_title">关于</string>
-    <string name="pref_about_summary_category_title">关于</string>
+    <string name="pref_about_summary_category_title">概要</string>
     <string name="pref_about_summary_version_title">版本</string>
     <string name="pref_about_summary_version_summary">0.1</string>
     <string name="pref_about_summary_github_title">GitHub</string>

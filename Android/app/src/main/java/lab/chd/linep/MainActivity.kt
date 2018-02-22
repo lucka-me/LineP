@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
 
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 1.toFloat(), locationListener)
             mainRecyclerViewAdapter.refreshWith(locationManager)
         }
 
