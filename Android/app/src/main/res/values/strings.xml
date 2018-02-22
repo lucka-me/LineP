@@ -35,15 +35,20 @@
     <!-- Mission -->
     <string name="loading">正在载入</string>
     <string name="error_request_mission_failed">获取任务失败</string>
+    <string name="missionID">任务 ID</string>
     <string name="location">位置</string>
+    <string name="waypoint">Waypoint</string>
     <string name="longitude">经度</string>
     <string name="latitude">纬度</string>
+    <string name="distance">距离</string>
     <string name="distanceMetre">距离 %.2f 米</string>
     <string name="distanceKM">距离 %.2f 千米</string>
     <string name="time">时间</string>
     <string name="description">描述</string>
     <string name="description_enter">输入描述</string>
     <string name="mission_title">任务</string>
+    <string name="finished">已完成</string>
+    <string name="unfinished">未完成</string>
 
     <!-- Preference -->
     <string name="pref_title">设置</string>

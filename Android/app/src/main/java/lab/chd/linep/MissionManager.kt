@@ -22,15 +22,27 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
     var isLoading: Boolean = false
+    var isReporting: Boolean = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
-    var missionData: MissionData = MissionData("", "", "")
+    var data: MissionData = MissionData("", "", "")
     private var missionListener: MissionListener
 
     init {
         this.context = context
         this.missionListener = missionListener
     }
+
+    // Listener
+    public interface MissionListener {
+        fun didStartedSuccess(missionData: MissionData)
+        fun didStartedFailed(error: Exception)
+        fun didReportedSccess()
+        fun didReportedFailed(error: Exception)
+    }
+
+    // Data class
+    data class MissionData(val id: String, val token: String, val description: String): Serializable
 
     fun start() {
         issueSN = 1
@@ -48,9 +60,9 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
         doAsync {
             // Get the Mission Data from the server
-            missionData = requestMission()
+            data = requestMission()
             // Get the GPX file
-            if (missionData.ID == "") {
+            if (data.id == "") {
                 uiThread {
                     val error: Exception = Exception(context.getString(R.string.error_request_mission_failed))
                     isLoading = false
@@ -58,12 +70,12 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 }
                 return@doAsync
             }
-            val gpxFile: File = requestMissionGPX(missionData as MissionData)
+            val gpxFile: File = requestMissionGPX(data as MissionData)
             uiThread {
                 waypointList = decodeGPX(gpxFile)
                 isLoading = false
                 isStarted = true
-                missionListener.didStartedSuccess(missionData as MissionData)
+                missionListener.didStartedSuccess(data as MissionData)
             }
         }
     }
@@ -87,12 +99,12 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     private fun requestMissionGPX(missionData: MissionData): File {
         // Download the GPX file from server
-        val gpxURL = context.getString(R.string.server_url) + "GPX/" + missionData.ID + ".gpx"
+        val gpxURL = context.getString(R.string.server_url) + "GPX/" + missionData.id + ".gpx"
         val gpxString = URL(gpxURL).readText()
         // Save the GPX file
         //   Refrence: https://developer.android.com/guide/topics/data/data-storage.html?hl=zh-cn
         //   Refrence: https://developer.android.com/training/data-storage/files.html#WriteInternalStorage
-        val filename: String = missionData.ID + ".gpx"
+        val filename: String = missionData.id + ".gpx"
         val gpxFile: File = File(context.filesDir, filename)
         gpxFile.writeText(gpxString, Charset.defaultCharset())
         return gpxFile
@@ -101,7 +113,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun stop() {
         isStarted = false
         issueSN = 0
-        missionData = MissionData("", "", "")
+        data = MissionData("", "", "")
         waypointList.clear()
     }
 
@@ -117,7 +129,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         try {
             fileOutputStream = FileOutputStream(file)
             objectOutputStream = ObjectOutputStream(fileOutputStream)
-            objectOutputStream.writeObject(missionData)
+            objectOutputStream.writeObject(data)
             objectOutputStream.writeInt(issueSN)
             objectOutputStream.writeObject(waypointList)
             objectOutputStream.close()
@@ -147,12 +159,12 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         try {
             fileInputStream = FileInputStream(file)
             objectInputStream = ObjectInputStream(fileInputStream)
-            missionData = objectInputStream.readObject() as MissionData
+            data = objectInputStream.readObject() as MissionData
             issueSN = objectInputStream.readInt()
             waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
             objectInputStream.close()
             fileInputStream.close()
-            if (missionData.ID == "") {
+            if (data.id == "") {
                 isStarted = false
             } else {
                 isStarted = true
@@ -248,13 +260,13 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     fun submitIssue() {
+        isReporting = true
         issueSN += 1
+        doAsync {
+            Thread.sleep(5000)
+            isReporting = false
+            missionListener.didReportedSccess()
+        }
+
     }
 }
-
-public interface MissionListener {
-    fun didStartedSuccess(missionData: MissionData)
-    fun didStartedFailed(error: Exception)
-}
-
-data class MissionData(val ID: String, val Token: String, val Description: String): Serializable

@@ -26,7 +26,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import java.text.DateFormat
 
-
 class MainActivity : AppCompatActivity() {
 
     private enum class PermissionRequest(val code: Int, val permission: String) {
@@ -120,21 +119,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     // MissionManager
-    val missionListener: MissionListener = object :MissionListener {
-        override fun didStartedSuccess(missionData: MissionData) {
+    val missionListener: MissionManager.MissionListener = object : MissionManager.MissionListener {
+
+        override fun didStartedSuccess(missionData: MissionManager.MissionData) {
             mainRecyclerViewAdapter.finishLoading()
             mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+            invalidateOptionsMenu()
             buttonReportIssue.show()
         }
 
         override fun didStartedFailed(error: Exception) {
             mainRecyclerViewAdapter.finishLoading()
+            invalidateOptionsMenu()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(error.message)
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
+        }
+
+        override fun didReportedSccess() {
+            reportProgress.visibility = View.INVISIBLE
+            buttonReportIssue.isEnabled = true
+        }
+
+        override fun didReportedFailed(error: Exception) {
+            reportProgress.visibility = View.INVISIBLE
+            buttonReportIssue.isEnabled = true
         }
     }
     var mission: MissionManager = MissionManager(this, missionListener)
@@ -149,7 +161,94 @@ class MainActivity : AppCompatActivity() {
 
         // Handel the Main List View
         mainRecyclerView = findViewById<RecyclerView>(R.id.mainRecyclerView)
-        mainRecyclerViewAdapter = MainRecyclerViewAdapter(this, mission.waypointList)
+        mainRecyclerViewAdapter = MainRecyclerViewAdapter(this, mission.waypointList, object : MainRecyclerViewAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int) {
+                when {
+                    position == MainRecyclerViewAdapter.ItemIndex.location.row -> {}
+                    position == MainRecyclerViewAdapter.ItemIndex.mission.row -> {
+                        if (!mission.isStarted) {
+                            return
+                        }
+                        val dialog = AlertDialog.Builder(this@MainActivity)
+                        val dialogView = layoutInflater.inflate(R.layout.dialog_mission, null)
+                        val progressBar = dialogView.findViewById<ProgressBar>(R.id.progressBar)
+                        val progressText = dialogView.findViewById<TextView>(R.id.progressText)
+                        val percentText = dialogView.findViewById<TextView>(R.id.percentText)
+                        val missionIDText = dialogView.findViewById<TextView>(R.id.missionIDText)
+                        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
+                        var finishedCount = 0
+                        for (waypoint in mission.waypointList) {
+                            finishedCount += if (waypoint.isChecked) 1 else 0
+                        }
+                        progressBar.isIndeterminate = false
+                        progressBar.max = mission.waypointList.size
+                        progressBar.progress = finishedCount
+                        progressText.setText(String.format("%d/%d", finishedCount, mission.waypointList.size))
+                        percentText.setText(String.format("%.2f%%", (finishedCount.toDouble() / mission.waypointList.size.toDouble()) * 100.0))
+                        missionIDText.text = mission.data.id
+                        descriptionText.text = mission.data.description
+
+                        dialog.setView(dialogView)
+                        dialog.setTitle(getString(R.string.mission_title))
+                        dialog.setPositiveButton(getString(R.string.confirm),null)
+                        dialog.show()
+                    }
+                    position >= MainRecyclerViewAdapter.ItemIndex.waypoint.row -> {
+                        val dialog = AlertDialog.Builder(this@MainActivity)
+                        val dialogView = layoutInflater.inflate(R.layout.dialog_waypoint, null)
+                        val finishedText = dialogView.findViewById<TextView>(R.id.finishedText)
+                        val longitudeText = dialogView.findViewById<TextView>(R.id.longitudeText)
+                        val latitudeText = dialogView.findViewById<TextView>(R.id.latitudeText)
+                        val distanceText = dialogView.findViewById<TextView>(R.id.distanceText)
+                        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
+                        if (mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
+                            finishedText.text = getString(R.string.finished)
+                            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorPrimary))
+                        } else {
+                            finishedText.text = getString(R.string.unfinished)
+                            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorAccent))
+                        }
+                        if (mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].location() == null) {
+                            longitudeText.text = getString(R.string.unavailable)
+                            latitudeText.text = getString(R.string.unavailable)
+                            distanceText.text = getString(R.string.unavailable)
+                        } else {
+                            val location: Location = mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].location() as Location
+                            longitudeText.text = String.format(getString(R.string.format_angle),
+                                    location.longitude.toInt(),
+                                    ((location.longitude - location.longitude.toInt()) * 60).toInt(),
+                                    (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
+                            )
+
+                            latitudeText.text = String.format(getString(R.string.format_angle),
+                                    location.latitude.toInt(),
+                                    ((location.latitude - location.latitude.toInt()) * 60).toInt(),
+                                    (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
+                            )
+
+                            if ((ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
+                                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                                val currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                                if (currentLocation.distanceTo(location) < 1000.0) {
+                                    distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
+                                } else {
+                                    distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
+                                }
+                            } else {
+                                distanceText.text = getString(R.string.unavailable)
+                            }
+                        }
+                        descriptionText.text = mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].description
+
+                        dialog.setView(dialogView)
+                        dialog.setTitle(getString(R.string.waypoint))
+                        dialog.setPositiveButton(getString(R.string.confirm),null)
+                        dialog.show()
+                    }
+                    else -> {}
+                }
+            }
+        })
         mainRecyclerView.layoutManager = LinearLayoutManager(this)
         mainRecyclerView.adapter = mainRecyclerViewAdapter
 
@@ -168,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         //   Reference: https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/zai_wo_men_de_app_zhong_shi_xian_yi_ge_li_zi.html
         mainRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                if (mission.isStarted) {
+                if (mission.isStarted and !mission.isReporting) {
                     if ((dy > 0) and buttonReportIssue.isShown) {
                         buttonReportIssue.hide()
                     } else if ((dy < 0) and !buttonReportIssue.isShown) {
@@ -252,6 +351,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    // Setup the menu
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -264,6 +364,23 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    // Update the menu when calling invalidateOptionsMenu()
+    //   Reference: http://blog.csdn.net/q4878802/article/details/51160424
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        if (menu != null) {
+            if (mission.isStarted) {
+                menu.getItem(MainMenu.startStop.index).isEnabled = true
+                menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_stop))
+            } else if (!mission.isStarted and mission.isLoading) {
+                menu.getItem(MainMenu.startStop.index).isEnabled = false
+            } else if (!mission.isStarted and !mission.isLoading) {
+                menu.getItem(MainMenu.startStop.index).isEnabled = true
+                menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_start))
+            }
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     // Handel the selection on Menu
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
@@ -274,12 +391,11 @@ class MainActivity : AppCompatActivity() {
                 if (mission.isStarted) {
                     mission.stop()
                     mainRecyclerViewAdapter.refreshWith(mission.waypointList)
-                    item.setTitle(getString(R.string.action_start))
                     buttonReportIssue.hide()
                 } else {
                     mainRecyclerViewAdapter.startLoading()
                     mission.start()
-                    item.setTitle(getString(R.string.action_stop))
+                    invalidateOptionsMenu()
                 }
             }
 
@@ -339,7 +455,7 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             var imageFile: File? = null
             try {
-                val imageFilename = "ISS_" + mission.missionData.ID + mission.issueSN
+                val imageFilename = "ISS_" + mission.data.id + mission.issueSN
                 val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
                 imageFile = File.createTempFile(imageFilename, ".jpg", storageDir)
                 mission.issueImagePath = imageFile.absolutePath
@@ -375,7 +491,7 @@ class MainActivity : AppCompatActivity() {
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        val dialogView = layoutInflater.inflate(R.layout.submit_dialog, null)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_submit, null)
         val longitudeText = dialogView.findViewById<TextView>(R.id.longitudeText)
         val latitudeText = dialogView.findViewById<TextView>(R.id.latitudeText)
         val timeText = dialogView.findViewById<TextView>(R.id.timeText)
@@ -405,6 +521,8 @@ class MainActivity : AppCompatActivity() {
         dialog.setView(dialogView)
         dialog.setTitle(getString(R.string.submit))
         dialog.setPositiveButton(getString(R.string.confirm), DialogInterface.OnClickListener { _, _ ->
+            buttonReportIssue.isEnabled = false
+            reportProgress.visibility = View.VISIBLE
             mission.submitIssue() })
         dialog.setNegativeButton(getString(R.string.cancel),null)
         dialog.show()

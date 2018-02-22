@@ -19,9 +19,8 @@ import android.widget.TextView
  * Created by lucka on 21/2/2018.
  */
 
-class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<Waypoint>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private enum class ItemIndex(val row: Int, val viewType: Int, val resource: Int) {
+class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<Waypoint>, var onItemClickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), View.OnClickListener {
+    enum class ItemIndex(val row: Int, val viewType: Int, val resource: Int) {
         location(0, 0, R.layout.main_card_location),
         mission(1, 1, R.layout.main_card_mission),
         waypoint(2, 2, R.layout.main_card_waypoint)
@@ -29,7 +28,20 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     private var location: Location? = null
     private var isLoading: Boolean = false
+    //private var onItemClickListener: OnItemClickListener? = null
 
+    // Listener
+    public interface OnItemClickListener {
+        fun onItemClick(position: Int)
+    }
+
+    override fun onClick(view: View?) {
+        if (view != null) {
+            onItemClickListener.onItemClick(view.tag as Int)
+        }
+    }
+
+    // View Holders
     class MainRecyclerViewHolderLocation(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var longitudeText: TextView
@@ -69,12 +81,20 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(context)
-        val viewHolder = when(viewType) {
-            ItemIndex.location.viewType -> MainRecyclerViewHolderLocation(layoutInflater.inflate(ItemIndex.location.resource, parent, false))
-            ItemIndex.mission.viewType -> MainRecyclerViewHolderMission(layoutInflater.inflate(ItemIndex.mission.resource, parent, false))
-            ItemIndex.waypoint.viewType -> MainRecyclerViewHolderWaypoint(layoutInflater.inflate(ItemIndex.waypoint.resource, parent, false))
-            else -> MainRecyclerViewHolderLocation(layoutInflater.inflate(R.layout.main_card_location, parent, false))
+        val view: View = when(viewType) {
+            ItemIndex.location.viewType -> layoutInflater.inflate(ItemIndex.location.resource, parent, false)
+            ItemIndex.mission.viewType -> layoutInflater.inflate(ItemIndex.mission.resource, parent, false)
+            ItemIndex.waypoint.viewType -> layoutInflater.inflate(ItemIndex.waypoint.resource, parent, false)
+            else -> layoutInflater.inflate(R.layout.main_card_location, parent, false)
         }
+        val viewHolder = when(viewType) {
+            ItemIndex.location.viewType -> MainRecyclerViewHolderLocation(view)
+            ItemIndex.mission.viewType -> MainRecyclerViewHolderMission(view)
+            ItemIndex.waypoint.viewType -> MainRecyclerViewHolderWaypoint(view)
+            else -> MainRecyclerViewHolderLocation(view)
+        }
+        view.setOnClickListener(this)
+
         return viewHolder
     }
 
@@ -143,6 +163,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
             else -> return
         }
+        holder.itemView.tag = position
     }
 
     override fun getItemCount(): Int {
