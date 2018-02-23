@@ -41,8 +41,8 @@
     <string name="longitude">经度</string>
     <string name="latitude">纬度</string>
     <string name="distance">距离</string>
-    <string name="distanceMetre">距离 %.2f 米</string>
-    <string name="distanceKM">距离 %.2f 千米</string>
+    <string name="distanceMetre">%.2f 米</string>
+    <string name="distanceKM">%.2f 千米</string>
     <string name="time">时间</string>
     <string name="description">描述</string>
     <string name="description_enter">输入描述</string>

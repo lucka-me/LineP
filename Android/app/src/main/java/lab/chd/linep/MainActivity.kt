@@ -123,6 +123,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun didStartedSuccess(missionData: MissionManager.MissionData) {
             mainRecyclerViewAdapter.finishLoading()
+            showMissionDialog()
             mainRecyclerViewAdapter.refreshWith(mission.waypointList)
             invalidateOptionsMenu()
             buttonReportIssue.show()
@@ -169,29 +170,7 @@ class MainActivity : AppCompatActivity() {
                         if (!mission.isStarted) {
                             return
                         }
-                        val dialog = AlertDialog.Builder(this@MainActivity)
-                        val dialogView = layoutInflater.inflate(R.layout.dialog_mission, null)
-                        val progressBar = dialogView.findViewById<ProgressBar>(R.id.progressBar)
-                        val progressText = dialogView.findViewById<TextView>(R.id.progressText)
-                        val percentText = dialogView.findViewById<TextView>(R.id.percentText)
-                        val missionIDText = dialogView.findViewById<TextView>(R.id.missionIDText)
-                        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
-                        var finishedCount = 0
-                        for (waypoint in mission.waypointList) {
-                            finishedCount += if (waypoint.isChecked) 1 else 0
-                        }
-                        progressBar.isIndeterminate = false
-                        progressBar.max = mission.waypointList.size
-                        progressBar.progress = finishedCount
-                        progressText.setText(String.format("%d/%d", finishedCount, mission.waypointList.size))
-                        percentText.setText(String.format("%.2f%%", (finishedCount.toDouble() / mission.waypointList.size.toDouble()) * 100.0))
-                        missionIDText.text = mission.data.id
-                        descriptionText.text = mission.data.description
-
-                        dialog.setView(dialogView)
-                        dialog.setTitle(getString(R.string.mission_title))
-                        dialog.setPositiveButton(getString(R.string.confirm),null)
-                        dialog.show()
+                        showMissionDialog()
                     }
                     position >= MainRecyclerViewAdapter.ItemIndex.waypoint.row -> {
                         val dialog = AlertDialog.Builder(this@MainActivity)
@@ -527,6 +506,34 @@ class MainActivity : AppCompatActivity() {
         dialog.setNegativeButton(getString(R.string.cancel),null)
         dialog.show()
 
+    }
+
+    // Show some specific dialogs
+    fun showMissionDialog() {
+        val dialog = AlertDialog.Builder(this)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_mission, null)
+        val progressBar = dialogView.findViewById<ProgressBar>(R.id.progressBar)
+        val progressText = dialogView.findViewById<TextView>(R.id.progressText)
+        val percentText = dialogView.findViewById<TextView>(R.id.percentText)
+        val missionIDText = dialogView.findViewById<TextView>(R.id.missionIDText)
+        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
+        var finishedCount = 0
+        for (waypoint in mission.waypointList) {
+            finishedCount += if (waypoint.isChecked) 1 else 0
+        }
+        progressBar.isIndeterminate = false
+        progressBar.max = mission.waypointList.size
+        progressBar.progress = finishedCount
+        progressText.setText(String.format("%d/%d", finishedCount, mission.waypointList.size))
+        percentText.setText(String.format("%.2f%%", (finishedCount.toDouble() / mission.waypointList.size.toDouble()) * 100.0))
+        missionIDText.text = mission.data.id
+        descriptionText.text = mission.data.description
+
+        dialog.setView(dialogView)
+        dialog.setTitle(getString(R.string.mission_title))
+
+        dialog.setPositiveButton(getString(R.string.confirm),null)
+        dialog.show()
     }
 
 }
