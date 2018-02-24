@@ -140,6 +140,22 @@ class MainActivity : AppCompatActivity() {
             alert.show()
         }
 
+        override fun didStoppedSccess() {
+            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+            invalidateOptionsMenu()
+        }
+
+        override fun didStoppedFailed(error: Exception) {
+            buttonReportIssue.show()
+            invalidateOptionsMenu()
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
+        }
+
         override fun didReportedSccess() {
             reportProgress.visibility = View.INVISIBLE
             buttonReportIssue.isEnabled = true
@@ -347,9 +363,11 @@ class MainActivity : AppCompatActivity() {
     //   Reference: http://blog.csdn.net/q4878802/article/details/51160424
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (menu != null) {
-            if (mission.isStarted) {
+            if (mission.isStarted and !mission.isStopping) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = true
                 menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_stop))
+            } else if (mission.isStarted and mission.isStopping) {
+                menu.getItem(MainMenu.startStop.index).isEnabled = false
             } else if (!mission.isStarted and mission.isLoading) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = false
             } else if (!mission.isStarted and !mission.isLoading) {
@@ -369,8 +387,8 @@ class MainActivity : AppCompatActivity() {
             MainMenu.startStop.id -> {
                 if (mission.isStarted) {
                     mission.stop()
-                    mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                     buttonReportIssue.hide()
+                    invalidateOptionsMenu()
                 } else {
                     mainRecyclerViewAdapter.startLoading()
                     mission.start()

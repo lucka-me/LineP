@@ -44,4 +44,6 @@ dependencies {
     compile 'com.android.support:preference-v7:26.1.0'
     // v14 Preference
     compile 'com.android.support:preference-v14:26.1.0'
+    // Apache Commons Net API
+    compile 'commons-net:commons-net:3.6'
 }

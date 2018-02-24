@@ -3,7 +3,10 @@ package lab.chd.linep
 import android.app.AlertDialog
 import android.content.Context
 import android.location.Location
+import android.support.v7.preference.PreferenceManager
 import com.google.gson.Gson
+import org.apache.commons.net.ftp.FTP
+import org.apache.commons.net.ftp.FTPClient
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.*
@@ -22,10 +25,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
     var isLoading: Boolean = false
+    var isStopping: Boolean = false
     var isReporting: Boolean = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
-    var data: MissionData = MissionData("", "", "")
+    var data: MissionData = MissionData("", "")
     private var missionListener: MissionListener
 
     init {
@@ -34,45 +38,72 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     // Listener
-    public interface MissionListener {
+    interface MissionListener {
         fun didStartedSuccess(missionData: MissionData)
         fun didStartedFailed(error: Exception)
+        fun didStoppedSccess()
+        fun didStoppedFailed(error: Exception)
         fun didReportedSccess()
         fun didReportedFailed(error: Exception)
     }
 
     // Data class
-    data class MissionData(val id: String, val token: String, val description: String): Serializable
+    data class MissionData(val id: String, val description: String): Serializable
 
     fun start() {
         issueSN = 1
         isLoading = true
-        /*
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            val alert = AlertDialog.Builder(context)
-            alert.setTitle(context.getString(R.string.alert_warning_title))
-            alert.setMessage(context.getString(R.string.alert_permission_internet))
-            alert.setPositiveButton(context.getString(R.string.confirm), null)
-            alert.show()
-            return
-        }*/
 
-
+        val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+        val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+        val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), "2121").toInt()
+        val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+        val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+        // Connect to FTP Server via Apache Commons Net API
+        //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
+        val ftpClient = FTPClient()
         doAsync {
-            // Get the Mission Data from the server
-            data = requestMission()
-            // Get the GPX file
-            if (data.id == "") {
-                uiThread {
-                    val error: Exception = Exception(context.getString(R.string.error_request_mission_failed))
+            try {
+                ftpClient.connect(serverURL, serverPort)
+                ftpClient.enterLocalPassiveMode()
+                ftpClient.login(username, password)
+                ftpClient.changeWorkingDirectory("Mission")
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+                val localJSONFile = File(context.filesDir, "mission.json")
+                var fileOutputStream = FileOutputStream(localJSONFile)
+                if (!ftpClient.retrieveFile(username + ".json", fileOutputStream)) {
+                    val error = Exception(context.getString(R.string.error_request_mission_failed))
                     isLoading = false
+                    uiThread {
+                        missionListener.didStartedFailed(error)
+                    }
+                    return@doAsync
+                }
+                fileOutputStream.close()
+                val jsonString = localJSONFile.readText()
+                data = Gson().fromJson(jsonString, MissionData::class.java)
+                ftpClient.changeWorkingDirectory("GPX")
+                val localGPXFile = File(context.filesDir, data.id + ".gpx")
+                fileOutputStream = FileOutputStream(localGPXFile)
+                if (!ftpClient.retrieveFile(data.id + ".gpx", fileOutputStream)) {
+                    val error = Exception(context.getString(R.string.error_request_gpx_failed))
+                    isLoading = false
+                    uiThread {
+                        missionListener.didStartedFailed(error)
+                    }
+                    return@doAsync
+                }
+                fileOutputStream.close()
+                waypointList = decodeGPX(localGPXFile)
+            } catch (error: Exception) {
+                isLoading = false
+                val newError = Exception(context.getString(R.string.error_request_mission_failed) + "\n" + error.message)
+                uiThread {
                     missionListener.didStartedFailed(error)
                 }
                 return@doAsync
             }
-            val gpxFile: File = requestMissionGPX(data as MissionData)
             uiThread {
-                waypointList = decodeGPX(gpxFile)
                 isLoading = false
                 isStarted = true
                 missionListener.didStartedSuccess(data as MissionData)
@@ -80,41 +111,19 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         }
     }
 
-    private fun requestMission(): MissionData {
-        var missionData: MissionData = MissionData("", "", "")
-        val jsonURL = context.getString(R.string.server_url) + "Mission.json"
-        var jsonString: String = ""
-        try {
-            jsonString = URL(jsonURL).readText()
-        } catch (error: Exception) {
-            return missionData
-        }
-        try {
-            missionData = Gson().fromJson(jsonString, MissionData::class.java)
-        } catch (error: Exception) {
-            return missionData
-        }
-        return missionData
-    }
-
-    private fun requestMissionGPX(missionData: MissionData): File {
-        // Download the GPX file from server
-        val gpxURL = context.getString(R.string.server_url) + "GPX/" + missionData.id + ".gpx"
-        val gpxString = URL(gpxURL).readText()
-        // Save the GPX file
-        //   Refrence: https://developer.android.com/guide/topics/data/data-storage.html?hl=zh-cn
-        //   Refrence: https://developer.android.com/training/data-storage/files.html#WriteInternalStorage
-        val filename: String = missionData.id + ".gpx"
-        val gpxFile: File = File(context.filesDir, filename)
-        gpxFile.writeText(gpxString, Charset.defaultCharset())
-        return gpxFile
-    }
-
     fun stop() {
-        isStarted = false
-        issueSN = 0
-        data = MissionData("", "", "")
-        waypointList.clear()
+        isStopping = true
+        doAsync {
+            Thread.sleep(5000)
+            uiThread {
+                issueSN = 0
+                data = MissionData("", "")
+                waypointList.clear()
+                isStarted = false
+                isStopping = false
+                missionListener.didStoppedSccess()
+            }
+        }
     }
 
     fun pause() {
