@@ -62,8 +62,9 @@ class MainActivity : AppCompatActivity() {
                 mainRecyclerViewAdapter.refreshWith(locationManager)
             }
             // Log location per 10 seconds
-            if (mission.isStarted && (location != null) && (mission.lastLocationLogDate.time - Date().time >= 10000)) {
+            if (mission.isStarted && (location != null) && (Date().time - mission.lastLocationLogDate.time >= 10000)) {
                 mission.log(String.format(getString(R.string.log_locationUpdate), location.longitude, location.latitude))
+                mission.lastLocationLogDate = Date()
             }
             if (mission.isStarted && (location != null) && !isChecking) {
                 isChecking = true
