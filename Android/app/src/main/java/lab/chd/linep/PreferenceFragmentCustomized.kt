@@ -26,7 +26,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.preference)
         // Handle the click
         //   Reference: https://stackoverflow.com/questions/18588670/onpreferenceclick-listener-not-working-onpreferenceclick-not-being-called
-        findPreference("pref_server_test").setOnPreferenceClickListener(object :Preference.OnPreferenceClickListener {
+        findPreference(getString(R.string.pref_server_test_key)).setOnPreferenceClickListener(object :Preference.OnPreferenceClickListener {
             override fun onPreferenceClick(preference: Preference?): Boolean {
                 if (preference == null) return false
                 preference.summary = getString(R.string.pref_server_test_summary_testing)
@@ -35,7 +35,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                 // Get Server URL, username and password from SharedPreferences
                 val sharedPreference = PreferenceManager.getDefaultSharedPreferences(this@PreferenceFragmentCustomized.context)
                 val serverURL: String = sharedPreference.getString(getString(R.string.pref_server_url_key), "")
-                val serverPort: Int = sharedPreference.getString(getString(R.string.pref_server_port_key), "2121").toInt()
+                val serverPort: Int = sharedPreference.getString(getString(R.string.pref_server_port_key), getString(R.string.pref_server_port_default)).toInt()
                 val username: String = sharedPreference.getString(getString(R.string.pref_user_id_key), "")
                 val password: String = sharedPreference.getString(getString(R.string.pref_user_token_key), "")
                 // Connect to FTP Server via Apache Commons Net API

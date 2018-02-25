@@ -61,7 +61,11 @@ class MainActivity : AppCompatActivity() {
             if (!mission.isLoading) {
                 mainRecyclerViewAdapter.refreshWith(locationManager)
             }
-            if (mission.isStarted and (location != null) and !isChecking) {
+            // Log location per 10 seconds
+            if (mission.isStarted && (location != null) && (mission.lastLocationLogDate.time - Date().time >= 10000)) {
+                mission.log(String.format(getString(R.string.log_locationUpdate), location.longitude, location.latitude))
+            }
+            if (mission.isStarted && (location != null) && !isChecking) {
                 isChecking = true
                 val reachedList = mission.reach(location as Location)
                 if (reachedList.isNotEmpty()) {
@@ -72,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setCancelable(false)
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                             mission.waypointList[index].isChecked = true
+                            mission.log(String.format(getString(R.string.log_checked), mission.waypointList[index].title))
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -83,6 +88,7 @@ class MainActivity : AppCompatActivity() {
                         })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
                             mission.waypointList[index].isChecked = true
+                            mission.log(String.format(getString(R.string.log_checked), mission.waypointList[index].title))
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -162,6 +168,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun didReportedFailed(error: Exception) {
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
             reportProgress.visibility = View.INVISIBLE
             buttonReportIssue.isEnabled = true
         }
@@ -175,6 +187,7 @@ class MainActivity : AppCompatActivity() {
 
         // Try to resume the misssion
         mission.resume()
+        invalidateOptionsMenu()
 
         // Handel the Main List View
         mainRecyclerView = findViewById<RecyclerView>(R.id.mainRecyclerView)
@@ -262,10 +275,10 @@ class MainActivity : AppCompatActivity() {
         //   Reference: https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/zai_wo_men_de_app_zhong_shi_xian_yi_ge_li_zi.html
         mainRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                if (mission.isStarted and !mission.isReporting) {
-                    if ((dy > 0) and buttonReportIssue.isShown) {
+                if (mission.isStarted && !mission.isReporting) {
+                    if ((dy > 0) && buttonReportIssue.isShown) {
                         buttonReportIssue.hide()
-                    } else if ((dy < 0) and !buttonReportIssue.isShown) {
+                    } else if ((dy < 0) && !buttonReportIssue.isShown) {
                         buttonReportIssue.show()
                     }
                 }
@@ -363,14 +376,14 @@ class MainActivity : AppCompatActivity() {
     //   Reference: http://blog.csdn.net/q4878802/article/details/51160424
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (menu != null) {
-            if (mission.isStarted and !mission.isStopping) {
+            if (mission.isStarted && !mission.isStopping) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = true
                 menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_stop))
-            } else if (mission.isStarted and mission.isStopping) {
+            } else if (mission.isStarted && mission.isStopping) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = false
-            } else if (!mission.isStarted and mission.isLoading) {
+            } else if (!mission.isStarted && mission.isLoading) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = false
-            } else if (!mission.isStarted and !mission.isLoading) {
+            } else if (!mission.isStarted && !mission.isLoading) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = true
                 menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_start))
             }
@@ -452,7 +465,7 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             var imageFile: File? = null
             try {
-                val imageFilename = "ISS_" + mission.data.id + mission.issueSN
+                val imageFilename = "ISS_" + mission.data.id + "_" + mission.issueSN
                 val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
                 imageFile = File.createTempFile(imageFilename, ".jpg", storageDir)
                 mission.issueImagePath = imageFile.absolutePath
@@ -489,28 +502,25 @@ class MainActivity : AppCompatActivity() {
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         val dialogView = layoutInflater.inflate(R.layout.dialog_submit, null)
-        val longitudeText = dialogView.findViewById<TextView>(R.id.longitudeText)
-        val latitudeText = dialogView.findViewById<TextView>(R.id.latitudeText)
-        val timeText = dialogView.findViewById<TextView>(R.id.timeText)
+        val longitudeTextView = dialogView.findViewById<TextView>(R.id.longitudeText)
+        val latitudeTextView = dialogView.findViewById<TextView>(R.id.latitudeText)
+        val timeTextView = dialogView.findViewById<TextView>(R.id.timeText)
         val imageView = dialogView.findViewById<ImageView>(R.id.imageView)
-        if (location == null) {
-            longitudeText.text = getString(R.string.unavailable)
-            latitudeText.text = getString(R.string.unavailable)
-        } else {
-            val setLocation: Location = location as Location
-            longitudeText.text = String.format(getString(R.string.format_angle),
-                    setLocation.longitude.toInt(),
-                    ((setLocation.longitude - setLocation.longitude.toInt()) * 60).toInt(),
-                    (((setLocation.longitude - setLocation.longitude.toInt()) * 60) - ((setLocation.longitude - setLocation.longitude.toInt()) * 60).toInt()) * 60
-            )
-
-            latitudeText.text = String.format(getString(R.string.format_angle),
-                    setLocation.latitude.toInt(),
-                    ((setLocation.latitude - setLocation.latitude.toInt()) * 60).toInt(),
-                    (((setLocation.latitude - setLocation.latitude.toInt()) * 60) - ((setLocation.latitude - setLocation.latitude.toInt()) * 60).toInt()) * 60
-            )
-        }
-        timeText.text = DateFormat.getDateTimeInstance().format(Date())
+        val longitudeText: String = if (location == null) getString(R.string.unavailable) else String.format(getString(R.string.format_angle),
+                location.longitude.toInt(),
+                ((location.longitude - location.longitude.toInt()) * 60).toInt(),
+                (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
+        )
+        val latitudeText: String = if (location == null) getString(R.string.unavailable) else String.format(getString(R.string.format_angle),
+                location.latitude.toInt(),
+                ((location.latitude - location.latitude.toInt()) * 60).toInt(),
+                (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
+        )
+        val currentTime = Date()
+        val timeText: String = DateFormat.getDateTimeInstance().format(currentTime)
+        longitudeTextView.text = longitudeText
+        latitudeTextView.text = latitudeText
+        timeTextView.text = timeText
         if (imageBitmap != null) {
             imageView.setImageBitmap(imageBitmap)
         }
@@ -520,8 +530,11 @@ class MainActivity : AppCompatActivity() {
         dialog.setPositiveButton(getString(R.string.confirm), DialogInterface.OnClickListener { _, _ ->
             buttonReportIssue.isEnabled = false
             reportProgress.visibility = View.VISIBLE
-            mission.submitIssue() })
-        dialog.setNegativeButton(getString(R.string.cancel),null)
+            val description: String = dialogView.findViewById<TextView>(R.id.descriptionText).text.toString()
+            mission.submitIssue(location, currentTime, description) })
+        dialog.setNegativeButton(getString(R.string.cancel), DialogInterface.OnClickListener { _, _ ->
+            File(mission.issueImagePath).delete()
+        })
         dialog.show()
 
     }

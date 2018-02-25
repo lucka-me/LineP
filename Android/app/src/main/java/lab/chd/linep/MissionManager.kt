@@ -10,8 +10,7 @@ import org.apache.commons.net.ftp.FTPClient
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.*
-import java.net.URL
-import java.nio.charset.Charset
+import java.text.DateFormat
 import java.util.*
 
 
@@ -29,6 +28,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     var isReporting: Boolean = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
+    var lastLocationLogDate: Date = Date()
     var data: MissionData = MissionData("", "")
     private var missionListener: MissionListener
 
@@ -54,16 +54,18 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         issueSN = 1
         isLoading = true
 
-        val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-        val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-        val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), "2121").toInt()
-        val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-        val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-        // Connect to FTP Server via Apache Commons Net API
-        //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
-        val ftpClient = FTPClient()
         doAsync {
             try {
+                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                // Connect to FTP Server via Apache Commons Net API
+                //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
+                // Download file from FTP Server via Apache Commons Net API
+                //   Reference: http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example
+                val ftpClient = FTPClient()
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
@@ -99,14 +101,16 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 isLoading = false
                 val newError = Exception(context.getString(R.string.error_request_mission_failed) + "\n" + error.message)
                 uiThread {
-                    missionListener.didStartedFailed(error)
+                    missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
             }
             uiThread {
                 isLoading = false
                 isStarted = true
-                missionListener.didStartedSuccess(data as MissionData)
+                File(context.filesDir, data.id + ".log").writeText(context.getString(R.string.log_headline))
+                log(context.getString(R.string.log_mission_started))
+                missionListener.didStartedSuccess(data)
             }
         }
     }
@@ -114,7 +118,34 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun stop() {
         isStopping = true
         doAsync {
-            Thread.sleep(5000)
+            try {
+                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                val ftpClient = FTPClient()
+                ftpClient.connect(serverURL, serverPort)
+                ftpClient.enterLocalPassiveMode()
+                ftpClient.login(username, password)
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+                ftpClient.changeWorkingDirectory(username)
+                ftpClient.changeWorkingDirectory(data.id)
+                // Upload log file
+                log(context.getString(R.string.log_mission_stopped))
+                val logFile = File(context.filesDir, data.id + ".log")
+                val fileInputStream = FileInputStream(logFile)
+                ftpClient.storeFile(data.id + ".log", fileInputStream)
+                fileInputStream.close()
+                logFile.delete()
+                ftpClient.logout()
+            } catch (error: Exception) {
+                isStopping = false
+                uiThread {
+                    missionListener.didStartedFailed(error)
+                }
+                return@doAsync
+            }
             uiThread {
                 issueSN = 0
                 data = MissionData("", "")
@@ -178,6 +209,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } else {
                 isStarted = true
             }
+            file.exists()
+            file.delete()
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -259,7 +292,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         val reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
             if (waypointList[scanner].location() != null) {
-                if (!waypointList[scanner].isChecked and (location.distanceTo(waypointList[scanner].location()) <= 30)) {
+                if (!waypointList[scanner].isChecked && (location.distanceTo(waypointList[scanner].location()) <= 30)) {
                     reachedList.add(scanner)
                 }
             }
@@ -268,14 +301,68 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         return reachedList
     }
 
-    fun submitIssue() {
+    fun submitIssue(location: Location?, time: Date, description: String) {
         isReporting = true
-        issueSN += 1
         doAsync {
-            Thread.sleep(5000)
-            isReporting = false
-            missionListener.didReportedSccess()
-        }
+            try {
+                // Create issue txt file
+                val issueFile = File(context.filesDir, "ISS_" + data.id + "_" + issueSN + ".txt")
+                val longitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.longitude)
+                val latitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.latitude)
+                issueFile.writeText(context.getString(R.string.location)
+                        + " (" + longitudeText + " " + latitudeText + ")\n"
+                        + context.getString(R.string.time)
+                        + " "
+                        + DateFormat.getDateTimeInstance().format(time)
+                        + "\n"
+                        + context.getString(R.string.description)
+                        + " "
+                        + description)
 
+                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                // Connect to FTP Server via Apache Commons Net API
+                //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
+                // Download file from FTP Server via Apache Commons Net API
+                //   Reference: http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example
+                val ftpClient = FTPClient()
+                ftpClient.connect(serverURL, serverPort)
+                ftpClient.enterLocalPassiveMode()
+                ftpClient.login(username, password)
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+                ftpClient.changeWorkingDirectory(username)
+                ftpClient.changeWorkingDirectory(data.id)
+                // Upload issue txt file
+                var fileInputStream = FileInputStream(issueFile)
+                ftpClient.storeFile("ISS_" + data.id + "_" + issueSN + ".txt", fileInputStream)
+                fileInputStream.close()
+                // Upload image
+                fileInputStream = FileInputStream(issueImagePath)
+                ftpClient.storeFile("ISS_" + data.id + "_" + issueSN + ".jpg", fileInputStream)
+                fileInputStream.close()
+                ftpClient.logout()
+                issueFile.delete()
+                log(String.format(context.getString(R.string.log_issueSubmitted), "ISS_" + data.id + "_" + issueSN, longitudeText, latitudeText, description))
+            } catch (error: Exception) {
+                isReporting = false
+                uiThread {
+                    missionListener.didReportedFailed(error)
+                }
+                return@doAsync
+            }
+            issueSN += 1
+            File(issueImagePath).delete()
+            isReporting = false
+            uiThread {
+                missionListener.didReportedSccess()
+            }
+        }
+    }
+
+    fun log(message: String) {
+        File(context.filesDir, data.id + ".log").appendText(String.format(context.getString(R.string.log_lineFormat), DateFormat.getDateTimeInstance().format(Date()), message))
     }
 }

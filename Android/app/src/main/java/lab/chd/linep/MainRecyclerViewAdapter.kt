@@ -126,7 +126,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
             ItemIndex.mission.viewType -> {
                 holder as MainRecyclerViewHolderMission
-                if (waypointList.isEmpty() and isLoading) {
+                if (waypointList.isEmpty() && isLoading) {
                     holder.progressBar.isIndeterminate = true
                     holder.progressText.setText(context.getString(R.string.loading))
                     holder.percentText.setText("")
@@ -168,7 +168,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     override fun getItemCount(): Int {
         var itemCount = 1
-        itemCount += if (waypointList.isEmpty() and isLoading) 1 else 0
+        itemCount += if (waypointList.isEmpty() && isLoading) 1 else 0
         itemCount += if (waypointList.isNotEmpty()) waypointList.size + 1 else 0
         return itemCount
     }

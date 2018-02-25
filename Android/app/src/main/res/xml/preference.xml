@@ -36,6 +36,7 @@
         <android.support.v7.preference.EditTextPreference
             android:title="@string/pref_server_port_title"
             android:summary="@string/pref_server_port_summary"
+            android:defaultValue="@string/pref_server_port_default"
             android:icon="@drawable/ic_pref_server_port"
             android:dialogIcon="@drawable/ic_pref_server_port"
             android:inputType="number"

@@ -21,12 +21,12 @@
 ```
 *Android 是 Google Inc. 的商标。*
 
-### Dependencies
-#### Android App
+## Dependencies
+### Android App
 * [Gson](https://github.com/google/gson) - [License](https://github.com/google/gson/blob/master/LICENSE)
 * [Anko](https://github.com/Kotlin/anko) - [License](https://github.com/Kotlin/anko/blob/master/LICENSE)
 * [iconmonstr](https://iconmonstr.com) - [License](https://iconmonstr.com/license/)
 * [Apache Commons Net](https://commons.apache.org/proper/commons-net/) - [License](http://www.apache.org/licenses/LICENSE-2.0)
 
-#### Server
+### Server
 * [pyftpdlib](https://pypi.python.org/pypi/pyftpdlib/) - [License](https://github.com/giampaolo/pyftpdlib/blob/master/LICENSE)
