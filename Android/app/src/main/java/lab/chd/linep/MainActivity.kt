@@ -164,8 +164,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun didReportedSccess() {
-            reportProgress.visibility = View.INVISIBLE
-            buttonReportIssue.isEnabled = true
+            reportProgressCircle.attachListener {
+                mission.isReporting = false
+            }
+            reportProgressCircle.beginFinalAnimation()
         }
 
         override fun didReportedFailed(error: Exception) {
@@ -175,8 +177,7 @@ class MainActivity : AppCompatActivity() {
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
-            reportProgress.visibility = View.INVISIBLE
-            buttonReportIssue.isEnabled = true
+            reportProgressCircle.hide()
         }
     }
     var mission: MissionManager = MissionManager(this, missionListener)
@@ -268,7 +269,9 @@ class MainActivity : AppCompatActivity() {
             buttonReportIssue.hide()
         }
         buttonReportIssue.setOnClickListener { _ ->
-            reportIssue()
+            if (!mission.isReporting) {
+                reportIssue()
+            }
         }
         // FAB hide when scrolling
         //   Reference: https://stackoverflow.com/questions/31617398/floatingactionbutton-hide-on-list-scroll
@@ -276,7 +279,7 @@ class MainActivity : AppCompatActivity() {
         //   Reference: https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/zai_wo_men_de_app_zhong_shi_xian_yi_ge_li_zi.html
         mainRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                if (mission.isStarted && !mission.isReporting) {
+                if (mission.isStarted and !mission.isReporting) {
                     if ((dy > 0) && buttonReportIssue.isShown) {
                         buttonReportIssue.hide()
                     } else if ((dy < 0) && !buttonReportIssue.isShown) {
@@ -352,6 +355,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mission.resume()
+        invalidateOptionsMenu()
         super.onResume()
     }
 
@@ -377,14 +381,14 @@ class MainActivity : AppCompatActivity() {
     //   Reference: http://blog.csdn.net/q4878802/article/details/51160424
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (menu != null) {
-            if (mission.isStarted && !mission.isStopping) {
+            if (mission.isStarted and !mission.isStopping) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = true
                 menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_stop))
-            } else if (mission.isStarted && mission.isStopping) {
+            } else if (mission.isStarted and mission.isStopping) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = false
-            } else if (!mission.isStarted && mission.isLoading) {
+            } else if (!mission.isStarted and mission.isLoading) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = false
-            } else if (!mission.isStarted && !mission.isLoading) {
+            } else if (!mission.isStarted and !mission.isLoading) {
                 menu.getItem(MainMenu.startStop.index).isEnabled = true
                 menu.getItem(MainMenu.startStop.index).setTitle(getString(R.string.action_start))
             }
@@ -529,8 +533,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setView(dialogView)
         dialog.setTitle(getString(R.string.submit))
         dialog.setPositiveButton(getString(R.string.confirm), DialogInterface.OnClickListener { _, _ ->
-            buttonReportIssue.isEnabled = false
-            reportProgress.visibility = View.VISIBLE
+            reportProgressCircle.show()
             val description: String = dialogView.findViewById<TextView>(R.id.descriptionText).text.toString()
             mission.submitIssue(location, currentTime, description) })
         dialog.setNegativeButton(getString(R.string.cancel), DialogInterface.OnClickListener { _, _ ->
@@ -565,6 +568,13 @@ class MainActivity : AppCompatActivity() {
         dialog.setTitle(getString(R.string.mission_title))
 
         dialog.setPositiveButton(getString(R.string.confirm),null)
+        if (!mission.isStopping) {
+            dialog.setNegativeButton(getString(R.string.action_stop), DialogInterface.OnClickListener { _, _ ->
+                mission.stop()
+                buttonReportIssue.hide()
+                invalidateOptionsMenu()
+            })
+        }
         dialog.show()
     }
 

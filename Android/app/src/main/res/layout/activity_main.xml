@@ -26,6 +26,39 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
+        android:layout_margin="10dp"
+        app:layout_anchor="@id/mainRecyclerView"
+        app:layout_anchorGravity="bottom|right|end">
+
+        <com.github.jorgecastilloprz.FABProgressCircle xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/reportProgressCircle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:arcColor="@color/colorPrimary"
+            app:reusable="true">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/buttonReportIssue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_centerInParent="true"
+                android:tint="@android:color/white"
+                app:backgroundTint="@color/colorAccent"
+                app:elevation="2dp"
+                app:fabSize="normal"
+                app:rippleColor="@color/colorAccentDark"
+                app:srcCompat="@drawable/ic_report" />
+
+        </com.github.jorgecastilloprz.FABProgressCircle>
+
+
+    </RelativeLayout>
+    <!--
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
         android:layout_margin="16dp"
         app:layout_anchor="@id/mainRecyclerView"
         app:layout_anchorGravity="bottom|right|end">
@@ -54,6 +87,6 @@
             app:srcCompat="@drawable/ic_report" />
 
 
-    </RelativeLayout>
+    </RelativeLayout>-->
 
 </android.support.design.widget.CoordinatorLayout>

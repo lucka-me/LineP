@@ -75,8 +75,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 var fileOutputStream = FileOutputStream(localJSONFile)
                 if (!ftpClient.retrieveFile(username + ".json", fileOutputStream)) {
                     val error = Exception(context.getString(R.string.error_request_mission_failed))
-                    isLoading = false
                     uiThread {
+                        isLoading = false
                         missionListener.didStartedFailed(error)
                     }
                     return@doAsync
@@ -89,8 +89,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 fileOutputStream = FileOutputStream(localGPXFile)
                 if (!ftpClient.retrieveFile(data.id + ".gpx", fileOutputStream)) {
                     val error = Exception(context.getString(R.string.error_request_gpx_failed))
-                    isLoading = false
                     uiThread {
+                        isLoading = false
                         missionListener.didStartedFailed(error)
                     }
                     return@doAsync
@@ -98,9 +98,9 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 fileOutputStream.close()
                 waypointList = decodeGPX(localGPXFile)
             } catch (error: Exception) {
-                isLoading = false
                 val newError = Exception(context.getString(R.string.error_request_mission_failed) + "\n" + error.message)
                 uiThread {
+                    isLoading = false
                     missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
@@ -209,8 +209,6 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } else {
                 isStarted = true
             }
-            file.exists()
-            file.delete()
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -347,15 +345,14 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 issueFile.delete()
                 log(String.format(context.getString(R.string.log_issueSubmitted), "ISS_" + data.id + "_" + issueSN, longitudeText, latitudeText, description))
             } catch (error: Exception) {
-                isReporting = false
                 uiThread {
+                    isReporting = false
                     missionListener.didReportedFailed(error)
                 }
                 return@doAsync
             }
             issueSN += 1
             File(issueImagePath).delete()
-            isReporting = false
             uiThread {
                 missionListener.didReportedSccess()
             }

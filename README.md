@@ -27,6 +27,7 @@
 * [Gson](https://github.com/google/gson) - [License](https://github.com/google/gson/blob/master/LICENSE)
 * [Anko](https://github.com/Kotlin/anko) - [License](https://github.com/Kotlin/anko/blob/master/LICENSE)
 * [Android Support Preference V7 Fix](https://github.com/Gericop/Android-Support-Preference-V7-Fix) - [License](https://github.com/Gericop/Android-Support-Preference-V7-Fix/blob/master/LICENSE)
+* [FABProgressCircle](https://github.com/JorgeCastilloPrz/FABProgressCircle) - [License](https://github.com/JorgeCastilloPrz/FABProgressCircle#license)
 * [iconmonstr](https://iconmonstr.com) - [License](https://iconmonstr.com/license/)
 
 ### Server

@@ -70,6 +70,15 @@
         </Preference>
 
         <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_FABPC_title"
+            android:summary="@string/pref_about_dependency_FABPC_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_FABPC_url" />
+        </Preference>
+
+        <Preference
             android:icon="@drawable/ic_pref_about_iconmonstr"
             android:title="@string/pref_about_dependency_iconmonstr_title"
             android:summary="@string/pref_about_dependency_iconmonstr_summary">

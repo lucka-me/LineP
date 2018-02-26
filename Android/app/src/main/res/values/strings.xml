@@ -117,6 +117,9 @@
     <string name="pref_about_dependency_prefFix_title">Android Support Preference V7 Fix</string>
     <string name="pref_about_dependency_prefFix_summary">Fixed preference support library</string>
     <string name="pref_about_dependency_prefFix_url">https://github.com/Gericop/Android-Support-Preference-V7-Fix</string>
+    <string name="pref_about_dependency_FABPC_title">FABProgressCircle</string>
+    <string name="pref_about_dependency_FABPC_summary">Progress circle around FloatingActionButton</string>
+    <string name="pref_about_dependency_FABPC_url">https://github.com/JorgeCastilloPrz/FABProgressCircle</string>
     <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
     <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
     <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
