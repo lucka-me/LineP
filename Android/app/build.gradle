@@ -40,10 +40,9 @@ dependencies {
     // Anko
     //   Refrence: https://github.com/Kotlin/anko
     compile "org.jetbrains.anko:anko:$anko_version"
-    // v7 Preference
-    compile 'com.android.support:preference-v7:26.1.0'
-    // v14 Preference
-    compile 'com.android.support:preference-v14:26.1.0'
+    // Android-Support-Preference-V7-Fix
+    //   Reference: https://github.com/Gericop/Android-Support-Preference-V7-Fix
+    compile 'com.takisoft.fix:preference-v7:26.1.0.3'
     // Apache Commons Net API
     compile 'commons-net:commons-net:3.6'
 }
