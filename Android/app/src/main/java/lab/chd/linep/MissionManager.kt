@@ -142,7 +142,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } catch (error: Exception) {
                 isStopping = false
                 uiThread {
-                    missionListener.didStartedFailed(error)
+                    val newError: Exception = Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
+                    missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
             }

@@ -150,6 +150,11 @@ class MainActivity : AppCompatActivity() {
         override fun didStoppedSccess() {
             mainRecyclerViewAdapter.refreshWith(mission.waypointList)
             invalidateOptionsMenu()
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.success))
+            alert.setMessage(getString(R.string.stop_success))
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
         }
 
         override fun didStoppedFailed(error: Exception) {

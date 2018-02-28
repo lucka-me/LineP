@@ -13,6 +13,7 @@
     <string name="imageProviderAthority">lab.chd.linep.fileprovider</string>
 
     <!-- Dialog -->
+    <string name="success">成功</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="submit">提交</string>
@@ -55,6 +56,8 @@
     <string name="mission_title">任务</string>
     <string name="finished">已完成</string>
     <string name="unfinished">未完成</string>
+    <string name="stop_success">任务停止，日志已成功提交。</string>
+    <string name="stop_failed">任务停止失败</string>
 
     <!-- Mission Log-->
     <string name="log_headline">任务日志\n</string>
