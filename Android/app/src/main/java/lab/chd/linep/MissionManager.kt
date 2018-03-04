@@ -26,6 +26,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     var isLoading: Boolean = false
     var isStopping: Boolean = false
     var isReporting: Boolean = false
+    // To avoid multi alert when reaching a waypoint
+    var isChecking = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
     var lastLocationLogDate: Date = Date()
@@ -39,6 +41,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     // Listener
     interface MissionListener {
+        fun onAllChecked()
         fun didStartedSuccess(missionData: MissionData)
         fun didStartedFailed(error: Exception)
         fun didStoppedSccess()
@@ -175,6 +178,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             objectOutputStream.writeObject(waypointList)
             objectOutputStream.close()
             fileOutputStream.close()
+            log(context.getString(R.string.log_mission_paused))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -210,6 +214,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } else {
                 isStarted = true
             }
+            log(context.getString(R.string.log_mission_resume))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -298,6 +303,21 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         }
 
         return reachedList
+    }
+
+    fun checkAt(index: Int) {
+        waypointList[index].isChecked = true
+        log(String.format(context.getString(R.string.log_checked), waypointList[index].title))
+        var isAllChecked = true
+        for (waypoint in waypointList) {
+            if (!waypoint.isChecked) {
+                isAllChecked = false
+                break
+            }
+        }
+        if (isAllChecked) {
+            missionListener.onAllChecked()
+        }
     }
 
     fun submitIssue(location: Location?, time: Date, description: String) {

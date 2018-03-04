@@ -51,8 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
-    // To avoid multi alert when reaching a waypoint
-    private var isChecking = false
 
     private val locationListener: LocationListener = object :LocationListener {
 
@@ -66,9 +64,9 @@ class MainActivity : AppCompatActivity() {
                 mission.log(String.format(getString(R.string.log_locationUpdate), location.longitude, location.latitude))
                 mission.lastLocationLogDate = Date()
             }
-            if (mission.isStarted && (location != null) && !isChecking) {
-                isChecking = true
-                val reachedList = mission.reach(location as Location)
+            if (mission.isStarted && (location != null) && !mission.isChecking) {
+                mission.isChecking = true
+                val reachedList = mission.reach(location)
                 if (reachedList.isNotEmpty()) {
                     for (index: Int in reachedList) {
                         val alert = AlertDialog.Builder(this@MainActivity)
@@ -76,8 +74,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setMessage(String.format(getString(R.string.alert_reach_waypoint_message), mission.waypointList[index].title))
                         alert.setCancelable(false)
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
-                            mission.waypointList[index].isChecked = true
-                            mission.log(String.format(getString(R.string.log_checked), mission.waypointList[index].title))
+                            mission.checkAt(index)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -85,11 +82,15 @@ class MainActivity : AppCompatActivity() {
                                     break
                                 }
                             }
-                            isChecking = if (isAllChecked) false else true
+                            if (isAllChecked) {
+                                mission.isChecking = false
+                                mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                            } else {
+                                mission.isChecking = true
+                            }
                         })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
-                            mission.waypointList[index].isChecked = true
-                            mission.log(String.format(getString(R.string.log_checked), mission.waypointList[index].title))
+                            mission.checkAt(index)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -97,11 +98,19 @@ class MainActivity : AppCompatActivity() {
                                     break
                                 }
                             }
-                            isChecking = if (isAllChecked) false else true
-                            reportIssue() })
+                            reportIssue()
+                            if (isAllChecked) {
+                                mission.isChecking = false
+                                mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                            } else {
+                                mission.isChecking = true
+                            }
+                        })
                         alert.show()
                     }
                     mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                } else {
+                    mission.isChecking = false
                 }
             }
         }
@@ -127,6 +136,10 @@ class MainActivity : AppCompatActivity() {
 
     // MissionManager
     val missionListener: MissionManager.MissionListener = object : MissionManager.MissionListener {
+
+        override fun onAllChecked() {
+            showMissionDialog()
+        }
 
         override fun didStartedSuccess(missionData: MissionManager.MissionData) {
             mainRecyclerViewAdapter.finishLoading()
@@ -192,10 +205,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        // Try to resume the misssion
-        mission.resume()
-        invalidateOptionsMenu()
-
         // Handel the Main List View
         mainRecyclerView = findViewById<RecyclerView>(R.id.mainRecyclerView)
         mainRecyclerViewAdapter = MainRecyclerViewAdapter(this, mission.waypointList, object : MainRecyclerViewAdapter.OnItemClickListener {
@@ -248,6 +257,12 @@ class MainActivity : AppCompatActivity() {
                                     distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
                                 } else {
                                     distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
+                                }
+                                if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
+                                    dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
+                                        mission.checkAt(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
+                                        mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                                    })
                                 }
                             } else {
                                 distanceText.text = getString(R.string.unavailable)
@@ -352,20 +367,25 @@ class MainActivity : AppCompatActivity() {
 
     // Set Location Update
     //   Reference: https://kotlintc.com/articles/921
+    override fun onStart() {
+        super.onStart()
+    }
+
     override fun onResume() {
-
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 1.toFloat(), locationListener)
-            mainRecyclerViewAdapter.refreshWith(locationManager)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
         }
-
         mission.resume()
+        mainRecyclerViewAdapter.refreshWith(mission.waypointList)
         invalidateOptionsMenu()
         super.onResume()
     }
 
+    override fun onStop() {
+        super.onStop()
+    }
+
     override fun onDestroy() {
-        mission.pause()
         super.onDestroy()
     }
 
