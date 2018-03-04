@@ -19,6 +19,7 @@
         <activity
             android:name="lab.chd.linep.MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,11 +31,13 @@
         <activity
             android:name="lab.chd.linep.PreferenceActivity"
             android:label="@string/pref_title"
+            android:screenOrientation="portrait"
             android:parentActivityName="lab.chd.linep.MainActivity" />
 
         <activity
             android:name="lab.chd.linep.PreferenceAboutActivity"
             android:label="@string/pref_about_title"
+            android:screenOrientation="portrait"
             android:parentActivityName="lab.chd.linep.PreferenceActivity" />
 
         <provider
