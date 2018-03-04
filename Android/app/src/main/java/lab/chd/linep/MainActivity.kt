@@ -10,9 +10,11 @@ import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -322,7 +324,15 @@ class MainActivity : AppCompatActivity() {
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_location))
                 alert.setCancelable(false)
-                alert.setNegativeButton(getString(R.string.cancel), null)
+                alert.setNegativeButton(getString(R.string.system_settings), DialogInterface.OnClickListener { _, _ ->
+                    // Open the application settings page
+                    //   Reference: https://stackoverflow.com/questions/32822101/how-to-programmatically-open-the-permission-screen-for-a-specific-app-on-android
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                })
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
