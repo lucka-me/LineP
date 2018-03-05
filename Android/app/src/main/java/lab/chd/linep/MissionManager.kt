@@ -2,11 +2,13 @@ package lab.chd.linep
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.support.v7.preference.PreferenceManager
 import com.google.gson.Gson
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
+import org.apache.commons.net.ftp.FTPSClient
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.*
@@ -58,26 +60,62 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         isLoading = true
 
         doAsync {
+            val sharedPreference: SharedPreferences
+            val serverURL: String
+            val serverPort: Int
+            val username: String
+            val password: String
+            val enableFTPS: Boolean
             try {
-                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            val ftpClient = if (enableFTPS) {
+                FTPSClient(false)
+            } else {
+                FTPClient()
+            }
+            try {
                 // Connect to FTP Server via Apache Commons Net API
                 //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
                 // Download file from FTP Server via Apache Commons Net API
                 //   Reference: http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example
-                val ftpClient = FTPClient()
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
-                ftpClient.changeWorkingDirectory("Mission")
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            // Must set protection buffer size and data channel protection when using FTPS!
+            //   Reference: (Example) http://www.kochnielsen.dk/kurt/blog/?p=162
+            if (enableFTPS) {
+                ftpClient as FTPSClient
+                ftpClient.execPBSZ(0)
+                ftpClient.execPROT("P")
+            }
+            try {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+                ftpClient.changeWorkingDirectory("Mission")
                 val localJSONFile = File(context.filesDir, "mission.json")
                 var fileOutputStream = FileOutputStream(localJSONFile)
                 if (!ftpClient.retrieveFile(username + ".json", fileOutputStream)) {
-                    val error = Exception(context.getString(R.string.error_request_mission_failed))
+                    val error = Exception(context.getString(R.string.error_request_json_failed))
                     uiThread {
                         isLoading = false
                         missionListener.didStartedFailed(error)
@@ -121,16 +159,50 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun stop() {
         isStopping = true
         doAsync {
+            val sharedPreference: SharedPreferences
+            val serverURL: String
+            val serverPort: Int
+            val username: String
+            val password: String
+            val enableFTPS: Boolean
             try {
-                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                val ftpClient = FTPClient()
+                sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            val ftpClient = if (enableFTPS) {
+                FTPSClient(false)
+            } else {
+                FTPClient()
+            }
+            try {
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            if (enableFTPS) {
+                ftpClient as FTPSClient
+                ftpClient.execPBSZ(0)
+                ftpClient.execPROT("P")
+            }
+            try {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory(username)
                 ftpClient.changeWorkingDirectory(data.id)
@@ -323,11 +395,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun submitIssue(location: Location?, time: Date, description: String) {
         isReporting = true
         doAsync {
+            val issueFile = File(context.filesDir, "ISS_" + data.id + "_" + issueSN + ".txt")
+            val longitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.longitude)
+            val latitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.latitude)
             try {
                 // Create issue txt file
-                val issueFile = File(context.filesDir, "ISS_" + data.id + "_" + issueSN + ".txt")
-                val longitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.longitude)
-                val latitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.latitude)
                 issueFile.writeText(context.getString(R.string.location)
                         + " (" + longitudeText + " " + latitudeText + ")\n"
                         + context.getString(R.string.time)
@@ -337,20 +409,59 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                         + context.getString(R.string.description)
                         + " "
                         + description)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_create_issue_file_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
 
-                val sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                val serverURL: String = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                val serverPort: Int = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                val username: String = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                val password: String = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                // Connect to FTP Server via Apache Commons Net API
-                //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
-                // Download file from FTP Server via Apache Commons Net API
-                //   Reference: http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example
-                val ftpClient = FTPClient()
+            val sharedPreference: SharedPreferences
+            val serverURL: String
+            val serverPort: Int
+            val username: String
+            val password: String
+            val enableFTPS: Boolean
+            try {
+                sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
+                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            val ftpClient = if (enableFTPS) {
+                FTPSClient(false)
+            } else {
+                FTPClient()
+            }
+            try {
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
+            } catch (error: Exception) {
+                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                uiThread {
+                    isLoading = false
+                    missionListener.didStartedFailed(newError)
+                }
+                return@doAsync
+            }
+            if (enableFTPS) {
+                ftpClient as FTPSClient
+                ftpClient.execPBSZ(0)
+                ftpClient.execPROT("P")
+            }
+            try {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory(username)
                 ftpClient.changeWorkingDirectory(data.id)

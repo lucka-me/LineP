@@ -7,6 +7,7 @@ import android.support.v7.preference.Preference
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat
 import android.support.v7.preference.PreferenceManager
 import org.apache.commons.net.ftp.FTPClient
+import org.apache.commons.net.ftp.FTPSClient
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -34,13 +35,13 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                 preference.summary = getString(R.string.pref_server_test_summary_testing)
 
                 var message: String = getString(R.string.pref_server_test_message_success)
-                val ftpClient = FTPClient()
                 doAsync {
                     var sharedPreference: SharedPreferences
                     var serverURL: String
                     var serverPort: Int
                     var username: String
                     var password: String
+                    var enableFTPS: Boolean
                     try {
                         // Get Server URL, username and password from SharedPreferences
                         sharedPreference = PreferenceManager.getDefaultSharedPreferences(this@PreferenceFragmentCustomized.context)
@@ -48,6 +49,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                         serverPort = sharedPreference.getString(getString(R.string.pref_server_port_key), getString(R.string.pref_server_port_default)).toInt()
                         username = sharedPreference.getString(getString(R.string.pref_user_id_key), "")
                         password = sharedPreference.getString(getString(R.string.pref_user_token_key), "")
+                        enableFTPS = sharedPreference.getBoolean(getString(R.string.pref_server_enableFTPS_key), false)
                     } catch (error: Exception) {
                         message = getString(R.string.error_get_preference_failed) + "\n" + error.message
                         uiThread {
@@ -62,6 +64,11 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                             preference.isEnabled = true
                         }
                         return@doAsync
+                    }
+                    val ftpClient = if (enableFTPS) {
+                        FTPSClient()
+                    } else {
+                        FTPClient()
                     }
 
                     // Connect to FTP Server via Apache Commons Net API

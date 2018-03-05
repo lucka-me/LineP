@@ -42,6 +42,13 @@
             android:inputType="number"
             android:key="@string/pref_server_port_key" />
 
+        <SwitchPreference
+            android:key="@string/pref_server_enableFTPS_key"
+            android:title="@string/pref_server_enableFTPS_title"
+            android:summary="@string/pref_server_enableFTPS_summary"
+            android:icon="@drawable/ic_pref_server_ftps"
+            android:defaultValue="false" />
+
         <Preference
             android:title="@string/pref_server_test_title"
             android:summary="@string/pref_server_test_summary"

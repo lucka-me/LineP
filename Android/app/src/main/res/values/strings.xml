@@ -39,8 +39,10 @@
     <string name="error_connect_failed">连接失败</string>
     <string name="error_login_failed">登录失败</string>
     <string name="error_request_mission_failed">未获取任务</string>
+    <string name="error_request_json_failed">未获取任务数据</string>
     <string name="error_request_gpx_failed">未获取 GPX 文件</string>
     <string name="error_report_failed">提交失败</string>
+    <string name="error_create_issue_file_failed">创建报告文件失败</string>
 
     <!-- Mission -->
     <string name="loading">正在载入</string>
@@ -89,6 +91,9 @@
     <string name="pref_server_port_title">服务器端口</string>
     <string name="pref_server_port_summary">点击以输入服务器端口号</string>
     <string name="pref_server_port_default">2121</string>
+    <string name="pref_server_enableFTPS_key">pref_server_enableFTPS</string>
+    <string name="pref_server_enableFTPS_title">启用加密协议</string>
+    <string name="pref_server_enableFTPS_summary">使用 FTPS 需要服务器端支持</string>
     <string name="pref_server_test_key">pref_server_test</string>
     <string name="pref_server_test_title">测试服务器</string>
     <string name="pref_server_test_summary">点击以测试服务器</string>
