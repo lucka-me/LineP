@@ -255,17 +255,22 @@ class MainActivity : AppCompatActivity() {
                             if ((ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
                                     locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                                 val currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                                if (currentLocation.distanceTo(location) < 1000.0) {
-                                    distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
+                                if (currentLocation != null) {
+                                    if (currentLocation.distanceTo(location) < 1000.0) {
+                                        distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
+                                    } else {
+                                        distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
+                                    }
+                                    if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
+                                        dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
+                                            mission.checkAt(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
+                                            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                                        })
+                                    }
                                 } else {
-                                    distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
+                                    distanceText.text = getString(R.string.unavailable)
                                 }
-                                if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
-                                    dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
-                                        mission.checkAt(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
-                                        mainRecyclerViewAdapter.refreshWith(mission.waypointList)
-                                    })
-                                }
+
                             } else {
                                 distanceText.text = getString(R.string.unavailable)
                             }
