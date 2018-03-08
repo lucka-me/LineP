@@ -192,7 +192,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } catch (error: Exception) {
                 val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
-                    isLoading = false
+                    isStopping = false
                     missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
