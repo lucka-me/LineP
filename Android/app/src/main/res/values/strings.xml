@@ -78,11 +78,11 @@
     <string name="pref_title">设置</string>
     <string name="pref_user_category_title">用户</string>
     <string name="pref_user_id_key">pref_user_id</string>
-    <string name="pref_user_id_title">ID</string>
-    <string name="pref_user_id_summary">点击以设置用户 ID</string>
+    <string name="pref_user_id_title">用户名</string>
+    <string name="pref_user_id_summary">点击以设置用户名</string>
     <string name="pref_user_token_key">pref_user_token</string>
-    <string name="pref_user_token_title">Token</string>
-    <string name="pref_user_token_summary">点击以设置用户 Token</string>
+    <string name="pref_user_token_title">登录密码</string>
+    <string name="pref_user_token_summary">点击以设置登录密码</string>
     <string name="pref_server_category_title">服务器</string>
     <string name="pref_server_url_key">pref_server_url</string>
     <string name="pref_server_url_title">服务器地址</string>
@@ -100,6 +100,10 @@
     <string name="pref_server_test_summary_testing">正在测试……</string>
     <string name="pref_server_test_message_success">连接成功</string>
     <string name="pref_about_category_title">关于</string>
+    <string name="pref_display_category_title">显示</string>
+    <string name="pref_display_map_key">pref_display_map</string>
+    <string name="pref_display_map_title">显示地图</string>
+    <string name="pref_display_map_summary">在位置卡片中显示 Google 地图</string>
     <!-- about -->
     <string name="pref_about_title">关于</string>
     <string name="pref_about_summary_category_title">概要</string>

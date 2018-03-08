@@ -144,9 +144,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun didStartedSuccess(missionData: MissionManager.MissionData) {
+            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
             mainRecyclerViewAdapter.finishLoading()
             showMissionDialog()
-            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
             invalidateOptionsMenu()
             buttonReportIssue.show()
         }
@@ -388,7 +388,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 0.toFloat(), locationListener)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 5.toFloat(), locationListener)
         }
         mission.resume()
         mainRecyclerViewAdapter.refreshWith(mission.waypointList)

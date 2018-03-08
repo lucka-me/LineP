@@ -36,12 +36,12 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
 
                 var message: String = getString(R.string.pref_server_test_message_success)
                 doAsync {
-                    var sharedPreference: SharedPreferences
-                    var serverURL: String
-                    var serverPort: Int
-                    var username: String
-                    var password: String
-                    var enableFTPS: Boolean
+                    val sharedPreference: SharedPreferences
+                    val serverURL: String
+                    val serverPort: Int
+                    val username: String
+                    val password: String
+                    val enableFTPS: Boolean
                     try {
                         // Get Server URL, username and password from SharedPreferences
                         sharedPreference = PreferenceManager.getDefaultSharedPreferences(this@PreferenceFragmentCustomized.context)

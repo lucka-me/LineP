@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.support.v4.app.ActivityCompat
+import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,9 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
-
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 
 
 /**
@@ -20,10 +23,12 @@ import android.widget.TextView
  */
 
 class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<Waypoint>, var onItemClickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), View.OnClickListener {
+
     enum class ItemIndex(val row: Int, val viewType: Int, val resource: Int) {
         location(0, 0, R.layout.main_card_location),
-        mission(1, 1, R.layout.main_card_mission),
-        waypoint(2, 2, R.layout.main_card_waypoint)
+        locationWithMap(0, 1, R.layout.main_card_location_map),
+        mission(1, 2, R.layout.main_card_mission),
+        waypoint(2, 3, R.layout.main_card_waypoint)
     }
 
     private var location: Location? = null
@@ -48,6 +53,19 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         var latitudeText: TextView
 
         init {
+            longitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLongitudeText)
+            latitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLatitudeText)
+        }
+    }
+
+    class MainRecyclerViewHolderLocationWithMap(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+        var mapView: MapView
+        var longitudeText: TextView
+        var latitudeText: TextView
+
+        init {
+            mapView = itemView.findViewById<MapView>(R.id.mainCardLocationMapView)
             longitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLongitudeText)
             latitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLatitudeText)
         }
@@ -83,12 +101,14 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         val layoutInflater: LayoutInflater = LayoutInflater.from(context)
         val view: View = when(viewType) {
             ItemIndex.location.viewType -> layoutInflater.inflate(ItemIndex.location.resource, parent, false)
+            ItemIndex.locationWithMap.viewType -> layoutInflater.inflate(ItemIndex.locationWithMap.resource, parent, false)
             ItemIndex.mission.viewType -> layoutInflater.inflate(ItemIndex.mission.resource, parent, false)
             ItemIndex.waypoint.viewType -> layoutInflater.inflate(ItemIndex.waypoint.resource, parent, false)
             else -> layoutInflater.inflate(R.layout.main_card_location, parent, false)
         }
         val viewHolder = when(viewType) {
             ItemIndex.location.viewType -> MainRecyclerViewHolderLocation(view)
+            ItemIndex.locationWithMap.viewType -> MainRecyclerViewHolderLocationWithMap(view)
             ItemIndex.mission.viewType -> MainRecyclerViewHolderMission(view)
             ItemIndex.waypoint.viewType -> MainRecyclerViewHolderWaypoint(view)
             else -> MainRecyclerViewHolderLocation(view)
@@ -106,6 +126,41 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
             ItemIndex.location.viewType -> {
                 holder as MainRecyclerViewHolderLocation
+                if (location == null) {
+                    holder.longitudeText.text = context.getString(R.string.unavailable)
+                    holder.latitudeText.text = context.getString(R.string.unavailable)
+                } else {
+                    val location: Location = this.location as Location
+                    holder.longitudeText.text = String.format(context.getString(R.string.format_angle),
+                            location.longitude.toInt(),
+                            ((location.longitude - location.longitude.toInt()) * 60).toInt(),
+                            (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
+                    )
+
+                    holder.latitudeText.text = String.format(context.getString(R.string.format_angle),
+                            location.latitude.toInt(),
+                            ((location.latitude - location.latitude.toInt()) * 60).toInt(),
+                            (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
+                    )
+                }
+            }
+
+            ItemIndex.locationWithMap.viewType -> {
+                holder as MainRecyclerViewHolderLocationWithMap
+                holder.mapView.onCreate(null)
+                holder.mapView.getMapAsync { googleMap: GoogleMap? ->
+                    if (googleMap != null) {
+                        googleMap.uiSettings.isMapToolbarEnabled = false
+                        googleMap.setOnMapClickListener {  }
+                        if (location != null) {
+                            val setLocation: Location = location as Location
+                            // Transform the coordinate
+                            val fixedLatLng: LatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(setLocation.latitude, setLocation.longitude))
+                            googleMap.addMarker(MarkerOptions().position(fixedLatLng))
+                            googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
+                        }
+                    }
+                }
                 if (location == null) {
                     holder.longitudeText.text = context.getString(R.string.unavailable)
                     holder.latitudeText.text = context.getString(R.string.unavailable)
@@ -174,8 +229,9 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     }
 
     override fun getItemViewType(position: Int): Int {
+        val isMapEnable: Boolean = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)
         val viewType: Int = when {
-            position == ItemIndex.location.row -> ItemIndex.location.viewType
+            position == ItemIndex.location.row -> if (isMapEnable) ItemIndex.locationWithMap.viewType else ItemIndex.location.viewType
             position == ItemIndex.mission.row  -> ItemIndex.mission.viewType
             position >= ItemIndex.waypoint.row -> ItemIndex.waypoint.viewType
             else -> -1
@@ -201,12 +257,12 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     fun startLoading() {
         isLoading = true
-        this.notifyDataSetChanged()
+        this.notifyItemInserted(ItemIndex.mission.row)
     }
 
     fun finishLoading() {
         isLoading = false
-        this.notifyDataSetChanged()
+        this.notifyItemChanged(ItemIndex.mission.row)
     }
 
 }
