@@ -137,6 +137,9 @@
     <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
     <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
     <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
+    <string name="pref_about_dependency_googleMaps_title">Google Maps API</string>
+    <string name="pref_about_dependency_googleMaps_summary">为用户打造卓越的位置体验</string>
+    <string name="pref_about_dependency_googleMaps_url">https://developers.google.com/maps/</string>
     <!-- License -->
     <string name="pref_license_title">许可证</string>
 

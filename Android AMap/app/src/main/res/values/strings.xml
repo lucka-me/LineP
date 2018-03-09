@@ -137,6 +137,9 @@
     <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
     <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
     <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
+    <string name="pref_about_dependency_amap_title">高德开放平台</string>
+    <string name="pref_about_dependency_amap_summary">国内技术领先的LBS服务提供商</string>
+    <string name="pref_about_dependency_amap_url">http://lbs.amap.com</string>
     <!-- License -->
     <string name="pref_license_title">许可证</string>
 

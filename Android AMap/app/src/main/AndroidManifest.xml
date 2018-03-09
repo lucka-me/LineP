@@ -61,7 +61,7 @@
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="8a0ed27eb25af1bbeb13f68561d4e912"/>
+            android:value="API_KEY"/>
 
 
     </application>
