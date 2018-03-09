@@ -3,7 +3,6 @@ package lab.chd.linep
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
 import android.support.v4.app.ActivityCompat
 import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.RecyclerView
@@ -15,14 +14,13 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 
 
 /**
  * Created by lucka on 21/2/2018.
  */
 
-class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<Waypoint>, var onItemClickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), View.OnClickListener {
+class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<Waypoint>, var onItemClickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), View.OnClickListener, OnMapReadyCallback {
 
     enum class ItemIndex(val row: Int, val viewType: Int, val resource: Int) {
         location(0, 0, R.layout.main_card_location),
@@ -33,6 +31,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     private var location: Location? = null
     private var isLoading: Boolean = false
+    private var mapView: MapView? = null
     //private var onItemClickListener: OnItemClickListener? = null
 
     // Listener
@@ -49,52 +48,31 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     // View Holders
     class MainRecyclerViewHolderLocation(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var longitudeText: TextView
-        var latitudeText: TextView
+        var longitudeText: TextView = itemView.findViewById<TextView>(R.id.mainCardLocationLongitudeText)
+        var latitudeText: TextView = itemView.findViewById<TextView>(R.id.mainCardLocationLatitudeText)
 
-        init {
-            longitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLongitudeText)
-            latitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLatitudeText)
-        }
     }
 
     class MainRecyclerViewHolderLocationWithMap(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var mapView: MapView
-        var longitudeText: TextView
-        var latitudeText: TextView
+        var mapView: MapView = itemView.findViewById<MapView>(R.id.mainCardLocationMapView)
 
-        init {
-            mapView = itemView.findViewById<MapView>(R.id.mainCardLocationMapView)
-            longitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLongitudeText)
-            latitudeText = itemView.findViewById<TextView>(R.id.mainCardLocationLatitudeText)
-        }
     }
 
     class MainRecyclerViewHolderMission(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var progressBar: ProgressBar
-        var progressText: TextView
-        var percentText: TextView
+        var progressBar: ProgressBar = itemView.findViewById<ProgressBar>(R.id.mainCardMissionProgressBar)
+        var progressText: TextView = itemView.findViewById<TextView>(R.id.mainCardMissionProgressText)
+        var percentText: TextView = itemView.findViewById<TextView>(R.id.mainCardMissionPercentText)
 
-        init {
-            progressBar = itemView.findViewById<ProgressBar>(R.id.mainCardMissionProgressBar)
-            progressText = itemView.findViewById<TextView>(R.id.mainCardMissionProgressText)
-            percentText = itemView.findViewById<TextView>(R.id.mainCardMissionPercentText)
-        }
     }
 
     class MainRecyclerViewHolderWaypoint(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var title: TextView
-        var distanceText: TextView
-        var checkBox: CheckBox
+        var title: TextView = itemView.findViewById<TextView>(R.id.mainCardWaypointTitle)
+        var distanceText: TextView = itemView.findViewById<TextView>(R.id.mainCardWaypointDistanceText)
+        var checkBox: CheckBox = itemView.findViewById<CheckBox>(R.id.mainCardWaypointCheckBox)
 
-        init {
-            title = itemView.findViewById<TextView>(R.id.mainCardWaypointTitle)
-            distanceText = itemView.findViewById<TextView>(R.id.mainCardWaypointDistanceText)
-            checkBox = itemView.findViewById<CheckBox>(R.id.mainCardWaypointCheckBox)
-        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
@@ -147,36 +125,9 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
             ItemIndex.locationWithMap.viewType -> {
                 holder as MainRecyclerViewHolderLocationWithMap
+                this.mapView = holder.mapView
                 holder.mapView.onCreate(null)
-                holder.mapView.getMapAsync { googleMap: GoogleMap? ->
-                    if (googleMap != null) {
-                        googleMap.uiSettings.isMapToolbarEnabled = false
-                        googleMap.setOnMapClickListener {  }
-                        if (location != null) {
-                            val setLocation: Location = location as Location
-                            // Transform the coordinate
-                            val fixedLatLng: LatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(setLocation.latitude, setLocation.longitude))
-                            googleMap.addMarker(MarkerOptions().position(fixedLatLng))
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
-                        }
-                    }
-                }
-                if (location == null) {
-                    holder.longitudeText.text = context.getString(R.string.unavailable)
-                    holder.latitudeText.text = context.getString(R.string.unavailable)
-                } else {
-                    val location: Location = this.location as Location
-                    holder.longitudeText.text = String.format(context.getString(R.string.format_angle),
-                            location.longitude.toInt(),
-                            ((location.longitude - location.longitude.toInt()) * 60).toInt(),
-                            (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
-                    )
-                    holder.latitudeText.text = String.format(context.getString(R.string.format_angle),
-                            location.latitude.toInt(),
-                            ((location.latitude - location.latitude.toInt()) * 60).toInt(),
-                            (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
-                    )
-                }
+                holder.mapView.getMapAsync(this)
             }
 
             ItemIndex.mission.viewType -> {
@@ -221,6 +172,20 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         holder.itemView.tag = position
     }
 
+    override fun onMapReady(googleMap: GoogleMap?) {
+        if (googleMap == null || location == null) return
+        googleMap.uiSettings.isMapToolbarEnabled = false
+
+        if (ActivityCompat.checkSelfPermission(context, MainActivity.PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.isMyLocationEnabled = true
+        }
+        
+        val setLocation: Location = location as Location
+        val fixedLatLng: LatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(setLocation.latitude, setLocation.longitude))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
+        //googleMap.addMarker(MarkerOptions().position(fixedLatLng))
+    }
+
     override fun getItemCount(): Int {
         var itemCount = 1
         itemCount += if (waypointList.isEmpty() && isLoading) 1 else 0
@@ -239,30 +204,62 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         return viewType
     }
 
-    fun refreshWith(locationManager: LocationManager) {
+    fun refreshWith(location: Location?) {
 
-        if ((ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
-                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        } else {
-            location = null
+        this.location = location
+        if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)) {
+            this.refreshAt(ItemIndex.location.row)
+        } else if (this.mapView != null) {
+            this.mapView!!.getMapAsync(this)
         }
-        this.notifyDataSetChanged()
+        //this.refreshAt(ItemIndex.location.row)
+        if (waypointList.isNotEmpty()) {
+            this.notifyItemRangeChanged(ItemIndex.waypoint.row, waypointList.size)
+        }
     }
 
+    /*
     fun refreshWith(waypointList: ArrayList<Waypoint>) {
         this.waypointList = waypointList
         this.notifyDataSetChanged()
     }
+    */
+
+    fun refreshAt(position: Int) {
+        this.notifyItemChanged(position)
+    }
+
+    fun refreshAt(position: Int, waypointList: ArrayList<Waypoint>) {
+        this.waypointList = waypointList
+        this.notifyItemChanged(ItemIndex.mission.row)
+        this.notifyItemChanged(position)
+    }
+
+    fun clearList(oldListSize: Int) {
+        this.notifyItemRangeRemoved(ItemIndex.mission.row, oldListSize + 1)
+    }
 
     fun startLoading() {
         isLoading = true
-        this.notifyItemInserted(ItemIndex.mission.row)
+        if (waypointList.size > 0) {
+            this.notifyItemChanged(ItemIndex.mission.row)
+        } else {
+            this.notifyItemInserted(ItemIndex.mission.row)
+        }
     }
 
-    fun finishLoading() {
+    fun finishLoading(waypointList: ArrayList<Waypoint>, oldListSize: Int = 0) {
+        this.waypointList = waypointList
         isLoading = false
-        this.notifyItemChanged(ItemIndex.mission.row)
+        if (waypointList.size > 0) {
+            this.notifyItemChanged(ItemIndex.mission.row)
+            if (oldListSize == 0) {
+                this.notifyItemRangeInserted(ItemIndex.waypoint.row, waypointList.size)
+            } else {
+                this.notifyItemRangeChanged(ItemIndex.waypoint.row, waypointList.size)
+            }
+        } else {
+            this.notifyItemRemoved(ItemIndex.mission.row)
+        }
     }
-
 }

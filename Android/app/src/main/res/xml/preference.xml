@@ -63,7 +63,7 @@
             android:key="@string/pref_display_map_key"
             android:title="@string/pref_display_map_title"
             android:summary="@string/pref_display_map_summary"
-            android:icon="@drawable/ic_pref_server_ftps"
+            android:icon="@drawable/ic_pref_display_map"
             android:defaultValue="false" />
 
     </PreferenceCategory>

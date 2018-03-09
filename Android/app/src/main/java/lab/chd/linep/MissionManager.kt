@@ -46,7 +46,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         fun onAllChecked()
         fun didStartedSuccess(missionData: MissionData)
         fun didStartedFailed(error: Exception)
-        fun didStoppedSccess()
+        fun didStoppedSccess(oldListSize: Int)
         fun didStoppedFailed(error: Exception)
         fun didReportedSccess()
         fun didReportedFailed(error: Exception)
@@ -225,10 +225,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             uiThread {
                 issueSN = 0
                 data = MissionData("", "")
+                val oldListSize = waypointList.size
                 waypointList.clear()
                 isStarted = false
                 isStopping = false
-                missionListener.didStoppedSccess()
+                missionListener.didStoppedSccess(oldListSize)
             }
         }
     }
@@ -262,7 +263,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     }
 
-    fun resume() {
+    fun resume(): Int {
         val filename = "mission.temp"
         val file: File = File(context.filesDir, filename)
         val fileInputStream: FileInputStream
@@ -270,9 +271,10 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
         if (!file.exists()) {
             isStarted = false
-            return
+            return waypointList.size
         }
 
+        val oldListSize = waypointList.size
         try {
             fileInputStream = FileInputStream(file)
             objectInputStream = ObjectInputStream(fileInputStream)
@@ -296,6 +298,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             alert.show()
             isStarted = false
         }
+        return oldListSize
     }
 
     fun decodeGPX(file: File): ArrayList<Waypoint> {

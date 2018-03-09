@@ -30,7 +30,7 @@ import java.text.DateFormat
 
 class MainActivity : AppCompatActivity() {
 
-    private enum class PermissionRequest(val code: Int, val permission: String) {
+    enum class PermissionRequest(val code: Int, val permission: String) {
         locationCoarse(1, android.Manifest.permission.ACCESS_COARSE_LOCATION),
         locationFine(2, android.Manifest.permission.ACCESS_FINE_LOCATION),
         internet(3, android.Manifest.permission.INTERNET)
@@ -58,8 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun onLocationChanged(location: Location?) {
 
-            if (!mission.isLoading) {
-                mainRecyclerViewAdapter.refreshWith(locationManager)
+            if (ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+                mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
             }
             // Log location per 10 seconds
             if (mission.isStarted && (location != null) && (Date().time - mission.lastLocationLogDate.time >= 10000)) {
@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setCancelable(false)
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index, mission.waypointList)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -86,13 +87,14 @@ class MainActivity : AppCompatActivity() {
                             }
                             if (isAllChecked) {
                                 mission.isChecking = false
-                                mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                                //mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                             } else {
                                 mission.isChecking = true
                             }
                         })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index, mission.waypointList)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -103,14 +105,12 @@ class MainActivity : AppCompatActivity() {
                             reportIssue()
                             if (isAllChecked) {
                                 mission.isChecking = false
-                                mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                             } else {
                                 mission.isChecking = true
                             }
                         })
                         alert.show()
                     }
-                    mainRecyclerViewAdapter.refreshWith(mission.waypointList)
                 } else {
                     mission.isChecking = false
                 }
@@ -118,11 +118,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            mainRecyclerViewAdapter.refreshWith(locationManager)
+            if (ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+                mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+            }
         }
 
         override fun onProviderEnabled(provider: String?) {
-            mainRecyclerViewAdapter.refreshWith(locationManager)
+            if (ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+                mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+            }
         }
 
         override fun onProviderDisabled(provider: String?) {
@@ -132,7 +136,9 @@ class MainActivity : AppCompatActivity() {
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
-            mainRecyclerViewAdapter.refreshWith(locationManager)
+            if (ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+                mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+            }
         }
     }
 
@@ -144,15 +150,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun didStartedSuccess(missionData: MissionManager.MissionData) {
-            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
-            mainRecyclerViewAdapter.finishLoading()
+            mainRecyclerViewAdapter.finishLoading(mission.waypointList)
             showMissionDialog()
             invalidateOptionsMenu()
             buttonReportIssue.show()
         }
 
         override fun didStartedFailed(error: Exception) {
-            mainRecyclerViewAdapter.finishLoading()
+            mainRecyclerViewAdapter.finishLoading(mission.waypointList)
             invalidateOptionsMenu()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
@@ -162,8 +167,8 @@ class MainActivity : AppCompatActivity() {
             alert.show()
         }
 
-        override fun didStoppedSccess() {
-            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+        override fun didStoppedSccess(oldListSize: Int) {
+            mainRecyclerViewAdapter.clearList(oldListSize)
             invalidateOptionsMenu()
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.success))
@@ -264,7 +269,7 @@ class MainActivity : AppCompatActivity() {
                                     if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
                                         dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                                             mission.checkAt(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
-                                            mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+                                            mainRecyclerViewAdapter.refreshAt(position, mission.waypointList)
                                         })
                                     }
                                 } else {
@@ -345,8 +350,8 @@ class MainActivity : AppCompatActivity() {
                         arrayOf(PermissionRequest.locationFine.permission),
                         PermissionRequest.locationFine.code)
             }
-        } else {
-            mainRecyclerViewAdapter.refreshWith(locationManager)
+        } else if (ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+            mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
         }
         // Check the Internet permission
         /*
@@ -390,8 +395,9 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000.toLong(), 5.toFloat(), locationListener)
         }
-        mission.resume()
-        mainRecyclerViewAdapter.refreshWith(mission.waypointList)
+        mainRecyclerViewAdapter.startLoading()
+        val oldListSize = mission.resume()
+        mainRecyclerViewAdapter.finishLoading(mission.waypointList, oldListSize)
         invalidateOptionsMenu()
         super.onResume()
     }
@@ -470,8 +476,8 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PermissionRequest.locationFine.code -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mainRecyclerViewAdapter.refreshWith(locationManager)
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this@MainActivity, PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
+                    mainRecyclerViewAdapter.refreshWith(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
                 } else {
 
                 }
