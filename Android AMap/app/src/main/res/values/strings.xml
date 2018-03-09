@@ -1,0 +1,143 @@
+<resources>
+    <string name="app_name">巡线</string>
+
+    <!-- Menu -->
+    <string name="action_start">开始</string>
+    <string name="action_stop">停止</string>
+    <string name="action_prefrence">设置</string>
+
+    <!-- Format -->
+    <string name="format_angle">%d° %d′ %.2f″</string>
+
+    <!-- Path -->
+    <string name="imageProviderAthority">lab.chd.linep.fileprovider</string>
+
+    <!-- Dialog -->
+    <string name="success">成功</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="submit">提交</string>
+    <string name="unavailable">不可用</string>
+    <string name="check">检查</string>
+
+    <!-- Alert -->
+    <string name="alert_warning_title">警告</string>
+    <string name="alert_location_service_unavailable">定位功能不可用</string>
+    <!-- Permission -->
+    <string name="alert_permission_title">请求权限</string>
+    <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
+    <string name="alert_permission_internet">本应用需要连接互联网以提供服务。</string>
+    <string name="system_settings">设置</string>
+    <!-- Reach Waypoint -->
+    <string name="alert_reach_waypoint_title">已到达 Waypoint</string>
+    <string name="alert_reach_waypoint_message">请检查 %s</string>
+    <string name="alert_reach_waypoint_checked">正常</string>
+    <string name="alert_reach_waypoint_report">报告</string>
+
+    <!-- Error -->
+    <string name="error_get_preference_failed">读取首选项失败</string>
+    <string name="error_connect_failed">连接失败</string>
+    <string name="error_login_failed">登录失败</string>
+    <string name="error_request_mission_failed">未获取任务</string>
+    <string name="error_request_json_failed">未获取任务数据</string>
+    <string name="error_request_gpx_failed">未获取 GPX 文件</string>
+    <string name="error_report_failed">提交失败</string>
+    <string name="error_create_issue_file_failed">创建报告文件失败</string>
+
+    <!-- Mission -->
+    <string name="loading">正在载入</string>
+    <string name="missionID">任务 ID</string>
+    <string name="location">位置</string>
+    <string name="waypoint">Waypoint</string>
+    <string name="longitude">经度</string>
+    <string name="latitude">纬度</string>
+    <string name="distance">距离</string>
+    <string name="distanceMetre">%.2f 米</string>
+    <string name="distanceKM">%.2f 千米</string>
+    <string name="time">时间</string>
+    <string name="description">描述</string>
+    <string name="description_enter">输入描述</string>
+    <string name="mission_title">任务</string>
+    <string name="finished">已完成</string>
+    <string name="unfinished">未完成</string>
+    <string name="stop_success">任务停止，日志已成功提交。</string>
+    <string name="stop_failed">任务停止失败</string>
+
+    <!-- Mission Log-->
+    <string name="log_headline">任务日志\n</string>
+    <string name="log_lineFormat">[%s]: %s\n</string>
+    <string name="log_mission_started">任务开始</string>
+    <string name="log_mission_stopped">任务停止</string>
+    <string name="log_mission_paused">任务暂停</string>
+    <string name="log_mission_resume">任务继续</string>
+    <string name="log_locationUpdate">位置更新 (%f, %f)</string>
+    <string name="log_issueSubmitted">提交报告 %s (%s, %s) %s</string>
+    <string name="log_checked">已检查 %s</string>
+
+    <!-- Preference -->
+    <string name="pref_title">设置</string>
+    <string name="pref_user_category_title">用户</string>
+    <string name="pref_user_id_key">pref_user_id</string>
+    <string name="pref_user_id_title">用户名</string>
+    <string name="pref_user_id_summary">点击以设置用户名</string>
+    <string name="pref_user_token_key">pref_user_token</string>
+    <string name="pref_user_token_title">登录密码</string>
+    <string name="pref_user_token_summary">点击以设置登录密码</string>
+    <string name="pref_server_category_title">服务器</string>
+    <string name="pref_server_url_key">pref_server_url</string>
+    <string name="pref_server_url_title">服务器地址</string>
+    <string name="pref_server_url_summary">点击以设置服务器地址</string>
+    <string name="pref_server_port_key">pref_server_port</string>
+    <string name="pref_server_port_title">服务器端口</string>
+    <string name="pref_server_port_summary">点击以输入服务器端口号</string>
+    <string name="pref_server_port_default">2121</string>
+    <string name="pref_server_enableFTPS_key">pref_server_enableFTPS</string>
+    <string name="pref_server_enableFTPS_title">启用加密协议</string>
+    <string name="pref_server_enableFTPS_summary">使用 FTPS 需要服务器端支持</string>
+    <string name="pref_server_test_key">pref_server_test</string>
+    <string name="pref_server_test_title">测试服务器</string>
+    <string name="pref_server_test_summary">点击以测试服务器</string>
+    <string name="pref_server_test_summary_testing">正在测试……</string>
+    <string name="pref_server_test_message_success">连接成功</string>
+    <string name="pref_about_category_title">关于</string>
+    <string name="pref_display_category_title">显示</string>
+    <string name="pref_display_map_key">pref_display_map</string>
+    <string name="pref_display_map_title">显示地图</string>
+    <string name="pref_display_map_summary">在位置卡片中显示高德地图</string>
+    <!-- about -->
+    <string name="pref_about_title">关于</string>
+    <string name="pref_about_summary_category_title">概要</string>
+    <string name="pref_about_summary_version_title">版本</string>
+    <string name="pref_about_summary_version_summary">0.1</string>
+    <string name="pref_about_summary_github_title">GitHub</string>
+    <string name="pref_about_summary_github_summary">应用源代码</string>
+    <string name="pref_about_summary_github_url">https://github.com/lucka-me/LineP</string>
+
+    <string name="pref_about_developer_category_title">开发者</string>
+    <string name="pref_about_developer_lucka_title">Lucka</string>
+    <string name="pref_about_developer_lucka_summary">个人网站</string>
+    <string name="pref_about_developer_lucka_url">https://lucka.moe</string>
+
+    <string name="pref_about_dependency_category_title">依赖组件</string>
+    <string name="pref_about_dependency_ACN_title">Apache Commons Net</string>
+    <string name="pref_about_dependency_ACN_summary">Network utilities and protocol implementations</string>
+    <string name="pref_about_dependency_ACN_url">https://commons.apache.org/proper/commons-net/</string>
+    <string name="pref_about_dependency_gson_title">google-gson</string>
+    <string name="pref_about_dependency_gson_summary">A Java serialization/deserialization library</string>
+    <string name="pref_about_dependency_gson_url">https://github.com/google/gson</string>
+    <string name="pref_about_dependency_anko_title">Anko</string>
+    <string name="pref_about_dependency_anko_summary">Pleasant Android application development</string>
+    <string name="pref_about_dependency_anko_url">https://github.com/Kotlin/anko</string>
+    <string name="pref_about_dependency_prefFix_title">Android Support Preference V7 Fix</string>
+    <string name="pref_about_dependency_prefFix_summary">Fixed preference support library</string>
+    <string name="pref_about_dependency_prefFix_url">https://github.com/Gericop/Android-Support-Preference-V7-Fix</string>
+    <string name="pref_about_dependency_FABPC_title">FABProgressCircle</string>
+    <string name="pref_about_dependency_FABPC_summary">Progress circle around FloatingActionButton</string>
+    <string name="pref_about_dependency_FABPC_url">https://github.com/JorgeCastilloPrz/FABProgressCircle</string>
+    <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
+    <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
+    <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
+    <!-- License -->
+    <string name="pref_license_title">许可证</string>
+
+</resources>

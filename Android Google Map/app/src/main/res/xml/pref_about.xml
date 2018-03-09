@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/pref_about_summary_category_title">
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_about"
+            android:title="@string/pref_about_summary_version_title"
+            android:summary="@string/pref_about_summary_version_summary" />
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_github"
+            android:title="@string/pref_about_summary_github_title"
+            android:summary="@string/pref_about_summary_github_summary" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_summary_github_url" />
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_about_developer_category_title">
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_website"
+            android:title="@string/pref_about_developer_lucka_title"
+            android:summary="@string/pref_about_developer_lucka_summary" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_developer_lucka_url" />
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_about_dependency_category_title">
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_ACN_title"
+            android:summary="@string/pref_about_dependency_ACN_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_gson_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_gson_title"
+            android:summary="@string/pref_about_dependency_gson_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_gson_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_anko_title"
+            android:summary="@string/pref_about_dependency_anko_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_anko_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_prefFix_title"
+            android:summary="@string/pref_about_dependency_prefFix_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_prefFix_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_FABPC_title"
+            android:summary="@string/pref_about_dependency_FABPC_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_FABPC_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_iconmonstr"
+            android:title="@string/pref_about_dependency_iconmonstr_title"
+            android:summary="@string/pref_about_dependency_iconmonstr_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_iconmonstr_url" />
+        </Preference>
+
+    </PreferenceCategory>
+</PreferenceScreen>
