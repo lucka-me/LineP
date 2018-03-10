@@ -591,9 +591,8 @@ class MainActivity : AppCompatActivity() {
                     googleMap.uiSettings.isMapToolbarEnabled = false
                     val location = mission.waypointList[index].location()
                     if (location != null) {
-                        val fixedLatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(location.latitude, location.longitude))
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
-                        googleMap.addMarker(MarkerOptions().position(fixedLatLng))
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
+                        googleMap.addMarker(MarkerOptions().position(LatLng(location.latitude, location.longitude)))
                     }
                 }
             }

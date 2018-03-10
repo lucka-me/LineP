@@ -181,8 +181,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         }
 
         val setLocation: Location = location as Location
-        val fixedLatLng: LatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(setLocation.latitude, setLocation.longitude))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(setLocation.latitude, setLocation.longitude)))
         //googleMap.addMarker(MarkerOptions().position(fixedLatLng))
     }
 
