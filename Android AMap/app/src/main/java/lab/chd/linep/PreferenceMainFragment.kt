@@ -22,10 +22,10 @@ import org.jetbrains.anko.uiThread
 //   Refrence: https://twitter.com/mariotaku/status/965522876546740224
 //   Refrence: https://medium.com/@JakobUlbrich/building-a-settings-screen-for-android-part-1-5959aa49337c
 //   Refrence: http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2017/0502/7901.html
-class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
+class PreferenceMainFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.preference)
+        setPreferencesFromResource(R.xml.preference, rootKey)
         // Handle the click
         //   Reference: https://stackoverflow.com/questions/18588670/onpreferenceclick-listener-not-working-onpreferenceclick-not-being-called
         findPreference(getString(R.string.pref_server_test_key)).setOnPreferenceClickListener(object :Preference.OnPreferenceClickListener {
@@ -44,7 +44,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                     val enableFTPS: Boolean
                     try {
                         // Get Server URL, username and password from SharedPreferences
-                        sharedPreference = PreferenceManager.getDefaultSharedPreferences(this@PreferenceFragmentCustomized.context)
+                        sharedPreference = PreferenceManager.getDefaultSharedPreferences(this@PreferenceMainFragment.context)
                         serverURL = sharedPreference.getString(getString(R.string.pref_server_url_key), "")
                         serverPort = sharedPreference.getString(getString(R.string.pref_server_port_key), getString(R.string.pref_server_port_default)).toInt()
                         username = sharedPreference.getString(getString(R.string.pref_user_id_key), "")
@@ -53,7 +53,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                     } catch (error: Exception) {
                         message = getString(R.string.error_get_preference_failed) + "\n" + error.message
                         uiThread {
-                            val dialog = AlertDialog.Builder(this@PreferenceFragmentCustomized.context)
+                            val dialog = AlertDialog.Builder(this@PreferenceMainFragment.context)
                             dialog.setTitle(getString(R.string.pref_server_test_title))
                             dialog.setIcon(R.drawable.ic_pref_server_test)
                             dialog.setMessage(message)
@@ -78,7 +78,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                     } catch (error: Exception) {
                         message = getString(R.string.error_connect_failed) + "\n" + error.message
                         uiThread {
-                            val dialog = AlertDialog.Builder(this@PreferenceFragmentCustomized.context)
+                            val dialog = AlertDialog.Builder(this@PreferenceMainFragment.context)
                             dialog.setTitle(getString(R.string.pref_server_test_title))
                             dialog.setIcon(R.drawable.ic_pref_server_test)
                             dialog.setMessage(message)
@@ -97,7 +97,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                         ftpClient.disconnect()
                         message = getString(R.string.error_login_failed) + "\n" + error.message
                         uiThread {
-                            val dialog = AlertDialog.Builder(this@PreferenceFragmentCustomized.context)
+                            val dialog = AlertDialog.Builder(this@PreferenceMainFragment.context)
                             dialog.setTitle(getString(R.string.pref_server_test_title))
                             dialog.setIcon(R.drawable.ic_pref_server_test)
                             dialog.setMessage(message)
@@ -112,7 +112,7 @@ class PreferenceFragmentCustomized : PreferenceFragmentCompat() {
                     ftpClient.logout()
                     ftpClient.disconnect()
                     uiThread {
-                        val dialog = AlertDialog.Builder(this@PreferenceFragmentCustomized.context)
+                        val dialog = AlertDialog.Builder(this@PreferenceMainFragment.context)
                         dialog.setTitle(getString(R.string.pref_server_test_title))
                         dialog.setIcon(R.drawable.ic_pref_server_test)
                         dialog.setMessage(message)
@@ -134,6 +134,10 @@ class PreferenceAboutFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_about, rootKey)
+        // Set the version information
+        val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        val versionCode = context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+        findPreference(getString(R.string.pref_about_summary_version_key)).summary = String.format(getString(R.string.pref_about_summary_version_summary), versionName, versionCode)
     }
 
 }

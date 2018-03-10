@@ -3,6 +3,7 @@
     <PreferenceCategory android:title="@string/pref_about_summary_category_title">
 
         <Preference
+            android:key="@string/pref_about_summary_version_key"
             android:icon="@drawable/ic_pref_about_about"
             android:title="@string/pref_about_summary_version_title"
             android:summary="@string/pref_about_summary_version_summary" />

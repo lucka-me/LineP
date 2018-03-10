@@ -16,14 +16,14 @@ class CoordinateKit {
     }
 
     companion object {
+
         fun convert(location: Location, from: CoordinateType, to: CoordinateType): Location {
-            var fixedLocation = Location(location)
+            val fixedLocation = Location(location)
             when (from) {
                 CoordinateType.WGS84 -> {
                     when (to) {
                         CoordinateType.GCJ02 -> {
                             val fixedLatLng = CoordinateConverter().from(CoordinateConverter.CoordType.GPS).coord(LatLng(location.latitude, location.longitude)).convert()
-                            val fixedLocation = Location(location)
                             fixedLocation.latitude = fixedLatLng.latitude
                             fixedLocation.longitude = fixedLatLng.longitude
                         }
@@ -32,6 +32,14 @@ class CoordinateKit {
             }
             return fixedLocation
         }
+
+        fun getDegreeString(degree: Double): String {
+            return String.format("%d° %d′ %.2f″",
+                    degree.toInt(),
+                    ((degree - degree.toInt()) * 60).toInt(),
+                    (((degree - degree.toInt()) * 60) - ((degree - degree.toInt()) * 60).toInt()) * 60)
+        }
+
     }
 
 }

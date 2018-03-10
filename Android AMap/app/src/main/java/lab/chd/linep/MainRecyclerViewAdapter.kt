@@ -109,17 +109,8 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
                     holder.latitudeText.text = context.getString(R.string.unavailable)
                 } else {
                     val location: Location = this.location as Location
-                    holder.longitudeText.text = String.format(context.getString(R.string.format_angle),
-                            location.longitude.toInt(),
-                            ((location.longitude - location.longitude.toInt()) * 60).toInt(),
-                            (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
-                    )
-
-                    holder.latitudeText.text = String.format(context.getString(R.string.format_angle),
-                            location.latitude.toInt(),
-                            ((location.latitude - location.latitude.toInt()) * 60).toInt(),
-                            (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
-                    )
+                    holder.longitudeText.text = CoordinateKit.getDegreeString(location.longitude)
+                    holder.latitudeText.text = CoordinateKit.getDegreeString(location.latitude)
                 }
             }
 

@@ -11,7 +11,7 @@ class PreferenceActivity : AppCompatActivity() {
         setContentView(R.layout.activity_preference)
 
         if (savedInstanceState == null) {
-            val preferenceFragment = PreferenceFragmentCustomized()
+            val preferenceFragment = PreferenceMainFragment()
             supportFragmentManager.beginTransaction().add(R.id.preferenceFrame, preferenceFragment).commit()
         }
     }

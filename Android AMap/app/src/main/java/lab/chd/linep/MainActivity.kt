@@ -504,16 +504,8 @@ class MainActivity : AppCompatActivity() {
         val latitudeTextView = dialogView.findViewById<TextView>(R.id.latitudeText)
         val timeTextView = dialogView.findViewById<TextView>(R.id.timeText)
         val imageView = dialogView.findViewById<ImageView>(R.id.imageView)
-        val longitudeText: String = if (location == null) getString(R.string.unavailable) else String.format(getString(R.string.format_angle),
-                location.longitude.toInt(),
-                ((location.longitude - location.longitude.toInt()) * 60).toInt(),
-                (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
-        )
-        val latitudeText: String = if (location == null) getString(R.string.unavailable) else String.format(getString(R.string.format_angle),
-                location.latitude.toInt(),
-                ((location.latitude - location.latitude.toInt()) * 60).toInt(),
-                (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
-        )
+        val longitudeText: String = if (location == null) getString(R.string.unavailable) else CoordinateKit.getDegreeString(location.longitude)
+        val latitudeText: String = if (location == null) getString(R.string.unavailable) else CoordinateKit.getDegreeString(location.latitude)
         val currentTime = Date()
         val timeText: String = DateFormat.getDateTimeInstance().format(currentTime)
         longitudeTextView.text = longitudeText
@@ -605,17 +597,8 @@ class MainActivity : AppCompatActivity() {
             distanceText.text = getString(R.string.unavailable)
         } else {
             val location: Location = mission.waypointList[index].location() as Location
-            longitudeText.text = String.format(getString(R.string.format_angle),
-                    location.longitude.toInt(),
-                    ((location.longitude - location.longitude.toInt()) * 60).toInt(),
-                    (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
-            )
-
-            latitudeText.text = String.format(getString(R.string.format_angle),
-                    location.latitude.toInt(),
-                    ((location.latitude - location.latitude.toInt()) * 60).toInt(),
-                    (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
-            )
+            longitudeText.text = CoordinateKit.getDegreeString(location.longitude)
+            latitudeText.text = CoordinateKit.getDegreeString(location.latitude)
 
             if ((ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
                     locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {

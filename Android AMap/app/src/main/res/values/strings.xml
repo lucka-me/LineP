@@ -107,8 +107,9 @@
     <!-- about -->
     <string name="pref_about_title">关于</string>
     <string name="pref_about_summary_category_title">概要</string>
+    <string name="pref_about_summary_version_key">pref_about_summary_version</string>
     <string name="pref_about_summary_version_title">版本</string>
-    <string name="pref_about_summary_version_summary">0.1</string>
+    <string name="pref_about_summary_version_summary">%s (%d)</string>
     <string name="pref_about_summary_github_title">GitHub</string>
     <string name="pref_about_summary_github_summary">应用源代码</string>
     <string name="pref_about_summary_github_url">https://github.com/lucka-me/LineP</string>
