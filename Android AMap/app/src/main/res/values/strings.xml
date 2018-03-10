@@ -100,10 +100,10 @@
     <string name="pref_server_test_summary_testing">正在测试……</string>
     <string name="pref_server_test_message_success">连接成功</string>
     <string name="pref_about_category_title">关于</string>
-    <string name="pref_display_category_title">显示</string>
-    <string name="pref_display_map_key">pref_display_map</string>
-    <string name="pref_display_map_title">显示地图</string>
-    <string name="pref_display_map_summary">在位置卡片中显示高德地图</string>
+    <string name="pref_geo_category_title">地图</string>
+    <string name="pref_geo_mapEnable_key">pref_geo_mapEnable</string>
+    <string name="pref_geo_mapEnable_title">显示地图</string>
+    <string name="pref_geo_mapEnable_summary">在位置卡片和 Waypoint 对话框中显示高德地图</string>
     <!-- about -->
     <string name="pref_about_title">关于</string>
     <string name="pref_about_summary_category_title">概要</string>

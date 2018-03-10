@@ -229,11 +229,13 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         this.notifyItemChanged(position)
     }
 
+    /*
     fun refreshAt(position: Int, waypointList: ArrayList<Waypoint>) {
         this.waypointList = waypointList
         this.notifyItemChanged(ItemIndex.mission.row)
         this.notifyItemChanged(position)
     }
+    */
 
     fun clearList(oldListSize: Int) {
         this.notifyItemRangeRemoved(ItemIndex.mission.row, oldListSize + 1)

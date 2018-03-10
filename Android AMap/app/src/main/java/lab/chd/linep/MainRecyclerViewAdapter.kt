@@ -205,7 +205,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     }
 
     override fun getItemViewType(position: Int): Int {
-        val isMapEnable: Boolean = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)
+        val isMapEnable: Boolean = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
         val viewType: Int = when {
             position == ItemIndex.location.row -> if (isMapEnable) ItemIndex.locationWithMap.viewType else ItemIndex.location.viewType
             position == ItemIndex.mission.row  -> ItemIndex.mission.viewType
@@ -218,7 +218,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     fun refreshWith(location: Location?) {
 
         this.location = location
-        if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)) {
+        if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)) {
             this.refreshAt(ItemIndex.location.row)
         } else if (this.aMap != null) {
         }
@@ -239,11 +239,13 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         this.notifyItemChanged(position)
     }
 
+    /*
     fun refreshAt(position: Int, waypointList: ArrayList<Waypoint>) {
         this.waypointList = waypointList
         this.notifyItemChanged(ItemIndex.mission.row)
         this.notifyItemChanged(position)
     }
+    */
 
     fun clearList(oldListSize: Int) {
         this.notifyItemRangeRemoved(ItemIndex.mission.row, oldListSize + 1)

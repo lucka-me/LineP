@@ -24,8 +24,14 @@ import android.widget.*
 import java.io.File
 import java.util.*
 import android.support.v4.content.FileProvider
+import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import java.text.DateFormat
 
 class MainActivity : AppCompatActivity() {
@@ -77,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setCancelable(false)
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
-                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index, mission.waypointList)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -94,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                         })
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
-                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index, mission.waypointList)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -225,67 +231,7 @@ class MainActivity : AppCompatActivity() {
                         showMissionDialog()
                     }
                     position >= MainRecyclerViewAdapter.ItemIndex.waypoint.row -> {
-                        val dialog = AlertDialog.Builder(this@MainActivity)
-                        val dialogView = layoutInflater.inflate(R.layout.dialog_waypoint, null)
-                        val finishedText = dialogView.findViewById<TextView>(R.id.finishedText)
-                        val longitudeText = dialogView.findViewById<TextView>(R.id.longitudeText)
-                        val latitudeText = dialogView.findViewById<TextView>(R.id.latitudeText)
-                        val distanceText = dialogView.findViewById<TextView>(R.id.distanceText)
-                        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
-                        if (mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
-                            finishedText.text = getString(R.string.finished)
-                            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorPrimary))
-                        } else {
-                            finishedText.text = getString(R.string.unfinished)
-                            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorAccent))
-                        }
-                        if (mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].location() == null) {
-                            longitudeText.text = getString(R.string.unavailable)
-                            latitudeText.text = getString(R.string.unavailable)
-                            distanceText.text = getString(R.string.unavailable)
-                        } else {
-                            val location: Location = mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].location() as Location
-                            longitudeText.text = String.format(getString(R.string.format_angle),
-                                    location.longitude.toInt(),
-                                    ((location.longitude - location.longitude.toInt()) * 60).toInt(),
-                                    (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
-                            )
-
-                            latitudeText.text = String.format(getString(R.string.format_angle),
-                                    location.latitude.toInt(),
-                                    ((location.latitude - location.latitude.toInt()) * 60).toInt(),
-                                    (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
-                            )
-
-                            if ((ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
-                                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                                val currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                                if (currentLocation != null) {
-                                    if (currentLocation.distanceTo(location) < 1000.0) {
-                                        distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
-                                    } else {
-                                        distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
-                                    }
-                                    if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].isChecked) {
-                                        dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
-                                            mission.checkAt(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
-                                            mainRecyclerViewAdapter.refreshAt(position, mission.waypointList)
-                                        })
-                                    }
-                                } else {
-                                    distanceText.text = getString(R.string.unavailable)
-                                }
-
-                            } else {
-                                distanceText.text = getString(R.string.unavailable)
-                            }
-                        }
-                        descriptionText.text = mission.waypointList[position - MainRecyclerViewAdapter.ItemIndex.waypoint.row].description
-
-                        dialog.setView(dialogView)
-                        dialog.setTitle(getString(R.string.waypoint))
-                        dialog.setPositiveButton(getString(R.string.confirm),null)
-                        dialog.show()
+                        showWaypointDialog(position - MainRecyclerViewAdapter.ItemIndex.waypoint.row)
                     }
                     else -> {}
                 }
@@ -621,6 +567,90 @@ class MainActivity : AppCompatActivity() {
                 invalidateOptionsMenu()
             })
         }
+        dialog.show()
+    }
+
+    fun showWaypointDialog(index: Int) {
+        val isMapEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getString(R.string.pref_display_map_key), false)
+        val dialog = AlertDialog.Builder(this@MainActivity)
+        val dialogView = if (isMapEnabled) {
+            layoutInflater.inflate(R.layout.dialog_waypoint_map, null)
+        } else {
+            layoutInflater.inflate(R.layout.dialog_waypoint, null)
+        }
+        val finishedText = dialogView.findViewById<TextView>(R.id.finishedText)
+        val longitudeText = dialogView.findViewById<TextView>(R.id.longitudeText)
+        val latitudeText = dialogView.findViewById<TextView>(R.id.latitudeText)
+        val distanceText = dialogView.findViewById<TextView>(R.id.distanceText)
+        val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
+        if (isMapEnabled) {
+            val mapView = dialogView.findViewById<MapView>(R.id.mapView)
+            mapView.onCreate(null)
+            mapView.getMapAsync { googleMap: GoogleMap? ->
+                if (googleMap != null) {
+                    googleMap.uiSettings.isMapToolbarEnabled = false
+                    val location = mission.waypointList[index].location()
+                    if (location != null) {
+                        val fixedLatLng = CoordinateTransformUtil.wgs84togcj02(LatLng(location.latitude, location.longitude))
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(fixedLatLng))
+                        googleMap.addMarker(MarkerOptions().position(fixedLatLng))
+                    }
+                }
+            }
+        }
+        if (mission.waypointList[index].isChecked) {
+            finishedText.text = getString(R.string.finished)
+            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorPrimary))
+        } else {
+            finishedText.text = getString(R.string.unfinished)
+            finishedText.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.colorAccent))
+        }
+        if (mission.waypointList[index].location() == null) {
+            longitudeText.text = getString(R.string.unavailable)
+            latitudeText.text = getString(R.string.unavailable)
+            distanceText.text = getString(R.string.unavailable)
+        } else {
+            val location: Location = mission.waypointList[index].location() as Location
+            longitudeText.text = String.format(getString(R.string.format_angle),
+                    location.longitude.toInt(),
+                    ((location.longitude - location.longitude.toInt()) * 60).toInt(),
+                    (((location.longitude - location.longitude.toInt()) * 60) - ((location.longitude - location.longitude.toInt()) * 60).toInt()) * 60
+            )
+
+            latitudeText.text = String.format(getString(R.string.format_angle),
+                    location.latitude.toInt(),
+                    ((location.latitude - location.latitude.toInt()) * 60).toInt(),
+                    (((location.latitude - location.latitude.toInt()) * 60) - ((location.latitude - location.latitude.toInt()) * 60).toInt()) * 60
+            )
+
+            if ((ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) and
+                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                val currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (currentLocation != null) {
+                    if (currentLocation.distanceTo(location) < 1000.0) {
+                        distanceText.text = String.format(getString(R.string.distanceMetre), currentLocation.distanceTo(location))
+                    } else {
+                        distanceText.text = String.format(getString(R.string.distanceKM), currentLocation.distanceTo(location) / 1000.0)
+                    }
+                    if (currentLocation.distanceTo(location) < 30.0 && !mission.waypointList[index].isChecked) {
+                        dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
+                            mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(index + MainRecyclerViewAdapter.ItemIndex.waypoint.row)
+                        })
+                    }
+                } else {
+                    distanceText.text = getString(R.string.unavailable)
+                }
+
+            } else {
+                distanceText.text = getString(R.string.unavailable)
+            }
+        }
+        descriptionText.text = mission.waypointList[index].description
+
+        dialog.setView(dialogView)
+        dialog.setTitle(mission.waypointList[index].title)
+        dialog.setPositiveButton(getString(R.string.confirm),null)
         dialog.show()
     }
 
