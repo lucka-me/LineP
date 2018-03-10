@@ -75,7 +75,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(context)
         val view: View = when(viewType) {
             ItemIndex.location.viewType -> layoutInflater.inflate(ItemIndex.location.resource, parent, false)
@@ -96,10 +96,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         return viewHolder
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        if (holder == null) {
-            return
-        }
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder.itemViewType) {
 
             ItemIndex.location.viewType -> {
@@ -175,9 +172,17 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     override fun onMapReady(googleMap: GoogleMap?) {
         if (googleMap == null || location == null) return
         googleMap.uiSettings.isMapToolbarEnabled = false
+        googleMap.mapType = when(PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.pref_geo_mapType_key), context.getString(R.string.pref_geo_mapType_Hybird))) {
+            context.getString(R.string.pref_geo_mapType_Normal) -> GoogleMap.MAP_TYPE_NORMAL
+            context.getString(R.string.pref_geo_mapType_Satellite) -> GoogleMap.MAP_TYPE_SATELLITE
+            context.getString(R.string.pref_geo_mapType_Terrain) -> GoogleMap.MAP_TYPE_TERRAIN
+            context.getString(R.string.pref_geo_mapType_Hybird) -> GoogleMap.MAP_TYPE_HYBRID
+            else -> GoogleMap.MAP_TYPE_HYBRID
+        }
 
         if (ActivityCompat.checkSelfPermission(context, MainActivity.PermissionRequest.locationFine.permission) == PackageManager.PERMISSION_GRANTED) {
             googleMap.isMyLocationEnabled = true
+            googleMap.uiSettings.isMyLocationButtonEnabled = true
         }
 
         val setLocation: Location = location as Location
@@ -193,7 +198,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     }
 
     override fun getItemViewType(position: Int): Int {
-        val isMapEnable: Boolean = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)
+        val isMapEnable: Boolean = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
         val viewType: Int = when {
             position == ItemIndex.location.row -> if (isMapEnable) ItemIndex.locationWithMap.viewType else ItemIndex.location.viewType
             position == ItemIndex.mission.row  -> ItemIndex.mission.viewType
@@ -206,7 +211,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
     fun refreshWith(location: Location?) {
 
         this.location = location
-        if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_display_map_key), false)) {
+        if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)) {
             this.refreshAt(ItemIndex.location.row)
         } else if (this.mapView != null) {
             this.mapView!!.getMapAsync(this)

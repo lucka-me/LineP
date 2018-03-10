@@ -89,7 +89,7 @@
         </Preference>
 
         <Preference
-            android:icon="@drawable/ic_pref_display_map"
+            android:icon="@drawable/ic_pref_geo_map"
             android:title="@string/pref_about_dependency_googleMaps_title"
             android:summary="@string/pref_about_dependency_googleMaps_summary">
             <intent

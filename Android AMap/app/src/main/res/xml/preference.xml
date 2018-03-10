@@ -66,6 +66,15 @@
             android:icon="@drawable/ic_pref_display_map"
             android:defaultValue="false" />
 
+        <ListPreference
+            android:key="@string/pref_geo_mapType_key"
+            android:icon="@drawable/ic_pref_geo_map_type"
+            android:title="@string/pref_geo_mapType_title"
+            android:summary="@string/pref_geo_mapType_summary"
+            android:defaultValue="HYBRID"
+            android:entries="@array/pref_geo_mapType_entries"
+            android:entryValues="@array/pref_geo_mapType_values" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_about_category_title">

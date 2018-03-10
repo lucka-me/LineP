@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Preference Main -->
+    <string name="pref_title">设置</string>
+    <string name="pref_user_category_title">用户</string>
+    <string name="pref_user_id_key">pref_user_id</string>
+    <string name="pref_user_id_title">用户名</string>
+    <string name="pref_user_id_summary">点击以设置用户名</string>
+    <string name="pref_user_token_key">pref_user_token</string>
+    <string name="pref_user_token_title">登录密码</string>
+    <string name="pref_user_token_summary">点击以设置登录密码</string>
+    <string name="pref_server_category_title">服务器</string>
+    <string name="pref_server_url_key">pref_server_url</string>
+    <string name="pref_server_url_title">服务器地址</string>
+    <string name="pref_server_url_summary">点击以设置服务器地址</string>
+    <string name="pref_server_port_key">pref_server_port</string>
+    <string name="pref_server_port_title">服务器端口</string>
+    <string name="pref_server_port_summary">点击以输入服务器端口号</string>
+    <string name="pref_server_port_default">2121</string>
+    <string name="pref_server_enableFTPS_key">pref_server_enableFTPS</string>
+    <string name="pref_server_enableFTPS_title">启用加密协议</string>
+    <string name="pref_server_enableFTPS_summary">使用 FTPS 需要服务器端支持</string>
+    <string name="pref_server_test_key">pref_server_test</string>
+    <string name="pref_server_test_title">测试服务器</string>
+    <string name="pref_server_test_summary">点击以测试服务器</string>
+    <string name="pref_server_test_summary_testing">正在测试……</string>
+    <string name="pref_server_test_message_success">连接成功</string>
+    <string name="pref_about_category_title">关于</string>
+    <string name="pref_geo_category_title">地图</string>
+    <string name="pref_geo_mapEnable_key">pref_geo_mapEnable</string>
+    <string name="pref_geo_mapEnable_title">显示地图</string>
+    <string name="pref_geo_mapEnable_summary">在位置卡片和 Waypoint 对话框中显示高德地图</string>
+    <string name="pref_geo_mapType_key">pref_geo_mapType</string>
+    <string name="pref_geo_mapType_title">地图类型</string>
+    <string name="pref_geo_mapType_summary">点击以选择地图类型</string>
+    <string name="pref_geo_mapType_Normal">NORMAL</string>
+    <string name="pref_geo_mapType_Satellite">SATELLITE</string>
+
+    <!-- Preference About -->
+    <string name="pref_about_title">关于</string>
+    <string name="pref_about_summary_category_title">概要</string>
+    <string name="pref_about_summary_version_key">pref_about_summary_version</string>
+    <string name="pref_about_summary_version_title">版本</string>
+    <string name="pref_about_summary_version_summary">%s (%d)</string>
+    <string name="pref_about_summary_github_title">GitHub</string>
+    <string name="pref_about_summary_github_summary">应用源代码</string>
+    <string name="pref_about_summary_github_url">https://github.com/lucka-me/LineP</string>
+
+    <string name="pref_about_developer_category_title">开发者</string>
+    <string name="pref_about_developer_lucka_title">Lucka</string>
+    <string name="pref_about_developer_lucka_summary">个人网站</string>
+    <string name="pref_about_developer_lucka_url">https://lucka.moe</string>
+
+    <string name="pref_about_dependency_category_title">依赖组件</string>
+    <string name="pref_about_dependency_ACN_title">Apache Commons Net</string>
+    <string name="pref_about_dependency_ACN_summary">Network utilities and protocol implementations</string>
+    <string name="pref_about_dependency_ACN_url">https://commons.apache.org/proper/commons-net/</string>
+    <string name="pref_about_dependency_gson_title">google-gson</string>
+    <string name="pref_about_dependency_gson_summary">A Java serialization/deserialization library</string>
+    <string name="pref_about_dependency_gson_url">https://github.com/google/gson</string>
+    <string name="pref_about_dependency_anko_title">Anko</string>
+    <string name="pref_about_dependency_anko_summary">Pleasant Android application development</string>
+    <string name="pref_about_dependency_anko_url">https://github.com/Kotlin/anko</string>
+    <string name="pref_about_dependency_prefFix_title">Android Support Preference V7 Fix</string>
+    <string name="pref_about_dependency_prefFix_summary">Fixed preference support library</string>
+    <string name="pref_about_dependency_prefFix_url">https://github.com/Gericop/Android-Support-Preference-V7-Fix</string>
+    <string name="pref_about_dependency_FABPC_title">FABProgressCircle</string>
+    <string name="pref_about_dependency_FABPC_summary">Progress circle around FloatingActionButton</string>
+    <string name="pref_about_dependency_FABPC_url">https://github.com/JorgeCastilloPrz/FABProgressCircle</string>
+    <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
+    <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
+    <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
+    <string name="pref_about_dependency_amap_title">高德开放平台</string>
+    <string name="pref_about_dependency_amap_summary">国内技术领先的LBS服务提供商</string>
+    <string name="pref_about_dependency_amap_url">http://lbs.amap.com</string>
+    <!-- License -->
+    <string name="pref_license_title">许可证</string>
+</resources>

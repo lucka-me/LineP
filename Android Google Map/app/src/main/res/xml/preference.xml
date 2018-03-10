@@ -57,14 +57,23 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/pref_display_category_title" >
+    <PreferenceCategory android:title="@string/pref_geo_category_title" >
 
         <SwitchPreference
-            android:key="@string/pref_display_map_key"
-            android:title="@string/pref_display_map_title"
-            android:summary="@string/pref_display_map_summary"
-            android:icon="@drawable/ic_pref_display_map"
+            android:key="@string/pref_geo_mapEnable_key"
+            android:title="@string/pref_geo_mapEnable_title"
+            android:summary="@string/pref_geo_mapEnable_summary"
+            android:icon="@drawable/ic_pref_geo_map"
             android:defaultValue="false" />
+
+        <ListPreference
+            android:key="@string/pref_geo_mapType_key"
+            android:icon="@drawable/ic_pref_geo_map_type"
+            android:title="@string/pref_geo_mapType_title"
+            android:summary="@string/pref_geo_mapType_summary"
+            android:defaultValue="HYBRID"
+            android:entries="@array/pref_geo_mapType_entries"
+            android:entryValues="@array/pref_geo_mapType_values" />
 
     </PreferenceCategory>
 

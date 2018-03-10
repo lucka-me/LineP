@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.location.Location
@@ -25,6 +26,7 @@ import java.io.File
 import java.util.*
 import android.support.v4.content.FileProvider
 import android.support.v7.preference.PreferenceManager
+import android.support.v7.preference.PreferenceManagerFix
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -59,7 +61,6 @@ class MainActivity : AppCompatActivity() {
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
-
     private val locationListener: LocationListener = object :LocationListener {
 
         override fun onLocationChanged(location: Location?) {
@@ -212,6 +213,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
     var mission: MissionManager = MissionManager(this, missionListener)
+    // Preference Change Listener
+    private var onPreferenceChangedListener: SharedPreferences.OnSharedPreferenceChangeListener = object : SharedPreferences.OnSharedPreferenceChangeListener {
+        override fun onSharedPreferenceChanged(preferences: SharedPreferences?, key: String?) {
+            if (preferences == null || key == null) return
+            when (key) {
+                getString(R.string.pref_geo_mapType_key) -> {
+                    mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.locationWithMap.row)
+                }
+            }
+
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -317,7 +330,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
         */
-
+        // Setup the Preference Change Listener
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(onPreferenceChangedListener)
 
     }
 
@@ -571,7 +585,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showWaypointDialog(index: Int) {
-        val isMapEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getString(R.string.pref_display_map_key), false)
+        val isMapEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getString(R.string.pref_geo_mapEnable_key), false)
         val dialog = AlertDialog.Builder(this@MainActivity)
         val dialogView = if (isMapEnabled) {
             layoutInflater.inflate(R.layout.dialog_waypoint_map, null)
@@ -589,6 +603,13 @@ class MainActivity : AppCompatActivity() {
             mapView.getMapAsync { googleMap: GoogleMap? ->
                 if (googleMap != null) {
                     googleMap.uiSettings.isMapToolbarEnabled = false
+                    googleMap.mapType = when(PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.pref_geo_mapType_key), getString(R.string.pref_geo_mapType_Hybird))) {
+                        getString(R.string.pref_geo_mapType_Normal) -> GoogleMap.MAP_TYPE_NORMAL
+                        getString(R.string.pref_geo_mapType_Satellite) -> GoogleMap.MAP_TYPE_SATELLITE
+                        getString(R.string.pref_geo_mapType_Terrain) -> GoogleMap.MAP_TYPE_TERRAIN
+                        getString(R.string.pref_geo_mapType_Hybird) -> GoogleMap.MAP_TYPE_HYBRID
+                        else -> GoogleMap.MAP_TYPE_HYBRID
+                    }
                     val location = mission.waypointList[index].location()
                     if (location != null) {
                         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))

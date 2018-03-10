@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.location.Location
@@ -59,7 +60,6 @@ class MainActivity : AppCompatActivity() {
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
-
     private val locationListener: LocationListener = object :LocationListener {
 
         override fun onLocationChanged(location: Location?) {
@@ -214,6 +214,19 @@ class MainActivity : AppCompatActivity() {
     }
     var mission: MissionManager = MissionManager(this, missionListener)
 
+    // Preference Change Listener
+    private var onPreferenceChangedListener: SharedPreferences.OnSharedPreferenceChangeListener = object : SharedPreferences.OnSharedPreferenceChangeListener {
+        override fun onSharedPreferenceChanged(preferences: SharedPreferences?, key: String?) {
+            if (preferences == null || key == null) return
+            when (key) {
+                getString(R.string.pref_geo_mapType_key) -> {
+                    mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.locationWithMap.row)
+                }
+            }
+
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -319,6 +332,8 @@ class MainActivity : AppCompatActivity() {
         }
         */
 
+        // Setup the Preference Change Listener
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(onPreferenceChangedListener)
 
     }
 
@@ -577,6 +592,11 @@ class MainActivity : AppCompatActivity() {
             mapView.onCreate(null)
             val aMap = mapView.map
             aMap.mapType = AMap.MAP_TYPE_SATELLITE
+            aMap.mapType = when(PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.pref_geo_mapType_key), getString(R.string.pref_geo_mapType_Satellite))) {
+                getString(R.string.pref_geo_mapType_Normal) -> AMap.MAP_TYPE_NORMAL
+                getString(R.string.pref_geo_mapType_Satellite) -> AMap.MAP_TYPE_SATELLITE
+                else -> AMap.MAP_TYPE_SATELLITE
+            }
             val location = mission.waypointList[index].location()
             if (location != null) {
                 aMap.moveCamera(CameraUpdateFactory.zoomTo(17.toFloat()))

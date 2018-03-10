@@ -75,7 +75,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(context)
         val view: View = when(viewType) {
             ItemIndex.location.viewType -> layoutInflater.inflate(ItemIndex.location.resource, parent, false)
@@ -96,10 +96,7 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
         return viewHolder
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        if (holder == null) {
-            return
-        }
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder.itemViewType) {
 
             ItemIndex.location.viewType -> {
@@ -119,7 +116,12 @@ class MainRecyclerViewAdapter(val context: Context, var waypointList: ArrayList<
                 holder.mapView.onCreate(null)
                 this.aMap = holder.mapView.map
                 this.aMap!!.uiSettings.isScrollGesturesEnabled = false
-                this.aMap!!.mapType = AMap.MAP_TYPE_SATELLITE
+
+                this.aMap!!.mapType = when(PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.pref_geo_mapType_key), context.getString(R.string.pref_geo_mapType_Satellite))) {
+                    context.getString(R.string.pref_geo_mapType_Normal) -> AMap.MAP_TYPE_NORMAL
+                    context.getString(R.string.pref_geo_mapType_Satellite) -> AMap.MAP_TYPE_SATELLITE
+                    else -> AMap.MAP_TYPE_SATELLITE
+                }
 
                 // Setup My Location
                 val myLocationStyle = MyLocationStyle()

@@ -135,8 +135,8 @@ class PreferenceAboutFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_about, rootKey)
         // Set the version information
-        val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
-        val versionCode = context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+        val versionName = context!!.packageManager.getPackageInfo(context!!.packageName, 0).versionName
+        val versionCode = context!!.packageManager.getPackageInfo(context!!.packageName, 0).versionCode
         findPreference(getString(R.string.pref_about_summary_version_key)).summary = String.format(getString(R.string.pref_about_summary_version_summary), versionName, versionCode)
     }
 
