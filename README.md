@@ -1,7 +1,7 @@
 <h1 align=center>巡线</h1>
 
 <p align="center">
-    <a href=""><img alt="Version" src="https://img.shields.io/badge/version-1.0.1-green.svg"/></a>
+    <a href=""><img alt="Version" src="https://img.shields.io/badge/version-1.0.2-green.svg"/></a>
     <a href="https://www.android.com/versions/lollipop-5-0/"><img alt="Android API Level" src="https://img.shields.io/badge/Android_API_Level-21-A4C639.svg"/></a>
 </p>
 

@@ -17,7 +17,8 @@ class CoordinateKit {
 
     companion object {
 
-        fun convert(location: Location, from: CoordinateType, to: CoordinateType): Location {
+        fun convert(location: Location?, from: CoordinateType, to: CoordinateType): Location? {
+            if (location == null) return location
             val fixedLocation = Location(location)
             when (from) {
                 CoordinateType.WGS84 -> {

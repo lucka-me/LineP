@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setPositiveButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
                             mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.mission.row)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
                         alert.setNegativeButton(getString(R.string.alert_reach_waypoint_report), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
                             mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.waypoint.row + index)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.mission.row)
                             var isAllChecked = true
                             for (checkIndex: Int in reachedList) {
                                 if (!mission.waypointList[checkIndex].isChecked) {
@@ -656,6 +658,7 @@ class MainActivity : AppCompatActivity() {
                         dialog.setNegativeButton(getString(R.string.alert_reach_waypoint_checked), DialogInterface.OnClickListener { _, _ ->
                             mission.checkAt(index)
                             mainRecyclerViewAdapter.refreshAt(index + MainRecyclerViewAdapter.ItemIndex.waypoint.row)
+                            mainRecyclerViewAdapter.refreshAt(MainRecyclerViewAdapter.ItemIndex.mission.row)
                         })
                     }
                 } else {
