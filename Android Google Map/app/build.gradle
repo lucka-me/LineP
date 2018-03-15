@@ -10,8 +10,8 @@ android {
         applicationId "lab.chd.linep"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 201803003
-        versionName "1.0.2"
+        versionCode 201803004
+        versionName "1.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

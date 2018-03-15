@@ -71,9 +71,9 @@
             android:icon="@drawable/ic_pref_geo_map_type"
             android:title="@string/pref_geo_mapType_title"
             android:summary="@string/pref_geo_mapType_summary"
-            android:defaultValue="HYBRID"
             android:entries="@array/pref_geo_mapType_entries"
-            android:entryValues="@array/pref_geo_mapType_values" />
+            android:entryValues="@array/pref_geo_mapType_values"
+            android:defaultValue="@string/pref_geo_mapType_Satellite"/>
 
     </PreferenceCategory>
 

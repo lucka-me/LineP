@@ -63,6 +63,15 @@
 
         <Preference
             android:icon="@drawable/ic_pref_about_dependency"
+            android:title="@string/pref_about_dependency_supportLibrary_title"
+            android:summary="@string/pref_about_dependency_supportLibrary_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_supportLibrary_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_dependency"
             android:title="@string/pref_about_dependency_prefFix_title"
             android:summary="@string/pref_about_dependency_prefFix_summary">
             <intent
@@ -80,21 +89,21 @@
         </Preference>
 
         <Preference
-            android:icon="@drawable/ic_pref_about_iconmonstr"
-            android:title="@string/pref_about_dependency_iconmonstr_title"
-            android:summary="@string/pref_about_dependency_iconmonstr_summary">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/pref_about_dependency_iconmonstr_url" />
-        </Preference>
-
-        <Preference
             android:icon="@drawable/ic_pref_display_map"
             android:title="@string/pref_about_dependency_amap_title"
             android:summary="@string/pref_about_dependency_amap_summary">
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="@string/pref_about_dependency_amap_url" />
+        </Preference>
+
+        <Preference
+            android:icon="@drawable/ic_pref_about_iconmonstr"
+            android:title="@string/pref_about_dependency_iconmonstr_title"
+            android:summary="@string/pref_about_dependency_iconmonstr_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/pref_about_dependency_iconmonstr_url" />
         </Preference>
 
     </PreferenceCategory>

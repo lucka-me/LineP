@@ -61,18 +61,21 @@
     <string name="pref_about_dependency_anko_title">Anko</string>
     <string name="pref_about_dependency_anko_summary">Pleasant Android application development</string>
     <string name="pref_about_dependency_anko_url">https://github.com/Kotlin/anko</string>
+    <string name="pref_about_dependency_supportLibrary_title">Support Library</string>
+    <string name="pref_about_dependency_supportLibrary_summary">A standard way to provide newer features</string>
+    <string name="pref_about_dependency_supportLibrary_url">https://developer.android.com/topic/libraries/support-library/index.html</string>
     <string name="pref_about_dependency_prefFix_title">Android Support Preference V7 Fix</string>
     <string name="pref_about_dependency_prefFix_summary">Fixed preference support library</string>
     <string name="pref_about_dependency_prefFix_url">https://github.com/Gericop/Android-Support-Preference-V7-Fix</string>
     <string name="pref_about_dependency_FABPC_title">FABProgressCircle</string>
     <string name="pref_about_dependency_FABPC_summary">Progress circle around FloatingActionButton</string>
     <string name="pref_about_dependency_FABPC_url">https://github.com/JorgeCastilloPrz/FABProgressCircle</string>
-    <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
-    <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
-    <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
     <string name="pref_about_dependency_amap_title">高德开放平台</string>
     <string name="pref_about_dependency_amap_summary">国内技术领先的LBS服务提供商</string>
     <string name="pref_about_dependency_amap_url">http://lbs.amap.com</string>
+    <string name="pref_about_dependency_iconmonstr_title">iconmonstr</string>
+    <string name="pref_about_dependency_iconmonstr_summary">Simple icons</string>
+    <string name="pref_about_dependency_iconmonstr_url">https://iconmonstr.com</string>
     <!-- License -->
     <string name="pref_license_title">许可证</string>
 </resources>
