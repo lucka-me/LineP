@@ -14,47 +14,164 @@ import org.jetbrains.anko.uiThread
 import java.io.*
 import java.text.DateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
- * Created by lucka on 27/1/2018.
+ * 任务管理器
+ *
+ * 用于存取、管理任务信息、状态和提交报告
+ *
+ * @property [context] 主页面的 Context
+ * @property [missionListener] 任务消息监听器
+ * @property [waypointList] 任务 Waypoint 列表
+ * @property [data] 任务基本信息
+ * @property [isStarted] 是否已开始任务
+ * @property [isLoading] 是否在载入任务
+ * @property [isStopping] 是否在停止任务
+ * @property [isReporting] 是否在提交问题
+ * @property [isChecking] 是否正在检查 Waypoint
+ * @property [issueSN] 问题序列号
+ * @property [issueImagePath] 问题的照片文件路径
+ * @property [lastLocationLogDate] 前次记录位置的时间
+ *
+ * 子类列表
+ * [MissionListener] 任务消息监听器
+ * [MissionData] 任务基本信息类
+ *
+ * 方法列表
+ * [start] 开始任务
+ * [stop] 停止任务
+ * [pause] 暂停任务
+ * [resume] 继续任务
+ * [decodeGPX] 解码 GPX 文件
+ * [reach] 抵达某位置时检查是否有需要检查的 Waypoint
+ * [checkAt] 指定 Waypoint 检查完成
+ * [submitIssue] 提交报告
+ * [log] 在日志中添加记录
+ *
+ * @author lucka
+ * @since 0.1
  */
+class MissionManager(private var context: Context, private var missionListener: MissionListener) {
 
-class MissionManager(context: Context, missionListener: MissionListener) {
-
-    private var context: Context
+    var data: MissionData = MissionData("", "")
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
     var isLoading: Boolean = false
     var isStopping: Boolean = false
     var isReporting: Boolean = false
-    // To avoid multi alert when reaching a waypoint
-    var isChecking = false
+    var isChecking = false  // To avoid multi alert when reaching a waypoint
     var issueSN: Int = 0
     var issueImagePath: String = ""
     var lastLocationLogDate: Date = Date()
-    var data: MissionData = MissionData("", "")
-    private var missionListener: MissionListener
 
-    init {
-        this.context = context
-        this.missionListener = missionListener
-    }
 
-    // Listener
+    /**
+     * 任务消息监听器
+     *
+     * @author lucka
+     * @since 0.1
+     */
     interface MissionListener {
+        /**
+         * 全部 Waypoint 检查完成时调用
+         *
+         * @author lucka
+         * @since 0.1
+         */
         fun onAllChecked()
+
+        /**
+         * 开始任务成功时调用
+         *
+         * @param [missionData] 新任务的基本信息
+         *
+         * @author lucka
+         * @since 0.1
+         */
         fun didStartedSuccess(missionData: MissionData)
+
+        /**
+         * 开始任务失败时调用
+         *
+         * @param [error] 错误信息
+         *
+         * @author lucka
+         * @since 0.1
+         */
         fun didStartedFailed(error: Exception)
-        fun didStoppedSccess(oldListSize: Int)
+
+        /**
+         * 停止任务成功时调用
+         *
+         * @param [oldListSize] 旧 [waypointList] 长度
+         *
+         * @author lucka
+         * @since 0.1
+         */
+        fun didStoppedSuccess(oldListSize: Int)
+
+        /**
+         * 停止任务失败时调用
+         *
+         * @param [error] 错误信息
+         *
+         * @author lucka
+         * @since 0.1
+         */
         fun didStoppedFailed(error: Exception)
-        fun didReportedSccess()
+
+        /**
+         * 提交报告成功时调用
+         *
+         * @author lucka
+         * @since 0.1
+         */
+        fun didReportedSuccess()
+
+        /**
+         * 提交报告失败时调用
+         *
+         * @param [error] 错误信息
+         *
+         * @author lucka
+         * @since 0.1
+         */
         fun didReportedFailed(error: Exception)
     }
 
-    // Data class
+    /**
+     * 任务基本信息类
+     *
+     * 可供序列化存储
+     *
+     * @property [id] 任务 ID
+     * @property [description] 任务描述
+     *
+     * @author lucka
+     * @since 0.1
+     */
     data class MissionData(val id: String, val description: String): Serializable
 
+    /**
+     * 开始任务
+     *
+     * 包括更新状态、连接服务器下载解码基本信息和 GPX 文件
+     * 成功后调用 [MissionListener.didStartedSuccess]
+     * 失败时调用 [MissionListener.didStartedFailed]
+     *
+     * 注释参考
+     * Connect to FTP Server via Apache Commons Net API
+     * @see <a href="https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt">Sample Code</a>
+     * Must set protection buffer size and data channel protection when using FTPS!
+     * @see <a href="http://www.kochnielsen.dk/kurt/blog/?p=162">Sample Code</a>
+     * Download file from FTP Server via Apache Commons Net API
+     * @see <a href="http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example">Sample Code</a>
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun start() {
         issueSN = 1
         isLoading = true
@@ -67,14 +184,31 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             val password: String
             val enableFTPS: Boolean
             try {
-                sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+                sharedPreference =
+                    PreferenceManager.getDefaultSharedPreferences(context)
+                serverURL =
+                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort =
+                    sharedPreference
+                        .getString(
+                            context.getString(R.string.pref_server_port_key),
+                            context.getString(R.string.pref_server_port_default)
+                        )
+                        .toInt()
+                username =
+                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password =
+                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS =
+                    sharedPreference
+                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                val newError =
+                    Exception(
+                        context.getString(R.string.error_get_preference_failed)
+                            + "\n"
+                            + error.message
+                    )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -88,14 +222,12 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             }
             try {
                 // Connect to FTP Server via Apache Commons Net API
-                //   Reference: https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt
-                // Download file from FTP Server via Apache Commons Net API
-                //   Reference: http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError =
+                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -103,18 +235,18 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 return@doAsync
             }
             // Must set protection buffer size and data channel protection when using FTPS!
-            //   Reference: (Example) http://www.kochnielsen.dk/kurt/blog/?p=162
             if (enableFTPS) {
                 ftpClient as FTPSClient
                 ftpClient.execPBSZ(0)
                 ftpClient.execPROT("P")
             }
             try {
+                // Download file from FTP Server via Apache Commons Net API
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory("Mission")
-                val localJSONFile = File(context.filesDir, "mission.json")
+                val localJSONFile = File(context.filesDir, "Mission.json")
                 var fileOutputStream = FileOutputStream(localJSONFile)
-                if (!ftpClient.retrieveFile(username + ".json", fileOutputStream)) {
+                if (!ftpClient.retrieveFile("$username.json", fileOutputStream)) {
                     val error = Exception(context.getString(R.string.error_request_json_failed))
                     uiThread {
                         isLoading = false
@@ -139,7 +271,12 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 fileOutputStream.close()
                 waypointList = decodeGPX(localGPXFile)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_request_mission_failed) + "\n" + error.message)
+                val newError =
+                    Exception(
+                        context.getString(R.string.error_request_mission_failed)
+                            + "\n"
+                            + error.message
+                    )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -149,13 +286,24 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             uiThread {
                 isLoading = false
                 isStarted = true
-                File(context.filesDir, data.id + ".log").writeText(context.getString(R.string.log_headline))
+                File(context.filesDir, data.id + ".log")
+                    .writeText(context.getString(R.string.log_headline))
                 log(context.getString(R.string.log_mission_started))
                 missionListener.didStartedSuccess(data)
             }
         }
     }
 
+    /**
+     * 停止任务
+     *
+     * 包括更新状态、生成日志文件、连接服务器上传日志文件
+     * 成功后调用 [MissionListener.didStoppedSuccess]
+     * 失败时调用 [MissionListener.didStoppedFailed]
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun stop() {
         isStopping = true
         doAsync {
@@ -167,13 +315,29 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             val enableFTPS: Boolean
             try {
                 sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+                serverURL =
+                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort =
+                    sharedPreference
+                        .getString(
+                            context.getString(R.string.pref_server_port_key),
+                            context.getString(R.string.pref_server_port_default)
+                        )
+                        .toInt()
+                username =
+                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password =
+                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS =
+                    sharedPreference
+                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                val newError =
+                    Exception(
+                        context.getString(R.string.error_get_preference_failed)
+                            + "\n"
+                            + error.message
+                    )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -190,7 +354,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError =
+                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
                     isStopping = false
                     missionListener.didStartedFailed(newError)
@@ -217,7 +382,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } catch (error: Exception) {
                 isStopping = false
                 uiThread {
-                    val newError: Exception = Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
+                    val newError =
+                        Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
                     missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
@@ -229,17 +395,28 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 waypointList.clear()
                 isStarted = false
                 isStopping = false
-                missionListener.didStoppedSccess(oldListSize)
+                missionListener.didStoppedSuccess(oldListSize)
             }
         }
     }
 
+    /**
+     * 暂停任务
+     *
+     * 应当在主页面 Activity 将被销毁时调用，将任务数据存入文件
+     *
+     * 注释参考
+     * Serialize and save the waypointList
+     * @see <a href="https://developer.android.com/training/basics/data-storage/files.html">Android Developers</a>
+     * @see <a href="http://blog.csdn.net/u011240877/article/details/72455715">两种序列化方式 Serializable 和 Parcelable</a>
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun pause() {
         // Serialize and save the waypointList
-        //   Refrence: https://developer.android.com/training/basics/data-storage/files.html
-        //   Refrence: http://blog.csdn.net/u011240877/article/details/72455715
-        val filename = "mission.temp"
-        val file: File = File(context.filesDir, filename)
+        val filename = "Mission.temp"
+        val file = File(context.filesDir, filename)
         val fileOutputStream: FileOutputStream
         val objectOutputStream: ObjectOutputStream
 
@@ -263,9 +440,19 @@ class MissionManager(context: Context, missionListener: MissionListener) {
 
     }
 
+    /**
+     * 继续任务
+     *
+     * 应当在主页面 Activity 即将显示时调用，从文件中读取恢复任务数据
+     *
+     * @return 旧 Waypoint 列表的大小
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun resume(): Int {
-        val filename = "mission.temp"
-        val file: File = File(context.filesDir, filename)
+        val filename = "Mission.temp"
+        val file = File(context.filesDir, filename)
         val fileInputStream: FileInputStream
         val objectInputStream: ObjectInputStream
 
@@ -280,14 +467,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             objectInputStream = ObjectInputStream(fileInputStream)
             data = objectInputStream.readObject() as MissionData
             issueSN = objectInputStream.readInt()
+            @Suppress("UNCHECKED_CAST")
             waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
             objectInputStream.close()
             fileInputStream.close()
-            if (data.id == "") {
-                isStarted = false
-            } else {
-                isStarted = true
-            }
+            isStarted = data.id != ""
             log(context.getString(R.string.log_mission_resume))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
@@ -301,29 +485,33 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         return oldListSize
     }
 
-    fun decodeGPX(file: File): ArrayList<Waypoint> {
-        /*
-        Decode a GPX file
-        GPX Refrence: http://www.topografix.com/GPX/1/1/#type_trkType
-
-        <wpt lat="xxx" lon="xxx">
-            <name> title </name>
-            <desc> description </desc>
-        </wpt>
-
-        */
+    /**
+     * 解码 GPX 文件
+     *
+     * @see <a href="http://www.topografix.com/GPX/1/1/#type_trkType">GPX 1.1 Schema Documentation</a>
+     *
+     * GPX 文件样例
+     * <wpt lat="xxx" lon="xxx">
+     *     <name> title </name>
+     *     <desc> description </desc>
+     * </wpt>
+     *
+     * @author lucka
+     * @since 0.1
+     */
+    private fun decodeGPX(file: File): ArrayList<Waypoint> {
 
         waypointList = ArrayList(0)
         val lineList: List<String> = file.readLines()
 
-        var title: String = ""
-        var description: String = ""
-        var location: Location = Location("")
-        var wptBegin: Boolean = false
+        var title = ""
+        var description = ""
+        var location = Location("")
+        var wptBegin = false
 
         for (line in lineList) {
 
-            // Scan untill wpt begin
+            // Scan until wpt begin
             if (!wptBegin) {
                 if (line.contains("")) {
                     wptBegin = true
@@ -354,9 +542,10 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 description = description.replace("<desc>", "")
                 description = description.replace("</desc>", "")
                 description = description.trim()
+                description = description.replace("<br/>", "\n")
                 continue
             } else if (line.contains("</wpt>")) {
-                val waypoint: Waypoint = Waypoint(title, description, false, location)
+                val waypoint = Waypoint(title, description, false, location)
                 waypointList.add(waypoint)
                 title = ""
                 description = ""
@@ -367,11 +556,23 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         return waypointList
     }
 
+    /**
+     * 抵达某位置时检查是否有需要检查的 Waypoint
+     *
+     * @param [location] 抵达的位置
+     *
+     * @return 在此处需要检查的 Waypoint 列表
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun reach(location: Location): ArrayList<Int> {
         val reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
-            if (waypointList[scanner].location() != null) {
-                if (!waypointList[scanner].isChecked && (location.distanceTo(waypointList[scanner].location()) <= 30)) {
+            if (waypointList[scanner].location != null) {
+                if (!waypointList[scanner].isChecked &&
+                    location.distanceTo(waypointList[scanner].location) <= 30
+                ) {
                     reachedList.add(scanner)
                 }
             }
@@ -380,6 +581,16 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         return reachedList
     }
 
+    /**
+     * 指定 Waypoint 检查完成
+     *
+     * 如果全部 Waypoint 检查完成则调用 [MissionListener.onAllChecked]
+     *
+     * @param [index] 完成检查的 Waypoint 序号
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun checkAt(index: Int) {
         waypointList[index].isChecked = true
         log(String.format(context.getString(R.string.log_checked), waypointList[index].title))
@@ -395,25 +606,53 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         }
     }
 
+    /**
+     * 提交报告
+     *
+     * 包括更新状态、生成报告文件、连接服务器上传报告文件和照片
+     * 成功后调用 [MissionListener.didReportedSuccess]
+     * 失败时调用 [MissionListener.didReportedFailed]
+     *
+     * @param [location] 报告的位置
+     * @param [time] 报告的时间
+     * @param [description] 报告的描述
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun submitIssue(location: Location?, time: Date, description: String) {
         isReporting = true
         doAsync {
             val issueFile = File(context.filesDir, "ISS_" + data.id + "_" + issueSN + ".txt")
-            val longitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.longitude)
-            val latitudeText: String = if (location == null) context.getString(R.string.unavailable) else String.format("%f", location.latitude)
+            val longitudeText: String =
+                if (location == null)
+                    context.getString(R.string.unavailable)
+                else
+                    String.format("%f", location.longitude)
+            val latitudeText: String =
+                if (location == null)
+                    context.getString(R.string.unavailable)
+                else
+                    String.format("%f", location.latitude)
             try {
                 // Create issue txt file
                 issueFile.writeText(context.getString(R.string.location)
-                        + " (" + longitudeText + " " + latitudeText + ")\n"
-                        + context.getString(R.string.time)
-                        + " "
-                        + DateFormat.getDateTimeInstance().format(time)
-                        + "\n"
-                        + context.getString(R.string.description)
-                        + " "
-                        + description)
+                    + " (" + longitudeText + " " + latitudeText + ")\n"
+                    + context.getString(R.string.time)
+                    + " "
+                    + DateFormat.getDateTimeInstance().format(time)
+                    + "\n"
+                    + context.getString(R.string.description)
+                    + " "
+                    + description
+                )
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_create_issue_file_failed) + "\n" + error.message)
+                val newError =
+                    Exception(
+                        context.getString(R.string.error_create_issue_file_failed)
+                            + "\n"
+                            + error.message
+                    )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -429,13 +668,29 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             val enableFTPS: Boolean
             try {
                 sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL = sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort = sharedPreference.getString(context.getString(R.string.pref_server_port_key), context.getString(R.string.pref_server_port_default)).toInt()
-                username = sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password = sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS = sharedPreference.getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+                serverURL =
+                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort =
+                    sharedPreference
+                        .getString(
+                            context.getString(R.string.pref_server_port_key),
+                            context.getString(R.string.pref_server_port_default)
+                        )
+                        .toInt()
+                username =
+                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
+                password =
+                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS =
+                    sharedPreference
+                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_get_preference_failed) + "\n" + error.message)
+                val newError =
+                    Exception(
+                        context.getString(R.string.error_get_preference_failed)
+                            + "\n"
+                            + error.message
+                    )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -452,7 +707,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError = Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError =
+                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -470,15 +726,26 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 ftpClient.changeWorkingDirectory(data.id)
                 // Upload issue txt file
                 var fileInputStream = FileInputStream(issueFile)
-                ftpClient.storeFile("ISS_" + data.id + "_" + issueSN + ".txt", fileInputStream)
+                ftpClient
+                    .storeFile("ISS_" + data.id + "_" + issueSN + ".txt", fileInputStream)
                 fileInputStream.close()
                 // Upload image
                 fileInputStream = FileInputStream(issueImagePath)
-                ftpClient.storeFile("ISS_" + data.id + "_" + issueSN + ".jpg", fileInputStream)
+                ftpClient
+                    .storeFile("ISS_" + data.id + "_" + issueSN + ".jpg", fileInputStream)
                 fileInputStream.close()
                 ftpClient.logout()
                 issueFile.delete()
-                log(String.format(context.getString(R.string.log_issueSubmitted), "ISS_" + data.id + "_" + issueSN, longitudeText, latitudeText, description))
+                log(
+                    String
+                        .format(
+                            context.getString(R.string.log_issueSubmitted),
+                            "ISS_" + data.id + "_" + issueSN,
+                            longitudeText,
+                            latitudeText,
+                            description
+                        )
+                )
             } catch (error: Exception) {
                 uiThread {
                     isReporting = false
@@ -489,12 +756,30 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             issueSN += 1
             File(issueImagePath).delete()
             uiThread {
-                missionListener.didReportedSccess()
+                missionListener.didReportedSuccess()
             }
         }
     }
 
+    /**
+     * 在日志中添加记录
+     *
+     * 将会记录时间和信息
+     *
+     * @param [message] 要记录的信息
+     *
+     * @author lucka
+     * @since 0.1
+     */
     fun log(message: String) {
-        File(context.filesDir, data.id + ".log").appendText(String.format(context.getString(R.string.log_lineFormat), DateFormat.getDateTimeInstance().format(Date()), message))
+        File(context.filesDir, data.id + ".log")
+            .appendText(
+                String
+                    .format(
+                        context.getString(R.string.log_lineFormat),
+                        DateFormat.getDateTimeInstance().format(Date()),
+                        message
+                    )
+            )
     }
 }

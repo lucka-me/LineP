@@ -8,16 +8,16 @@
     tools:context="lab.chd.linep.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <!--
-    clipToPadding can make prevent the item itself drawing inside the padding
-      Reference: https://stackoverflow.com/questions/28998327/how-to-add-a-simple-8dp-header-footer-to-androids-recyclerview
-    -->
+    
+    <!-- clipToPadding can make prevent the item itself drawing inside the padding -->
+    <!-- <a href="https://stackoverflow.com/questions/28998327/how-to-add-a-simple-8dp-header-footer-to-androids-recyclerview">Stack Overflow</a> -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/mainRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingVertical="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"

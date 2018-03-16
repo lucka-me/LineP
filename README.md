@@ -1,7 +1,8 @@
 <h1 align=center>巡线</h1>
 
 <p align="center">
-    <a href=""><img alt="Version" src="https://img.shields.io/badge/version-1.0.3-green.svg"/></a>
+    <a href="./Android AMap/"><img alt="Version" src="https://img.shields.io/badge/AMap_ver-1.1.0--A-green.svg"/></a>
+    <a href="./Android Google Map/"><img alt="Version" src="https://img.shields.io/badge/GMap_ver-1.0.3--G-green.svg"/></a>
     <a href="https://www.android.com/versions/lollipop-5-0/"><img alt="Android API Level" src="https://img.shields.io/badge/Android_API_Level-21-A4C639.svg"/></a>
 </p>
 
@@ -16,9 +17,9 @@
 本项目当前开发重点为 Android 客户端，FTP/FTPS 服务器暂时通过 Python 及 [pyftpdlib](https://pypi.python.org/pypi/pyftpdlib/) 架设。
 
 ### 版本
-Android 客户端现分为应用了 [Google Maps API](https://developers.google.com/maps/) 的 `Google Map 版` 和应用了[高德开放平台](http://lbs.amap.com)的 `AMap 版`。
+Android 客户端现分为应用 [Google Maps API](https://developers.google.com/maps/) 的 `Google Map 版` 和应用[高德开放平台](http://lbs.amap.com)的 `AMap 版`。
 
-两个版本目前平行开发，功能基本保持一致。
+目前计划将 `AMap 版` 作为最终成果和正式版本提交，并带有较完整的说明文档，代码也将进行清理；`Google Map 版` 则作为具实验性质的开发版本。两个版本目前平行开发，功能基本保持一致。
 
 ### 坐标系
 * `Google Map 版` 主要使用 WGS-84 坐标系统，在中国大陆地区使用时地图显示可能存在较大偏移。服务器端应提供基于 WGS-84 坐标系统的 GPX 文件。

@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# AMap SDK
+#   Reference: http://lbs.amap.com/api/android-sdk/guide/create-project/dev-attention
+-keep class com.amap.api.maps2d.** { *; }
+-keep class com.amap.api.mapcore2d.** { *; }

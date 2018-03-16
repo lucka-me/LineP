@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_get_preference_failed">读取首选项失败</string>
+    <string name="error_connect_failed">连接失败</string>
+    <string name="error_login_failed">登录失败</string>
+    <string name="error_request_mission_failed">未获取任务</string>
+    <string name="error_request_json_failed">未获取任务数据</string>
+    <string name="error_request_gpx_failed">未获取 GPX 文件</string>
+    <string name="error_report_failed">提交失败</string>
+    <string name="error_create_issue_file_failed">创建报告文件失败</string>
+</resources>
