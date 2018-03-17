@@ -22,18 +22,5 @@
 
 # AMap SDK
 #   Reference: http://lbs.amap.com/api/android-sdk/guide/create-project/dev-attention
--keep class com.amap.api.maps2d.** { *; }
--keep class com.amap.api.mapcore2d.** { *; }
-
--keep class com.amap.api.maps.**{*;}
--keep class com.autonavi.amap.mapcore.*{*;}
--keep class com.amap.api.trace.**{*;}
--keep class com.amap.api.maps.**{*;}
--keep class com.autonavi.**{*;}
--keep class com.amap.api.trace.**{*;}
--keep class com.amap.api.location.**{*;}
--keep class com.amap.api.fence.**{*;}
--keep class com.autonavi.aps.amapapi.model.**{*;}
--keep class com.amap.api.services.**{*;}
--keep class com.amap.api.navi.**{*;}
--keep class com.autonavi.**{*;}
+-keep class com.amap.api.** { *; }
+-dontwarn com.amap.api.**
