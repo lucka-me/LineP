@@ -86,14 +86,9 @@ class MainActivity : AppCompatActivity() {
                     location,
                     CoordinateKit.CoordinateType.WGS84,
                     CoordinateKit.CoordinateType.GCJ02
-            ) ?: return
-            if (ActivityCompat.checkSelfPermission(
-                            this@MainActivity,
-                            PermissionRequest.LocationFine.permission
-                    ) ==
-                PackageManager.PERMISSION_GRANTED) {
-                mainRecyclerViewAdapter.refreshWith(fixedLocation)
-            }
+            )
+            mainRecyclerViewAdapter.refreshWith(fixedLocation)
+            if (fixedLocation == null) return
             // Log Location per 10 seconds
             if (mission.isStarted && (Date().time - mission.lastLocationLogDate.time >= 10000)) {
                 mission.log(String.format(

@@ -34,16 +34,6 @@
     <string name="alert_reach_waypoint_checked">正常</string>
     <string name="alert_reach_waypoint_report">报告</string>
 
-    <!-- Error -->
-    <string name="error_get_preference_failed">读取首选项失败</string>
-    <string name="error_connect_failed">连接失败</string>
-    <string name="error_login_failed">登录失败</string>
-    <string name="error_request_mission_failed">未获取任务</string>
-    <string name="error_request_json_failed">未获取任务数据</string>
-    <string name="error_request_gpx_failed">未获取 GPX 文件</string>
-    <string name="error_report_failed">提交失败</string>
-    <string name="error_create_issue_file_failed">创建报告文件失败</string>
-
     <!-- Mission -->
     <string name="loading">正在载入</string>
     <string name="missionID">任务 ID</string>

@@ -269,24 +269,22 @@ class MainRecyclerViewAdapter(
                 holder as MainRecyclerViewHolderWaypoint
                 holder.title.text = waypointList[position - ItemIndex.Waypoint.row].title
                 val waypointLocation = waypointList[position - ItemIndex.Waypoint.row].location
-                if (waypointLocation != null && location != null) {
+                holder.distanceText.text = if (waypointLocation != null && location != null) {
                     if (waypointLocation.distanceTo(location) < 1000.0) {
-                        holder.distanceText.text =
-                            String
-                                .format(
-                                    context.getString(R.string.distanceMetre),
-                                    waypointLocation.distanceTo(location)
-                                )
+                        String
+                            .format(
+                                context.getString(R.string.distanceMetre),
+                                waypointLocation.distanceTo(location)
+                            )
                     } else {
-                        holder.distanceText.text =
-                            String
-                                .format(
-                                    context.getString(R.string.distanceKM),
-                                    waypointLocation.distanceTo(location) / 1000.0
-                                )
+                        String
+                            .format(
+                                context.getString(R.string.distanceKM),
+                                waypointLocation.distanceTo(location) / 1000.0
+                            )
                     }
                 } else {
-                    holder.distanceText.text = context.getString(R.string.unavailable)
+                    context.getString(R.string.unavailable)
                 }
                 holder.checkBox.isChecked =
                     waypointList[position - ItemIndex.Waypoint.row].isChecked

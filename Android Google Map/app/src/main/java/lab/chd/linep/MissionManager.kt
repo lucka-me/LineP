@@ -17,29 +17,22 @@ import java.util.*
 
 
 /**
- * Created by lucka on 27/1/2018.
+ * @author lucka
+ * @since 0.1
  */
+class MissionManager(private var context: Context, private var missionListener: MissionListener) {
 
-class MissionManager(context: Context, missionListener: MissionListener) {
-
-    private var context: Context
     var waypointList: ArrayList<Waypoint> = ArrayList(0)
     var isStarted: Boolean = false
     var isLoading: Boolean = false
     var isStopping: Boolean = false
     var isReporting: Boolean = false
-    // To avoid multi alert when reaching a waypoint
+    // To avoid multi alert when reaching a Waypoint
     var isChecking = false
     var issueSN: Int = 0
     var issueImagePath: String = ""
     var lastLocationLogDate: Date = Date()
     var data: MissionData = MissionData("", "")
-    private var missionListener: MissionListener
-
-    init {
-        this.context = context
-        this.missionListener = missionListener
-    }
 
     // Listener
     interface MissionListener {
@@ -112,9 +105,9 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             try {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory("Mission")
-                val localJSONFile = File(context.filesDir, "mission.json")
+                val localJSONFile = File(context.filesDir, "Mission.json")
                 var fileOutputStream = FileOutputStream(localJSONFile)
-                if (!ftpClient.retrieveFile(username + ".json", fileOutputStream)) {
+                if (!ftpClient.retrieveFile("$username.json", fileOutputStream)) {
                     val error = Exception(context.getString(R.string.error_request_json_failed))
                     uiThread {
                         isLoading = false
@@ -217,7 +210,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             } catch (error: Exception) {
                 isStopping = false
                 uiThread {
-                    val newError: Exception = Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
+                    val newError = Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
                     missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
@@ -238,8 +231,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         // Serialize and save the waypointList
         //   Refrence: https://developer.android.com/training/basics/data-storage/files.html
         //   Refrence: http://blog.csdn.net/u011240877/article/details/72455715
-        val filename = "mission.temp"
-        val file: File = File(context.filesDir, filename)
+        val filename = "Mission.temp"
+        val file = File(context.filesDir, filename)
         val fileOutputStream: FileOutputStream
         val objectOutputStream: ObjectOutputStream
 
@@ -264,8 +257,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     }
 
     fun resume(): Int {
-        val filename = "mission.temp"
-        val file: File = File(context.filesDir, filename)
+        val filename = "Mission.temp"
+        val file = File(context.filesDir, filename)
         val fileInputStream: FileInputStream
         val objectInputStream: ObjectInputStream
 
@@ -280,14 +273,11 @@ class MissionManager(context: Context, missionListener: MissionListener) {
             objectInputStream = ObjectInputStream(fileInputStream)
             data = objectInputStream.readObject() as MissionData
             issueSN = objectInputStream.readInt()
+            @Suppress("UNCHECKED_CAST")
             waypointList = objectInputStream.readObject() as ArrayList<Waypoint>
             objectInputStream.close()
             fileInputStream.close()
-            if (data.id == "") {
-                isStarted = false
-            } else {
-                isStarted = true
-            }
+            isStarted = data.id != ""
             log(context.getString(R.string.log_mission_resume))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
@@ -301,7 +291,7 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         return oldListSize
     }
 
-    fun decodeGPX(file: File): ArrayList<Waypoint> {
+    private fun decodeGPX(file: File): ArrayList<Waypoint> {
         /*
         Decode a GPX file
         GPX Refrence: http://www.topografix.com/GPX/1/1/#type_trkType
@@ -316,10 +306,10 @@ class MissionManager(context: Context, missionListener: MissionListener) {
         waypointList = ArrayList(0)
         val lineList: List<String> = file.readLines()
 
-        var title: String = ""
-        var description: String = ""
-        var location: Location = Location("")
-        var wptBegin: Boolean = false
+        var title = ""
+        var description = ""
+        var location = Location("")
+        var wptBegin = false
 
         for (line in lineList) {
 
@@ -354,9 +344,10 @@ class MissionManager(context: Context, missionListener: MissionListener) {
                 description = description.replace("<desc>", "")
                 description = description.replace("</desc>", "")
                 description = description.trim()
+                description = description.replace("<br/>", "\n")
                 continue
             } else if (line.contains("</wpt>")) {
-                val waypoint: Waypoint = Waypoint(title, description, false, location)
+                val waypoint = Waypoint(title, description, false, location)
                 waypointList.add(waypoint)
                 title = ""
                 description = ""
@@ -370,8 +361,8 @@ class MissionManager(context: Context, missionListener: MissionListener) {
     fun reach(location: Location): ArrayList<Int> {
         val reachedList: ArrayList<Int> = ArrayList(0)
         for (scanner: Int in 0 until waypointList.size) {
-            if (waypointList[scanner].location() != null) {
-                if (!waypointList[scanner].isChecked && (location.distanceTo(waypointList[scanner].location()) <= 30)) {
+            if (waypointList[scanner].location != null) {
+                if (!waypointList[scanner].isChecked && (location.distanceTo(waypointList[scanner].location) <= 30)) {
                     reachedList.add(scanner)
                 }
             }

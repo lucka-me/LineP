@@ -13,7 +13,8 @@ import org.jetbrains.anko.uiThread
 
 
 /**
- * Created by lucka on 18/2/2018.
+ * @author lucka
+ * @since 0.1
  */
 // Preference Activity
 //   Reference: https://developer.android.com/guide/topics/ui/settings.html
@@ -28,7 +29,7 @@ class PreferenceMainFragment : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.preference)
         // Handle the click
         //   Reference: https://stackoverflow.com/questions/18588670/onpreferenceclick-listener-not-working-onpreferenceclick-not-being-called
-        findPreference(getString(R.string.pref_server_test_key)).setOnPreferenceClickListener(object :Preference.OnPreferenceClickListener {
+        findPreference(getString(R.string.pref_server_test_key)).onPreferenceClickListener = object :Preference.OnPreferenceClickListener {
             override fun onPreferenceClick(preference: Preference?): Boolean {
                 if (preference == null) return false
                 preference.isEnabled = false
@@ -125,7 +126,7 @@ class PreferenceMainFragment : PreferenceFragmentCompat() {
                 }
                 return true
             }
-        })
+        }
     }
 
 }

@@ -4,6 +4,10 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 
+/**
+ * @author lucka
+ * @since 0.1
+ */
 class PreferenceAboutActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
