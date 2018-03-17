@@ -124,7 +124,7 @@
 
 | 组件名称 | 描述
 | :--- | :---
-| [Apache Commons Net](https://commons.apache.org/proper/commons-net/) | Apache 软件基金会的网络工具和协议库，本软件通过它的组件访问 FTP 服务器
+| [Apache Commons Net](https://commons.apache.org/proper/commons-net/) | Apache 软件基金会旗下的网络工具和协议库，本软件通过它的组件访问 FTP 服务器
 | [Gson](https://github.com/google/gson) | Google 开发的 JSON 解析器库，本软件通过它解析 JSON 文件
 | [Anko](https://github.com/Kotlin/anko) | Kotlin 为 Android 开发提供的插件，本软件的网络功能通过它来管理线程
 | [Support Library](https://developer.android.com/topic/libraries/support-library/index.html) | Google 提供的支持库，提供了大量新特性如 CardView，并保证了旧 Android 版本的兼容性
@@ -134,3 +134,38 @@
 | [高德开放平台](http://lbs.amap.com) | 本软件的地图功能和坐标系转换功能由高德的 API 提供
 
 ## 参考资料
+在本软件的开发过程中，来自互联网的教程、讨论和示例代码提供了巨大的帮助。
+
+* [FloatingActionButton hide on list scroll | Stack Overflow](https://stackoverflow.com/questions/31617398/)
+* [在我们的App中实现一个例子 | 《Kotlin for Android》中文翻译](https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/zai_wo_men_de_app_zhong_shi_xian_yi_ge_li_zi.html)
+  用 `object` 直接定义一个监听器
+* [在运行时请求权限 | Android Developers](https://developer.android.com/training/permissions/requesting.html#perm-request)
+* [How to programmatically open the Permission Screen for a specific app on Android Marshmallow? | Stack Overflow](https://stackoverflow.com/questions/32822101/)
+* [Android动态修改ToolBar的Menu菜单 | CSDN 博客](http://blog.csdn.net/q4878802/article/details/51160424)
+* [Taking Photos | Android Developers](https://developer.android.com/training/camera/photobasics.html)
+  调用系统相机照相并获取全分辨率照片
+* [ftp-upload/Main.kt | GitHub](https://github.com/KoFuk/ftp-upload/blob/master/src/main/kotlin/com/chronoscoper/ftpupload/Main.kt)
+  示例代码，通过 Apache Commons Net API 连接 FTP 服务器
+* [Java Client using FTP over SSL (Explicit) | Java and Open Source](http://www.kochnielsen.dk/kurt/blog/?p=162)
+  示例代码，通过 SSL/TLS 连接 FTPS 时必须设置保护缓冲和数据保护
+* [Java FTP file download tutorial and example | Code Java](http://www.codejava.net/java-se/networking/ftp/java-ftp-file-download-tutorial-and-example)
+* [保存文件 | Android Developers](https://developer.android.com/training/basics/data-storage/files.html)
+* [Android 进阶6：两种序列化方式 Serializable 和 Parcelable | CSDN 博客](http://blog.csdn.net/u011240877/article/details/72455715)
+  将数据序列化保存进文件/从文件中反序列化读取数据
+* [GPX 1.1 Schema Documentation | TopoGrafix](http://www.topografix.com/GPX/1/1/#type_trkType)
+  GPX 格式文档
+* [设置 | Android Developers](https://developer.android.com/guide/topics/ui/settings.html)
+* [Android：详解如何创建Google风格的SettingsActivity | 简书](https://www.jianshu.com/p/f5f8834ee9af)
+* [Providing Up Navigation | Android Developers](https://developer.android.com/training/implementing-navigation/ancestral.html)
+  点击工具栏返回时调用 `onBackPress()` 而非 `finish()` 以实现正确的动画效果
+* [Building an Android Settings Screen (Part 1) | Medium](https://medium.com/@JakobUlbrich/building-a-settings-screen-for-android-part-1-5959aa49337c)
+  使用 `PreferenceFragmentCompact`
+* [创建 Android 设置界面 (第一部分) | 泡在网上的日子](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2017/0502/7901.html)
+  上文的翻译
+* [onPreferenceClick listener not working / onPreferenceClick not being called | Stack Overflow](https://stackoverflow.com/questions/18588670/)
+  处理设置界面的点击事件
+* [How to add a simple 8dp header/footer to Android's RecyclerView? | Stack Overflow](https://stackoverflow.com/questions/28998327/)
+  用 `clipToPadding` 避免视图物件在 Padding 内部绘制
+* [Android ImageView 图片靠右，靠左处理 | CSDN 博客](http://blog.csdn.net/thinan/article/details/51729445)
+* [Android preferences onclick event | Stack Overflow](https://stackoverflow.com/questions/5330677/)
+  在设置页面里通过 `<intent>` 点击打开新页面
