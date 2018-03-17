@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline.gmap
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -460,7 +460,7 @@ class MainActivity : AppCompatActivity() {
 
             }
             if (imageFile != null) {
-                val photoURI = FileProvider.getUriForFile(this, getString(R.string.imageProviderAthority), imageFile)
+                val photoURI = FileProvider.getUriForFile(this, getString(R.string.imageProviderAuthority), imageFile)
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                 startActivityForResult(takePictureIntent, ActivityRequest.TakeIssuePhoto.code)
             }

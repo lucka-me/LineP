@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline
 
 import android.app.AlertDialog
 import android.content.Context

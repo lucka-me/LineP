@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="lab.chd.linep">
+    package="lab.chd.patroline.gmap">
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="lab.chd.linep.MainActivity"
+            android:name="lab.chd.patroline.gmap.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -29,20 +29,20 @@
         </activity>
 
         <activity
-            android:name="lab.chd.linep.PreferenceActivity"
+            android:name="lab.chd.patroline.gmap.PreferenceActivity"
             android:label="@string/pref_title"
             android:screenOrientation="portrait"
-            android:parentActivityName="lab.chd.linep.MainActivity" />
+            android:parentActivityName="lab.chd.patroline.gmap.MainActivity" />
 
         <activity
-            android:name="lab.chd.linep.PreferenceAboutActivity"
+            android:name="lab.chd.patroline.gmap.PreferenceAboutActivity"
             android:label="@string/pref_about_title"
             android:screenOrientation="portrait"
-            android:parentActivityName="lab.chd.linep.PreferenceActivity" />
+            android:parentActivityName="lab.chd.patroline.gmap.PreferenceActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="lab.chd.linep.fileprovider"
+            android:authorities="lab.chd.patroline.gmap.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline.gmap
 
 import android.content.Context
 import android.content.pm.PackageManager

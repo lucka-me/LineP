@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline.gmap
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -8,15 +8,15 @@ import android.view.MenuItem
  * @author lucka
  * @since 0.1
  */
-class PreferenceAboutActivity : AppCompatActivity() {
+class PreferenceActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_preference_about)
+        setContentView(R.layout.activity_preference)
 
         if (savedInstanceState == null) {
-            val preferenceAboutFragment = PreferenceAboutFragment()
-            supportFragmentManager.beginTransaction().add(R.id.preferenceAboutFrame, preferenceAboutFragment).commit()
+            val preferenceFragment = PreferenceMainFragment()
+            supportFragmentManager.beginTransaction().add(R.id.preferenceFrame, preferenceFragment).commit()
         }
     }
 
@@ -24,6 +24,8 @@ class PreferenceAboutActivity : AppCompatActivity() {
         if (item != null) {
             when (item.itemId) {
                 android.R.id.home -> {
+                    // Call onBackPress() when tap the back button on the toolbar instead of finish()
+                    //   Reference: https://developer.android.com/training/implementing-navigation/ancestral.html
                     onBackPressed()
                     return true
                 }
@@ -31,5 +33,6 @@ class PreferenceAboutActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
 
 }

@@ -7,16 +7,17 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "lab.chd.linep"
+        applicationId "lab.chd.patroline.gmap"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 201803005
-        versionName "1.1.1-G"
+        versionCode 201803006
+        versionName "1.1.2-G"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -36,10 +37,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     // gson
-    //   Refrence: https://github.com/google/gson
+    //   Reference: https://github.com/google/gson
     compile 'com.google.code.gson:gson:2.8.2'
     // Anko
-    //   Refrence: https://github.com/Kotlin/anko
+    //   Reference: https://github.com/Kotlin/anko
     compile "org.jetbrains.anko:anko:$anko_version"
     // Android-Support-Preference-V7-Fix
     //   Reference: https://github.com/Gericop/Android-Support-Preference-V7-Fix

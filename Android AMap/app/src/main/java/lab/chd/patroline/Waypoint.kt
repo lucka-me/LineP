@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline
 
 import android.location.Location
 import java.io.Serializable

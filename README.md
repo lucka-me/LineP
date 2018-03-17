@@ -1,8 +1,8 @@
 <h1 align=center>巡线</h1>
 
 <p align="center">
-    <a href="./Android AMap/"><img alt="Version" src="https://img.shields.io/badge/AMap_ver-1.1.1--A-green.svg"/></a>
-    <a href="./Android Google Map/"><img alt="Version" src="https://img.shields.io/badge/GMap_ver-1.1.1--G-green.svg"/></a>
+    <a href="./Android AMap/"><img alt="Version" src="https://img.shields.io/badge/AMap_ver-1.1.2--A-green.svg"/></a>
+    <a href="./Android Google Map/"><img alt="Version" src="https://img.shields.io/badge/GMap_ver-1.1.2--G-green.svg"/></a>
     <a href="https://www.android.com/versions/lollipop-5-0/"><img alt="Android API Level" src="https://img.shields.io/badge/Android_API_Level-21-A4C639.svg"/></a>
 </p>
 

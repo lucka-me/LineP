@@ -1,4 +1,4 @@
-package lab.chd.linep
+package lab.chd.patroline
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle

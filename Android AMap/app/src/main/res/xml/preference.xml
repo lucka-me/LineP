@@ -89,8 +89,8 @@
             -->
             <intent
                 android:action="android.intent.action.MAIN"
-                android:targetPackage="lab.chd.linep"
-                android:targetClass="lab.chd.linep.PreferenceAboutActivity" />
+                android:targetPackage="lab.chd.patroline"
+                android:targetClass="lab.chd.patroline.PreferenceAboutActivity" />
         </Preference>
 
     </PreferenceCategory>
