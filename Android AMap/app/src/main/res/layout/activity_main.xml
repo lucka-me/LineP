@@ -54,39 +54,5 @@
 
 
     </RelativeLayout>
-    <!--
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_margin="16dp"
-        app:layout_anchor="@id/mainRecyclerView"
-        app:layout_anchorGravity="bottom|right|end">
-
-        <ProgressBar
-            android:id="@+id/reportProgress"
-            style="@android:style/Widget.Material.ProgressBar.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerInParent="true"
-            android:indeterminate="true"
-            android:indeterminateTint="@color/colorPrimary"
-            android:indeterminateTintMode="src_in"
-            android:visibility="invisible" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/buttonReportIssue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:tint="@android:color/white"
-            app:backgroundTint="@color/colorAccent"
-            app:fabSize="normal"
-            app:rippleColor="@color/colorAccentDark"
-            app:srcCompat="@drawable/ic_report" />
-
-
-    </RelativeLayout>-->
 
 </android.support.design.widget.CoordinatorLayout>

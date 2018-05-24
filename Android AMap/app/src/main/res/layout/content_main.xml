@@ -10,7 +10,7 @@
 
     
     <!-- clipToPadding can make prevent the item itself drawing inside the padding -->
-    <!-- <a href="https://stackoverflow.com/questions/28998327/how-to-add-a-simple-8dp-header-footer-to-androids-recyclerview">Stack Overflow</a> -->
+    <!-- <a href="https://stackoverflow.com/questions/28998327/">Stack Overflow</a> -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/mainRecyclerView"
         android:layout_width="0dp"

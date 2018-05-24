@@ -340,7 +340,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                     )
                 uiThread {
                     isLoading = false
-                    missionListener.didStartedFailed(newError)
+                    missionListener.didStoppedFailed(newError)
                 }
                 return@doAsync
             }
@@ -358,16 +358,16 @@ class MissionManager(private var context: Context, private var missionListener: 
                     Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
                     isStopping = false
-                    missionListener.didStartedFailed(newError)
+                    missionListener.didStoppedFailed(newError)
                 }
                 return@doAsync
             }
-            if (enableFTPS) {
-                ftpClient as FTPSClient
-                ftpClient.execPBSZ(0)
-                ftpClient.execPROT("P")
-            }
             try {
+                if (enableFTPS) {
+                    ftpClient as FTPSClient
+                    ftpClient.execPBSZ(0)
+                    ftpClient.execPROT("P")
+                }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory(username)
                 ftpClient.changeWorkingDirectory(data.id)
@@ -655,7 +655,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                     )
                 uiThread {
                     isLoading = false
-                    missionListener.didStartedFailed(newError)
+                    missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
             }
@@ -693,7 +693,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                     )
                 uiThread {
                     isLoading = false
-                    missionListener.didStartedFailed(newError)
+                    missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
             }
@@ -710,17 +710,17 @@ class MissionManager(private var context: Context, private var missionListener: 
                 val newError =
                     Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
                 uiThread {
-                    isLoading = false
-                    missionListener.didStartedFailed(newError)
+                    missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
             }
-            if (enableFTPS) {
-                ftpClient as FTPSClient
-                ftpClient.execPBSZ(0)
-                ftpClient.execPROT("P")
-            }
+
             try {
+                if (enableFTPS) {
+                    ftpClient as FTPSClient
+                    ftpClient.execPBSZ(0)
+                    ftpClient.execPROT("P")
+                }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
                 ftpClient.changeWorkingDirectory(username)
                 ftpClient.changeWorkingDirectory(data.id)

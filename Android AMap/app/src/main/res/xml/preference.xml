@@ -85,7 +85,7 @@
             android:icon="@drawable/ic_pref_about_about">
             <!--
             Open activity
-              Reference: https://stackoverflow.com/questions/5330677/android-preferences-onclick-event
+              Reference: https://stackoverflow.com/questions/5330677/
             -->
             <intent
                 android:action="android.intent.action.MAIN"
