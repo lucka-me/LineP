@@ -24,6 +24,7 @@
     <string name="alert_permission_title">请求权限</string>
     <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
     <string name="alert_permission_internet">本应用需要连接互联网以提供服务。</string>
+    <string name="alert_permission_storage">本应用需要访问您的储存以提供地图服务。</string>
     <string name="system_settings">设置</string>
     <!-- Reach Waypoint -->
     <string name="alert_reach_waypoint_title">已到达检查点</string>

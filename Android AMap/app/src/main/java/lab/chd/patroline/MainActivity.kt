@@ -323,7 +323,8 @@ class MainActivity : AppCompatActivity() {
     enum class PermissionRequest(val code: Int, val permission: String) {
         LocationCoarse(1, android.Manifest.permission.ACCESS_COARSE_LOCATION),
         LocationFine(2, android.Manifest.permission.ACCESS_FINE_LOCATION),
-        Internet(3, android.Manifest.permission.INTERNET)
+        Internet(3, android.Manifest.permission.INTERNET),
+        Storage(4, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
     /**
@@ -483,6 +484,40 @@ class MainActivity : AppCompatActivity() {
                             CoordinateKit.CoordinateType.GCJ02
                         )
                 )
+        }
+        // Check the External Storage permission
+        if (ActivityCompat
+                .checkSelfPermission(this, PermissionRequest.Storage.permission)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Explain if the permission was denied before
+            if (
+                ActivityCompat
+                    .shouldShowRequestPermissionRationale(
+                        this,
+                        PermissionRequest.Storage.permission
+                    )
+            ) {
+                // Explain
+                val alert = AlertDialog.Builder(this)
+                alert.setTitle(getString(R.string.alert_permission_title))
+                alert.setMessage(getString(R.string.alert_permission_storage))
+                alert.setCancelable(false)
+                alert.setNegativeButton(getString(R.string.system_settings), { _, _ ->
+                    // Open the application settings page
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                })
+                alert.setPositiveButton(getString(R.string.confirm), null)
+                alert.show()
+            } else {
+                ActivityCompat.requestPermissions(this,
+                    arrayOf(PermissionRequest.Storage.permission),
+                    PermissionRequest.Storage.code)
+            }
         }
         // Check the Internet permission
         /*

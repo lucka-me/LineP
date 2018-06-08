@@ -1,8 +1,8 @@
 <h1 align=center><img src="./Resource/Banner.svg" alt="Banner"></h1>
 
 <p align="center">
-    <a href="./Android AMap/"><img alt="AMap Version" src="https://img.shields.io/badge/AMap_ver-1.1.3--A-green.svg"/></a>
-    <a href="./Android Google Map/"><img alt="GMap Version" src="https://img.shields.io/badge/GMap_ver-1.1.3--G-green.svg"/></a>
+    <a href="./Android AMap/"><img alt="AMap Version" src="https://img.shields.io/badge/AMap_ver-1.1.4--A-green.svg"/></a>
+    <a href="./Android Google Map/"><img alt="GMap Version" src="https://img.shields.io/badge/GMap_ver-1.1.4--G-green.svg"/></a>
     <a href="https://www.android.com/versions/lollipop-5-0/"><img alt="Android API Level" src="https://img.shields.io/badge/Android_API_Level-21-A4C639.svg"/></a><br/>
     <a href="./Server/"><img alt="Server" src="https://img.shields.io/badge/server-pyftpdlib-blue.svg"/></a>
     <a href="./Server/"><img alt="FTPS Support" src="https://img.shields.io/badge/FTPS-available-green.svg"/></a>
