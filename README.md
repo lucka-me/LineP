@@ -1,4 +1,4 @@
-<h1 align=center><img src="./Resource/banner.svg" alt="Banner"></h1>
+<h1 align=center><img src="./Resource/Banner.svg" alt="Banner"></h1>
 
 <p align="center">
     <a href="./CHANGELOG"><img alt="Version" src="https://img.shields.io/badge/version-1.2.0-green.svg"/></a>
@@ -13,10 +13,6 @@
 
 ## 概述
 本应用体系由此 Android 客户端及[服务器端](https://github.com/lucka-me/Patroute-web)构成。
-
-## 注意
-* 编译 Android 客户端前请自行获取并加入 [Google API Key](https://developers.google.com/maps/documentation/android-api/signup) / [高德 API Key](http://lbs.amap.com/api/android-sdk/guide/create-project/get-key)
-* 启动 FTPS 服务器前请自行生成证书文件，详情请参考源代码内注释。
 
 ## 许可证
 ```
