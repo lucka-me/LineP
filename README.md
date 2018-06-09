@@ -36,7 +36,4 @@
 * [Android Support Preference V7 Fix](https://github.com/Gericop/Android-Support-Preference-V7-Fix) - [License](https://github.com/Gericop/Android-Support-Preference-V7-Fix/blob/master/LICENSE)
 * [FABProgressCircle](https://github.com/JorgeCastilloPrz/FABProgressCircle) - [License](https://github.com/JorgeCastilloPrz/FABProgressCircle#license)
 * [iconmonstr](https://iconmonstr.com) - [License](https://iconmonstr.com/license/)
-* [Google Maps API](https://developers.google.com/maps/) / [高德开放平台](http://lbs.amap.com)
-
-### 服务器
-* [pyftpdlib](https://pypi.python.org/pypi/pyftpdlib/) - [License](https://github.com/giampaolo/pyftpdlib/blob/master/LICENSE)
+* [高德开放平台](http://lbs.amap.com)
