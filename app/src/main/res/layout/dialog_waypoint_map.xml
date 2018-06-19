@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.amap.api.maps2d.MapView xmlns:android="http://schemas.android.com/apk/res/android"
+    <com.amap.api.maps.TextureMapView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/mapView"
         android:layout_width="0dp"
         android:layout_height="0dp"

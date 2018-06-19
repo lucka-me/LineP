@@ -10,10 +10,10 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ProgressBar
 import android.widget.TextView
-import com.amap.api.maps2d.AMap
-import com.amap.api.maps2d.CameraUpdateFactory
-import com.amap.api.maps2d.MapView
-import com.amap.api.maps2d.model.MyLocationStyle
+import com.amap.api.maps.AMap
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.TextureMapView
+import com.amap.api.maps.model.MyLocationStyle
 
 /**
  * 主页面的 Recycler View 适配器
@@ -130,7 +130,7 @@ class MainRecyclerViewAdapter(
     class MainRecyclerViewHolderLocationWithMap(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 
-        var mapView: MapView = itemView.findViewById(R.id.mainCardLocationMapView)
+        var mapView: TextureMapView = itemView.findViewById(R.id.mainCardLocationMapView)
 
     }
 
@@ -219,21 +219,25 @@ class MainRecyclerViewAdapter(
                 this.aMap!!.uiSettings.isScrollGesturesEnabled = false
 
                 this.aMap!!.mapType =
-                    when(PreferenceManager
+                    when (PreferenceManager
                         .getDefaultSharedPreferences(context)
-                        .getString(context.getString(R.string.pref_geo_mapType_key),
-                        context.getString(R.string.pref_geo_mapType_Satellite))
+                        .getString(
+                            context.getString(R.string.pref_geo_mapType_key),
+                            context.getString(R.string.pref_geo_mapType_Satellite)
+                        )
                     ) {
-                    context.getString(R.string.pref_geo_mapType_Normal) ->
-                        AMap.MAP_TYPE_NORMAL
-                    context.getString(R.string.pref_geo_mapType_Satellite) ->
-                        AMap.MAP_TYPE_SATELLITE
-                    else -> AMap.MAP_TYPE_SATELLITE
-                }
+                        context.getString(R.string.pref_geo_mapType_Normal) ->
+                            AMap.MAP_TYPE_NORMAL
+                        context.getString(R.string.pref_geo_mapType_Satellite) ->
+                            AMap.MAP_TYPE_SATELLITE
+                        context.getString(R.string.pref_geo_mapType_Night) ->
+                            AMap.MAP_TYPE_NIGHT
+                        else -> AMap.MAP_TYPE_SATELLITE
+                    }
 
                 // Setup My Location
                 val myLocationStyle = MyLocationStyle()
-                this.aMap!!.setMyLocationStyle(myLocationStyle)
+                this.aMap!!.myLocationStyle = myLocationStyle
                 this.aMap!!.isMyLocationEnabled = true
                 this.aMap!!.moveCamera(CameraUpdateFactory.zoomTo(17.toFloat()))
             }
@@ -256,12 +260,10 @@ class MainRecyclerViewAdapter(
                         .progressBar
                         .incrementProgressBy(finishedCount - holder.progressBar.progress)
                     holder.progressText.text = String.format("%d/%d", finishedCount, waypointList.size)
-                    holder.percentText.text =
-                        String
-                            .format(
-                                "%.2f%%",
-                                (finishedCount.toDouble() / waypointList.size.toDouble()) * 100.0
-                            )
+                    holder.percentText.text = String.format(
+                        "%.2f%%",
+                        (finishedCount.toDouble() / waypointList.size.toDouble()) * 100.0
+                    )
                 }
             }
 
@@ -271,17 +273,15 @@ class MainRecyclerViewAdapter(
                 val waypointLocation = waypointList[position - ItemIndex.Waypoint.row].location
                 holder.distanceText.text = if (waypointLocation != null && location != null) {
                     if (waypointLocation.distanceTo(location) < 1000.0) {
-                        String
-                            .format(
-                                context.getString(R.string.distanceMetre),
-                                waypointLocation.distanceTo(location)
-                            )
+                        String.format(
+                            context.getString(R.string.distanceMetre),
+                            waypointLocation.distanceTo(location)
+                        )
                     } else {
-                        String
-                            .format(
-                                context.getString(R.string.distanceKM),
-                                waypointLocation.distanceTo(location) / 1000.0
-                            )
+                        String.format(
+                            context.getString(R.string.distanceKM),
+                            waypointLocation.distanceTo(location) / 1000.0
+                        )
                     }
                 } else {
                     context.getString(R.string.unavailable)
@@ -303,10 +303,9 @@ class MainRecyclerViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val isMapEnable: Boolean =
-            PreferenceManager.
-                getDefaultSharedPreferences(context).
-                getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
+        val isMapEnable: Boolean = PreferenceManager
+            .getDefaultSharedPreferences(context)
+            .getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
         return when {
             position == ItemIndex.Location.row ->
                 if (isMapEnable) ItemIndex.LocationWithMap.viewType else ItemIndex.Location.viewType
@@ -350,19 +349,27 @@ class MainRecyclerViewAdapter(
      * 以 Waypoint 列表刷新视图
      *
      * 刷新任务卡片和 Waypoint 卡片的内容
+     * [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大多数情况下为同一实例
+     * （引用），不必要刷新。
      *
-     * @Deprecated 0.1 [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大
-     * 多数情况下为同一实例（引用），不必要刷新。
+     * Changelog
+     * [0.1] - 2018-03-09
+     *   废弃，由 [refreshAt] 代替
+     * [1.2.1] - 2018-06-19
+     *   彻底无效化
      *
      * @param [waypointList] 用以刷新的 Waypoint 列表
      *
      * @author lucka
      * @since 0.1
      */
-    @Deprecated("This method should be replaced by refreshAt() and clearList()")
+    @Deprecated("This method should be replaced with \"refreshAt()\" or \"clearList()\"",
+        ReplaceWith("refreshAt()"))
     fun refreshWith(waypointList: ArrayList<Waypoint>) {
+        /*
         this.waypointList = waypointList
         this.notifyDataSetChanged()
+        */
     }
 
     /**
@@ -380,19 +387,28 @@ class MainRecyclerViewAdapter(
     /**
      * 刷新指定位置的卡片同时更新 Waypoint 列表
      *
-     * @Deprecated 0.1 [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大
-     * 多数情况下为同一实例（引用），不必要刷新。
+     * [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大多数情况下为同一实例
+     * （引用），不必要刷新。
+     *
+     * Changelog
+     * [0.1] - 2018-03-09
+     *   废弃，不再需要刷新 [waypointList]
+     * [1.2.1] - 2018-06-19
+     *   彻底无效化
      *
      * @param [position] 要刷新的卡片位置
      *
      * @author lucka
      * @since 0.1
      */
-    @Deprecated("This method should be replaced by refreshAt(position: Int)")
+    @Deprecated("This method should be replaced with \"refreshAt(position: Int)\"",
+        ReplaceWith("refreshAt()"))
     fun refreshAt(position: Int, waypointList: ArrayList<Waypoint>) {
+        /*
         this.waypointList = waypointList
         this.notifyItemChanged(ItemIndex.Mission.row)
         this.notifyItemChanged(position)
+        */
     }
 
     /**

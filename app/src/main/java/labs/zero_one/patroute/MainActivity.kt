@@ -27,11 +27,11 @@ import android.support.v4.content.FileProvider
 import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import com.amap.api.maps2d.AMap
-import com.amap.api.maps2d.CameraUpdateFactory
-import com.amap.api.maps2d.MapView
-import com.amap.api.maps2d.model.LatLng
-import com.amap.api.maps2d.model.MarkerOptions
+import com.amap.api.maps.AMap
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.TextureMapView
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.DateFormat
 
@@ -78,24 +78,26 @@ class MainActivity : AppCompatActivity() {
 
     // LocationManager and Listener
     private lateinit var locationManager: LocationManager
-    private val locationListener: LocationListener = object :LocationListener {
+    private val locationListener: LocationListener = object : LocationListener {
 
         override fun onLocationChanged(location: Location?) {
-
             val fixedLocation = CoordinateKit.convert(
-                    location,
-                    CoordinateKit.CoordinateType.WGS84,
-                    CoordinateKit.CoordinateType.GCJ02
+                location,
+                CoordinateKit.CoordinateType.WGS84,
+                CoordinateKit.CoordinateType.GCJ02,
+                this@MainActivity
             )
             mainRecyclerViewAdapter.refreshWith(fixedLocation)
             if (fixedLocation == null) return
             // Log Location per 10 seconds
             if (mission.isStarted && (Date().time - mission.lastLocationLogDate.time >= 10000)) {
-                mission.log(String.format(
+                mission.log(
+                    String.format(
                         getString(R.string.log_locationUpdate),
                         fixedLocation.longitude,
                         fixedLocation.latitude
-                ))
+                    )
+                )
                 mission.lastLocationLogDate = Date()
             }
             if (mission.isStarted && !mission.isChecking) {
@@ -105,55 +107,52 @@ class MainActivity : AppCompatActivity() {
                     for (index: Int in reachedList) {
                         val alert = AlertDialog.Builder(this@MainActivity)
                         alert.setTitle(getString(R.string.alert_reach_waypoint_title))
-                        alert.setMessage(String.format(
+                        alert.setMessage(
+                            String.format(
                                 getString(R.string.alert_reach_waypoint_message),
                                 mission.waypointList[index].title
-                        ))
+                            )
+                        )
                         alert.setCancelable(false)
                         alert.setPositiveButton(
-                                getString(R.string.alert_reach_waypoint_checked),
-                                { _, _ ->
-                                    mission.checkAt(index)
-                                    mainRecyclerViewAdapter
-                                        .refreshAt(
-                                            MainRecyclerViewAdapter.ItemIndex.Waypoint.row
-                                                + index
-                                        )
-                                    mainRecyclerViewAdapter
-                                        .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                                    var isAllChecked = true
-                                    for (checkIndex: Int in reachedList) {
-                                        if (!mission.waypointList[checkIndex].isChecked) {
-                                            isAllChecked = false
-                                            break
-                                        }
+                            getString(R.string.alert_reach_waypoint_checked),
+                            { _, _ ->
+                                mission.checkAt(index)
+                                mainRecyclerViewAdapter.refreshAt(
+                                    MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
+                                )
+                                mainRecyclerViewAdapter
+                                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                                var isAllChecked = true
+                                for (checkIndex: Int in reachedList) {
+                                    if (!mission.waypointList[checkIndex].isChecked) {
+                                        isAllChecked = false
+                                        break
                                     }
-                                    mission.isChecking = !isAllChecked
                                 }
+                                mission.isChecking = !isAllChecked
+                            }
                         )
-                        alert
-                            .setNegativeButton(
-                                getString(R.string.alert_reach_waypoint_report),
-                                { _, _ ->
-                                    mission.checkAt(index)
-                                    mainRecyclerViewAdapter
-                                        .refreshAt(
-                                            MainRecyclerViewAdapter.ItemIndex.Waypoint.row
-                                                + index
-                                        )
-                                    mainRecyclerViewAdapter
-                                        .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                                    var isAllChecked = true
-                                    for (checkIndex: Int in reachedList) {
-                                        if (!mission.waypointList[checkIndex].isChecked) {
-                                            isAllChecked = false
-                                            break
-                                        }
+                        alert.setNegativeButton(
+                            getString(R.string.alert_reach_waypoint_report),
+                            { _, _ ->
+                                mission.checkAt(index)
+                                mainRecyclerViewAdapter.refreshAt(
+                                    MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
+                                )
+                                mainRecyclerViewAdapter
+                                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                                var isAllChecked = true
+                                for (checkIndex: Int in reachedList) {
+                                    if (!mission.waypointList[checkIndex].isChecked) {
+                                        isAllChecked = false
+                                        break
                                     }
-                                    takeIssuePhoto()
-                                    mission.isChecking = !isAllChecked
                                 }
-                            )
+                                takeIssuePhoto()
+                                mission.isChecking = !isAllChecked
+                            }
+                        )
                         alert.show()
                     }
                 } else {
@@ -163,42 +162,38 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            if (ActivityCompat
-                    .checkSelfPermission(
-                        this@MainActivity,
-                        PermissionRequest.LocationFine.permission
-                    ) ==
+            if (ActivityCompat.checkSelfPermission(
+                    this@MainActivity,
+                    PermissionRequest.LocationFine.permission
+                ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
-                mainRecyclerViewAdapter
-                    .refreshWith(
-                        CoordinateKit
-                            .convert(
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                                CoordinateKit.CoordinateType.WGS84,
-                                CoordinateKit.CoordinateType.GCJ02
-                            )
+                mainRecyclerViewAdapter.refreshWith(
+                    CoordinateKit.convert(
+                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                        CoordinateKit.CoordinateType.WGS84,
+                        CoordinateKit.CoordinateType.GCJ02,
+                        this@MainActivity
                     )
+                )
             }
         }
 
         override fun onProviderEnabled(provider: String?) {
-            if (ActivityCompat
-                    .checkSelfPermission(
-                        this@MainActivity,
-                        PermissionRequest.LocationFine.permission
-                    ) ==
+            if (ActivityCompat.checkSelfPermission(
+                    this@MainActivity,
+                    PermissionRequest.LocationFine.permission
+                ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
-                mainRecyclerViewAdapter
-                    .refreshWith(
-                        CoordinateKit
-                            .convert(
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                                CoordinateKit.CoordinateType.WGS84,
-                                CoordinateKit.CoordinateType.GCJ02
-                            )
+                mainRecyclerViewAdapter.refreshWith(
+                    CoordinateKit.convert(
+                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                        CoordinateKit.CoordinateType.WGS84,
+                        CoordinateKit.CoordinateType.GCJ02,
+                        this@MainActivity
                     )
+                )
             }
         }
 
@@ -209,23 +204,6 @@ class MainActivity : AppCompatActivity() {
             alert.setCancelable(false)
             alert.setPositiveButton(getString(R.string.confirm), null)
             alert.show()
-            if (ActivityCompat
-                    .checkSelfPermission(
-                        this@MainActivity,
-                        PermissionRequest.LocationFine.permission
-                    ) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                mainRecyclerViewAdapter
-                    .refreshWith(
-                        CoordinateKit
-                            .convert(
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                                CoordinateKit.CoordinateType.WGS84,
-                                CoordinateKit.CoordinateType.GCJ02
-                            )
-                    )
-            }
         }
     }
 
@@ -233,79 +211,79 @@ class MainActivity : AppCompatActivity() {
     private val missionListener: MissionManager.MissionListener =
         object : MissionManager.MissionListener {
 
-        override fun onAllChecked() {
-            showMissionDialog()
-        }
-
-        override fun didStartedSuccess(missionData: MissionManager.MissionData) {
-            mainRecyclerViewAdapter.finishLoading(mission.waypointList)
-            showMissionDialog()
-            invalidateOptionsMenu()
-            buttonReportIssue.show()
-        }
-
-        override fun didStartedFailed(error: Exception) {
-            mainRecyclerViewAdapter.finishLoading(mission.waypointList)
-            invalidateOptionsMenu()
-            val alert = AlertDialog.Builder(this@MainActivity)
-            alert.setTitle(getString(R.string.alert_warning_title))
-            alert.setMessage(error.message)
-            alert.setCancelable(false)
-            alert.setPositiveButton(getString(R.string.confirm), null)
-            alert.show()
-        }
-
-        override fun didStoppedSuccess(oldListSize: Int) {
-            mainRecyclerViewAdapter.clearList(oldListSize)
-            invalidateOptionsMenu()
-            val alert = AlertDialog.Builder(this@MainActivity)
-            alert.setTitle(getString(R.string.success))
-            alert.setMessage(getString(R.string.stop_success))
-            alert.setCancelable(false)
-            alert.setPositiveButton(getString(R.string.confirm), null)
-        }
-
-        override fun didStoppedFailed(error: Exception) {
-            buttonReportIssue.show()
-            invalidateOptionsMenu()
-            val alert = AlertDialog.Builder(this@MainActivity)
-            alert.setTitle(getString(R.string.alert_warning_title))
-            alert.setMessage(error.message)
-            alert.setCancelable(false)
-            alert.setPositiveButton(getString(R.string.confirm), null)
-            alert.show()
-        }
-
-        override fun didReportedSuccess() {
-            reportProgressCircle.attachListener {
-                mission.isReporting = false
+            override fun onAllChecked() {
+                showMissionDialog()
             }
-            reportProgressCircle.beginFinalAnimation()
-        }
 
-        override fun didReportedFailed(error: Exception) {
-            val alert = AlertDialog.Builder(this@MainActivity)
-            alert.setTitle(getString(R.string.alert_warning_title))
-            alert.setMessage(error.message)
-            alert.setCancelable(false)
-            alert.setPositiveButton(getString(R.string.confirm), null)
-            alert.show()
-            reportProgressCircle.hide()
-        }
+            override fun didStartedSuccess(missionData: MissionManager.MissionData) {
+                mainRecyclerViewAdapter.finishLoading(mission.waypointList)
+                showMissionDialog()
+                invalidateOptionsMenu()
+                buttonReportIssue.show()
+            }
+
+            override fun didStartedFailed(error: Exception) {
+                mainRecyclerViewAdapter.finishLoading(mission.waypointList)
+                invalidateOptionsMenu()
+                val alert = AlertDialog.Builder(this@MainActivity)
+                alert.setTitle(getString(R.string.alert_warning_title))
+                alert.setMessage(error.message)
+                alert.setCancelable(false)
+                alert.setPositiveButton(getString(R.string.confirm), null)
+                alert.show()
+            }
+
+            override fun didStoppedSuccess(oldListSize: Int) {
+                mainRecyclerViewAdapter.clearList(oldListSize)
+                invalidateOptionsMenu()
+                val alert = AlertDialog.Builder(this@MainActivity)
+                alert.setTitle(getString(R.string.success))
+                alert.setMessage(getString(R.string.stop_success))
+                alert.setCancelable(false)
+                alert.setPositiveButton(getString(R.string.confirm), null)
+            }
+
+            override fun didStoppedFailed(error: Exception) {
+                buttonReportIssue.show()
+                invalidateOptionsMenu()
+                val alert = AlertDialog.Builder(this@MainActivity)
+                alert.setTitle(getString(R.string.alert_warning_title))
+                alert.setMessage(error.message)
+                alert.setCancelable(false)
+                alert.setPositiveButton(getString(R.string.confirm), null)
+                alert.show()
+            }
+
+            override fun didReportedSuccess() {
+                reportProgressCircle.attachListener {
+                    mission.isReporting = false
+                }
+                reportProgressCircle.beginFinalAnimation()
+            }
+
+            override fun didReportedFailed(error: Exception) {
+                val alert = AlertDialog.Builder(this@MainActivity)
+                alert.setTitle(getString(R.string.alert_warning_title))
+                alert.setMessage(error.message)
+                alert.setCancelable(false)
+                alert.setPositiveButton(getString(R.string.confirm), null)
+                alert.show()
+                reportProgressCircle.hide()
+            }
     }
     var mission: MissionManager = MissionManager(this, missionListener)
 
     // Preference Change Listener
     private var onPreferenceChangedListener: SharedPreferences.OnSharedPreferenceChangeListener =
         SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
-        if (preferences == null || key == null) return@OnSharedPreferenceChangeListener
-        when (key) {
-            getString(R.string.pref_geo_mapType_key) -> {
-                mainRecyclerViewAdapter
-                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.LocationWithMap.row)
+            if (preferences == null || key == null) return@OnSharedPreferenceChangeListener
+            when (key) {
+                getString(R.string.pref_geo_mapType_key) -> {
+                    mainRecyclerViewAdapter
+                        .refreshAt(MainRecyclerViewAdapter.ItemIndex.LocationWithMap.row)
+                }
             }
         }
-    }
 
     /**
      * 权限请求相关
@@ -381,30 +359,30 @@ class MainActivity : AppCompatActivity() {
 
         // Handel the Main List View
         mainRecyclerView = findViewById(R.id.mainRecyclerView)
-        mainRecyclerViewAdapter =
-            MainRecyclerViewAdapter(
-                this,
-                mission.waypointList,
-                object : MainRecyclerViewAdapter.OnItemClickListener {
-                    override fun onItemClick(position: Int) {
-                        when {
-                            position == MainRecyclerViewAdapter.ItemIndex.Location.row -> {}
-                            position == MainRecyclerViewAdapter.ItemIndex.Mission.row -> {
-                                if (!mission.isStarted) return
-                                showMissionDialog()
-                            }
-                            position >= MainRecyclerViewAdapter.ItemIndex.Waypoint.row -> {
-                                showWaypointDialog(
-                                    position - MainRecyclerViewAdapter.ItemIndex.Waypoint.row
-                                )
-                            }
-                            else -> {
+        mainRecyclerViewAdapter = MainRecyclerViewAdapter(
+            this,
+            mission.waypointList,
+            object : MainRecyclerViewAdapter.OnItemClickListener {
 
-                            }
+                override fun onItemClick(position: Int) {
+                    when {
+                        position == MainRecyclerViewAdapter.ItemIndex.Location.row -> {}
+                        position == MainRecyclerViewAdapter.ItemIndex.Mission.row -> {
+                            if (!mission.isStarted) return
+                            showMissionDialog()
+                        }
+                        position >= MainRecyclerViewAdapter.ItemIndex.Waypoint.row -> {
+                            showWaypointDialog(
+                                position - MainRecyclerViewAdapter.ItemIndex.Waypoint.row
+                            )
+                        }
+                        else -> {
                         }
                     }
                 }
-            )
+
+            }
+        )
         mainRecyclerView.layoutManager = LinearLayoutManager(this)
         mainRecyclerView.adapter = mainRecyclerViewAdapter
 
@@ -421,108 +399,129 @@ class MainActivity : AppCompatActivity() {
         }
         // FAB hide when scrolling
         // Use object to define a listener directly
-        mainRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                if (mission.isStarted and !mission.isReporting) {
-                    if ((dy > 0) && buttonReportIssue.isShown) {
-                        buttonReportIssue.hide()
-                    } else if ((dy < 0) && !buttonReportIssue.isShown) {
-                        buttonReportIssue.show()
+        mainRecyclerView.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+
+                override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                    if (mission.isStarted and !mission.isReporting) {
+                        if ((dy > 0) && buttonReportIssue.isShown) {
+                            buttonReportIssue.hide()
+                        } else if ((dy < 0) && !buttonReportIssue.isShown) {
+                            buttonReportIssue.show()
+                        }
                     }
+                    super.onScrolled(recyclerView, dx, dy)
                 }
-                super.onScrolled(recyclerView, dx, dy)
             }
-        })
+        )
 
         // Handel the Location Service
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         // Check the Location permission
-        if (ActivityCompat
-                .checkSelfPermission(this, PermissionRequest.LocationFine.permission)
-            != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                PermissionRequest.LocationFine.permission
+            ) !=
+            PackageManager.PERMISSION_GRANTED
         ) {
             // Explain if the permission was denied before
-            if (
-                ActivityCompat
-                    .shouldShowRequestPermissionRationale(
-                        this,
-                        PermissionRequest.LocationFine.permission
-                    )
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    PermissionRequest.LocationFine.permission
+                )
             ) {
                 // Explain
                 val alert = AlertDialog.Builder(this)
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_location))
                 alert.setCancelable(false)
-                alert.setNegativeButton(getString(R.string.system_settings), { _, _ ->
-                    // Open the application settings page
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    val uri = Uri.fromParts("package", packageName, null)
-                    intent.data = uri
-                    startActivity(intent)
-                })
+                alert.setNegativeButton(
+                    getString(R.string.system_settings),
+                    { _, _ ->
+                        // Open the application settings page
+                        val intent = Intent()
+                        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        val uri = Uri.fromParts("package", packageName, null)
+                        intent.data = uri
+                        startActivity(intent)
+                    }
+                )
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
-                ActivityCompat.requestPermissions(this,
-                        arrayOf(PermissionRequest.LocationFine.permission),
-                        PermissionRequest.LocationFine.code)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(PermissionRequest.LocationFine.permission),
+                    PermissionRequest.LocationFine.code
+                )
             }
-        } else if (ActivityCompat
-                .checkSelfPermission(
-                    this@MainActivity,
-                    PermissionRequest.LocationFine.permission
-                ) ==
+        } else if (ActivityCompat.checkSelfPermission(
+                this@MainActivity,
+                PermissionRequest.LocationFine.permission
+            ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            mainRecyclerViewAdapter
-                .refreshWith(
-                    CoordinateKit
-                        .convert(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                            CoordinateKit.CoordinateType.WGS84,
-                            CoordinateKit.CoordinateType.GCJ02
-                        )
+            mainRecyclerViewAdapter.refreshWith(
+                CoordinateKit.convert(
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                    CoordinateKit.CoordinateType.WGS84,
+                    CoordinateKit.CoordinateType.GCJ02,
+                    this
                 )
+            )
         }
         // Check the External Storage permission
-        if (ActivityCompat
-                .checkSelfPermission(this, PermissionRequest.Storage.permission)
-            != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                PermissionRequest.Storage.permission
+            ) !=
+            PackageManager.PERMISSION_GRANTED
         ) {
             // Explain if the permission was denied before
-            if (
-                ActivityCompat
-                    .shouldShowRequestPermissionRationale(
-                        this,
-                        PermissionRequest.Storage.permission
-                    )
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    PermissionRequest.Storage.permission
+                )
             ) {
                 // Explain
                 val alert = AlertDialog.Builder(this)
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_storage))
                 alert.setCancelable(false)
-                alert.setNegativeButton(getString(R.string.system_settings), { _, _ ->
-                    // Open the application settings page
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    val uri = Uri.fromParts("package", packageName, null)
-                    intent.data = uri
-                    startActivity(intent)
-                })
+                alert.setNegativeButton(
+                    getString(R.string.system_settings),
+                    { _, _ ->
+                        // Open the application settings page
+                        val intent = Intent()
+                        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        val uri = Uri.fromParts("package", packageName, null)
+                        intent.data = uri
+                        startActivity(intent)
+                    }
+                )
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
-                ActivityCompat.requestPermissions(this,
+                ActivityCompat.requestPermissions(
+                    this,
                     arrayOf(PermissionRequest.Storage.permission),
-                    PermissionRequest.Storage.code)
+                    PermissionRequest.Storage.code
+                )
             }
         }
         // Check the Internet permission
         /*
-        if (ActivityCompat.checkSelfPermission(this, PermissionRequest.Internet.permission) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, PermissionRequest.Internet.permission)) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                PermissionRequest.Internet.permission
+            ) !=
+            PackageManager.PERMISSION_GRANTED)
+        {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    PermissionRequest.Internet.permission
+                )
+            ) {
                 val alert = AlertDialog.Builder(this)
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_internet))
@@ -531,9 +530,11 @@ class MainActivity : AppCompatActivity() {
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
-                ActivityCompat.requestPermissions(this,
-                        arrayOf(PermissionRequest.Internet.permission),
-                        PermissionRequest.Internet.code)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(PermissionRequest.Internet.permission),
+                    PermissionRequest.Internet.code
+                )
             }
         }
         */
@@ -547,8 +548,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
 
-        if (ContextCompat
-                .checkSelfPermission(this, PermissionRequest.LocationFine.permission) ==
+        if (ContextCompat.checkSelfPermission(
+                this,
+                PermissionRequest.LocationFine.permission
+            ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
             locationManager.removeUpdates(locationListener)
@@ -559,16 +562,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        if (ContextCompat
-                .checkSelfPermission(this, PermissionRequest.LocationFine.permission) ==
+        if (ContextCompat.checkSelfPermission(
+                this,
+                PermissionRequest.LocationFine.permission
+            ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            locationManager
-                .requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    1000.toLong(), 5.toFloat(),
-                    locationListener
-                )
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                1000.toLong(), 5.toFloat(),
+                locationListener
+            )
         }
         mainRecyclerViewAdapter.startLoading()
         val oldListSize = mission.resume()
@@ -637,8 +641,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             MainMenu.Preference.id -> {
-                val intent: Intent =
-                    Intent(this, PreferenceActivity::class.java).apply {  }
+                val intent: Intent = Intent(this, PreferenceActivity::class.java)
+                    .apply {  }
                 startActivity(intent)
             }
         }
@@ -659,25 +663,21 @@ class MainActivity : AppCompatActivity() {
             PermissionRequest.LocationFine.code -> {
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    (ActivityCompat
-                        .checkSelfPermission(
-                            this@MainActivity,
-                            PermissionRequest.LocationFine.permission
-                        ) ==
+                    (ActivityCompat.checkSelfPermission(
+                        this@MainActivity,
+                        PermissionRequest.LocationFine.permission
+                    ) ==
                         PackageManager.PERMISSION_GRANTED)
                 ) {
-                    mainRecyclerViewAdapter
-                        .refreshWith(
-                            CoordinateKit
-                                .convert(
-                                    locationManager
-                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                                    CoordinateKit.CoordinateType.WGS84,
-                                    CoordinateKit.CoordinateType.GCJ02
-                                )
+                    mainRecyclerViewAdapter.refreshWith(
+                        CoordinateKit.convert(
+                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                            CoordinateKit.CoordinateType.WGS84,
+                            CoordinateKit.CoordinateType.GCJ02,
+                            this
                         )
+                    )
                 } else {
-
                 }
                 return
             }
@@ -729,16 +729,13 @@ class MainActivity : AppCompatActivity() {
                 imageFile = File.createTempFile(imageFilename, ".jpg", storageDir)
                 mission.issueImagePath = imageFile.absolutePath
             } catch (error: Exception) {
-
             }
             if (imageFile != null) {
-                val photoURI =
-                    FileProvider
-                        .getUriForFile(
-                            this,
-                            getString(R.string.imageProviderAuthority),
-                            imageFile
-                        )
+                val photoURI = FileProvider.getUriForFile(
+                    this,
+                    getString(R.string.imageProviderAuthority),
+                    imageFile
+                )
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                 startActivityForResult(takePictureIntent, ActivityRequest.TakeIssuePhoto.code)
             }
@@ -758,17 +755,19 @@ class MainActivity : AppCompatActivity() {
     private fun submitIssue() {
         // Get Location and image
         val location: Location? =
-            if ((ContextCompat
-                    .checkSelfPermission(this, PermissionRequest.LocationFine.permission) ==
+            if ((ContextCompat.checkSelfPermission(
+                    this,
+                    PermissionRequest.LocationFine.permission
+                ) ==
                     PackageManager.PERMISSION_GRANTED) &&
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             ) {
-                CoordinateKit
-                    .convert(
-                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                        CoordinateKit.CoordinateType.WGS84,
-                        CoordinateKit.CoordinateType.GCJ02
-                    )
+                CoordinateKit.convert(
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                    CoordinateKit.CoordinateType.WGS84,
+                    CoordinateKit.CoordinateType.GCJ02,
+                    this
+                )
             } else {
                 null
             }
@@ -809,14 +808,23 @@ class MainActivity : AppCompatActivity() {
 
         dialog.setView(dialogView)
         dialog.setTitle(getString(R.string.submit))
-        dialog.setPositiveButton(getString(R.string.confirm), { _, _ ->
-            reportProgressCircle.show()
-            val description: String =
-                dialogView.findViewById<TextView>(R.id.descriptionText).text.toString()
-            mission.submitIssue(location, currentTime, description) })
-        dialog.setNegativeButton(getString(R.string.cancel), { _, _ ->
-            File(mission.issueImagePath).delete()
-        })
+        dialog.setPositiveButton(
+            getString(R.string.confirm),
+            { _, _ ->
+                reportProgressCircle.show()
+                val description: String = dialogView
+                    .findViewById<TextView>(R.id.descriptionText)
+                    .text
+                    .toString()
+                mission.submitIssue(location, currentTime, description)
+            }
+        )
+        dialog.setNegativeButton(
+            getString(R.string.cancel),
+            { _, _ ->
+                File(mission.issueImagePath).delete()
+            }
+        )
         dialog.show()
 
     }
@@ -845,12 +853,10 @@ class MainActivity : AppCompatActivity() {
         progressBar.max = mission.waypointList.size
         progressBar.progress = finishedCount
         progressText.text = String.format("%d/%d", finishedCount, mission.waypointList.size)
-        percentText.text =
-            String
-                .format(
-                    "%.2f%%",
-                    (finishedCount.toDouble() / mission.waypointList.size.toDouble()) * 100.0
-                )
+        percentText.text = String.format(
+            "%.2f%%",
+            (finishedCount.toDouble() / mission.waypointList.size.toDouble()) * 100.0
+        )
         missionIDText.text = mission.data.id
         descriptionText.text = mission.data.description
 
@@ -859,11 +865,14 @@ class MainActivity : AppCompatActivity() {
 
         dialog.setPositiveButton(getString(R.string.confirm),null)
         if (!mission.isStopping) {
-            dialog.setNegativeButton(getString(R.string.action_stop), { _, _ ->
-                mission.stop()
-                buttonReportIssue.hide()
-                invalidateOptionsMenu()
-            })
+            dialog.setNegativeButton(
+                getString(R.string.action_stop),
+                { _, _ ->
+                    mission.stop()
+                    buttonReportIssue.hide()
+                    invalidateOptionsMenu()
+                }
+            )
         }
         dialog.show()
     }
@@ -878,10 +887,9 @@ class MainActivity : AppCompatActivity() {
      */
     @SuppressLint("InflateParams")
     fun showWaypointDialog(index: Int) {
-        val isMapEnable: Boolean =
-            PreferenceManager
-                .getDefaultSharedPreferences(this)
-                .getBoolean(getString(R.string.pref_geo_mapEnable_key), false)
+        val isMapEnable: Boolean = PreferenceManager
+            .getDefaultSharedPreferences(this)
+            .getBoolean(getString(R.string.pref_geo_mapEnable_key), false)
         val dialog = AlertDialog.Builder(this)
         val dialogView =
             if (isMapEnable)
@@ -894,34 +902,30 @@ class MainActivity : AppCompatActivity() {
         val distanceText = dialogView.findViewById<TextView>(R.id.distanceText)
         val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
         if (isMapEnable) {
-            val mapView = dialogView.findViewById<MapView>(R.id.mapView)
+            val mapView = dialogView.findViewById<TextureMapView>(R.id.mapView)
             mapView.onCreate(null)
             val aMap = mapView.map
-            aMap.mapType = AMap.MAP_TYPE_SATELLITE
-            aMap.mapType =
-                when(PreferenceManager
-                    .getDefaultSharedPreferences(this)
-                    .getString(
-                        getString(R.string.pref_geo_mapType_key),
-                        getString(R.string.pref_geo_mapType_Satellite)
-                    )
-                ) {
-                    getString(R.string.pref_geo_mapType_Normal) -> AMap.MAP_TYPE_NORMAL
-                    getString(R.string.pref_geo_mapType_Satellite) -> AMap.MAP_TYPE_SATELLITE
-                    else -> AMap.MAP_TYPE_SATELLITE
-                }
+            aMap.mapType = when(PreferenceManager
+                .getDefaultSharedPreferences(this)
+                .getString(
+                    getString(R.string.pref_geo_mapType_key),
+                    getString(R.string.pref_geo_mapType_Satellite)
+                )
+            ) {
+                getString(R.string.pref_geo_mapType_Normal)    -> AMap.MAP_TYPE_NORMAL
+                getString(R.string.pref_geo_mapType_Satellite) -> AMap.MAP_TYPE_SATELLITE
+                getString(R.string.pref_geo_mapType_Night)     -> AMap.MAP_TYPE_NIGHT
+                else -> AMap.MAP_TYPE_SATELLITE
+            }
             val location = mission.waypointList[index].location
             if (location != null) {
                 aMap.moveCamera(CameraUpdateFactory.zoomTo(17.toFloat()))
-                aMap
-                    .moveCamera(
-                        CameraUpdateFactory
-                            .changeLatLng(LatLng(location.latitude, location.longitude))
-                    )
-                aMap
-                    .addMarker(
-                        MarkerOptions().position(LatLng(location.latitude, location.longitude))
-                    )
+                aMap.moveCamera(
+                    CameraUpdateFactory.changeLatLng(LatLng(location.latitude, location.longitude))
+                )
+                aMap.addMarker(
+                    MarkerOptions().position(LatLng(location.latitude, location.longitude))
+                )
             }
         }
         if (mission.waypointList[index].isChecked) {
@@ -940,58 +944,50 @@ class MainActivity : AppCompatActivity() {
             longitudeText.text = CoordinateKit.getDegreeString(location.longitude)
             latitudeText.text = CoordinateKit.getDegreeString(location.latitude)
 
-            if ((ActivityCompat
-                    .checkSelfPermission(
-                        this@MainActivity,
-                        PermissionRequest.LocationFine.permission
-                    ) ==
+            if ((ActivityCompat.checkSelfPermission(
+                    this@MainActivity,
+                    PermissionRequest.LocationFine.permission
+                ) ==
                     PackageManager.PERMISSION_GRANTED
                     ) &&
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             ) {
-                val currentLocation =
-                    CoordinateKit.
-                        convert(
-                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                            CoordinateKit.CoordinateType.WGS84,
-                            CoordinateKit.CoordinateType.GCJ02
-                        )
+                val currentLocation = CoordinateKit.convert(
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
+                    CoordinateKit.CoordinateType.WGS84,
+                    CoordinateKit.CoordinateType.GCJ02,
+                    this
+                )
                 distanceText.text = when {
                     currentLocation == null ->
                         getString(R.string.unavailable)
                     currentLocation.distanceTo(location) < 1000.0 ->
-                        String
-                            .format(
-                                getString(R.string.distanceMetre),
-                                currentLocation.distanceTo(location)
-                            )
+                        String.format(
+                            getString(R.string.distanceMetre),
+                            currentLocation.distanceTo(location)
+                        )
                     else ->
-                        String
-                            .format(
-                                getString(R.string.distanceKM),
-                                currentLocation.distanceTo(location) / 1000.0
-                            )
+                        String.format(
+                            getString(R.string.distanceKM),
+                            currentLocation.distanceTo(location) / 1000.0
+                        )
                 }
                 if (currentLocation != null &&
                     currentLocation.distanceTo(location) < 30.0 &&
                     !mission.waypointList[index].isChecked
                 ) {
-                    dialog
-                        .setNegativeButton(
-                            getString(R.string.alert_reach_waypoint_checked),
-                            { _, _ ->
-                                mission.checkAt(index)
-                                mainRecyclerViewAdapter
-                                    .refreshAt(
-                                        index
-                                            + MainRecyclerViewAdapter.ItemIndex.Waypoint.row
-                                    )
-                                mainRecyclerViewAdapter
-                                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                            }
-                        )
+                    dialog.setNegativeButton(
+                        getString(R.string.alert_reach_waypoint_checked),
+                        { _, _ ->
+                            mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(
+                                index + MainRecyclerViewAdapter.ItemIndex.Waypoint.row
+                            )
+                            mainRecyclerViewAdapter
+                                .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                        }
+                    )
                 }
-
             } else {
                 distanceText.text = getString(R.string.unavailable)
             }

@@ -10,8 +10,8 @@ android {
         applicationId "labs.zero_one.patroute"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 201806002
-        versionName "1.2.0"
+        versionCode 201806003
+        versionName "1.2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -50,5 +50,5 @@ dependencies {
     //   Reference: https://github.com/JorgeCastilloPrz/FABProgressCircle
     implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
     // AMap API
-    implementation 'com.amap.api:map2d:5.2.0'
+    implementation 'com.amap.api:3dmap:6.2.0'
 }

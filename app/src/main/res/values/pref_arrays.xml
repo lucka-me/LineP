@@ -3,9 +3,11 @@
     <string-array name="pref_geo_mapType_entries">
         <item>普通地图</item>
         <item>卫星图</item>
+        <item>夜景地图</item>
     </string-array>
     <string-array name="pref_geo_mapType_values">
         <item>@string/pref_geo_mapType_Normal</item>
         <item>@string/pref_geo_mapType_Satellite</item>
+        <item>@string/pref_geo_mapType_Night</item>
     </string-array>
 </resources>

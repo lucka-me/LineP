@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.amap.api.maps2d.MapView
+        <com.amap.api.maps.TextureMapView
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/mainCardLocationMapView"
             android:layout_width="0dp"

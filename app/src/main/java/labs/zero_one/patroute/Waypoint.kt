@@ -13,17 +13,17 @@ import java.io.Serializable
  * @property [isChecked] Waypoint 是否已被检查
  * @property [longitude] Waypoint 的经度
  * @property [latitude] Waypoint 的纬度
- *
- * @param [location] 作为访问器使用，并不作实际存储
+ * @property [location] [Location] 类型的访问器
  *
  * @author lucka
  * @since 0.1
  */
-class Waypoint(var title: String,
-               var description: String,
-               var isChecked: Boolean,
-               location: Location?
-): Serializable {
+class Waypoint(
+    var title: String,
+    var description: String,
+    var isChecked: Boolean,
+    location: Location?
+) : Serializable {
     private var longitude: Double? = null
     private var latitude: Double? = null
     /**
@@ -33,7 +33,7 @@ class Waypoint(var title: String,
      * 因此使用 Location 作为 Location 类属性访问器
      *
      * @author lucka
-     * @since 1.0.4
+     * @since 1.1.0
      */
     var location: Location?
         set(value) {
@@ -57,15 +57,21 @@ class Waypoint(var title: String,
     /**
      * 获取包含 Waypoint 经纬度的 Location 类实体
      *
-     * @Deprecated 1.0.4 被访问器 location 代替
+     * Changelog
+     * [1.1.0] - 2018-03-17
+     *   废弃，由访问器 location 代替
+     * [1.2.1] - 2018-06-18
+     *   返回值改为 null
      *
-     * @return 包含 Waypoint 经纬度的 Location 类实体，若无经纬度则返回 null
+     * @return null（已废弃）
      *
      * @author lucka
      * @since 0.1
      */
-    @Deprecated("This method should be replaced by accessor \"location\".")
+    @Deprecated("This method should be replaced with accessor \"location\".",
+        ReplaceWith("location"))
     fun location(): Location? {
+        /*
         var location: Location? = null
         if (this.longitude != null && this.latitude != null) {
             location = Location("")
@@ -73,6 +79,8 @@ class Waypoint(var title: String,
             location.latitude = this.latitude!!
         }
         return location
+        */
+        return null
     }
 
 }

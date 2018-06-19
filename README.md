@@ -1,9 +1,8 @@
 <h1 align=center><img src="./Resource/Banner.svg" alt="Banner"></h1>
 
 <p align="center">
-    <a href="./CHANGELOG"><img alt="Version" src="https://img.shields.io/badge/version-1.2.0-green.svg"/></a>
+    <a href="./CHANGELOGm.md"><img alt="Version" src="https://img.shields.io/badge/version-1.2.1-brightgreen.svg"/></a>
     <a href="https://www.android.com/versions/lollipop-5-0/"><img alt="Android API Level" src="https://img.shields.io/badge/Android_API_Level-21-A4C639.svg"/></a>
-    <a href="./Server/"><img alt="FTPS Support" src="https://img.shields.io/badge/FTPS-available-green.svg"/></a>
 </p>
 
 <p align="center">

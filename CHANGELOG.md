@@ -3,6 +3,16 @@
 <h1 align=center><br/>更新日志</h1>
 
 ```markdown
+## [1.2.1] - 2018-06-19
+Main update.
+- 1.2.0(201806002) -> 1.2.1(201806003)
+
+### Changed
+- Migrate from AMap 2D Map SDK to AMap 3D Map SDK
+- Clean code, the deprecated methods will not functional any more
+```
+
+```markdown
 ## [1.2.0] - 2018-06-09
 Begining of the next step.
 - 1.1.4-A(201806001) -> 1.2.0(201806002)

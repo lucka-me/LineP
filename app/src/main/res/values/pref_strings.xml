@@ -35,6 +35,7 @@
     <string name="pref_geo_mapType_summary">点击以选择地图类型</string>
     <string name="pref_geo_mapType_Normal">NORMAL</string>
     <string name="pref_geo_mapType_Satellite">SATELLITE</string>
+    <string name="pref_geo_mapType_Night">NIGHT</string>
 
     <!-- Preference About -->
     <string name="pref_about_title">关于</string>
@@ -49,7 +50,7 @@
     <string name="pref_about_developer_category_title">开发者</string>
     <string name="pref_about_developer_lucka_title">Team 0.1</string>
     <string name="pref_about_developer_lucka_summary">网站</string>
-    <string name="pref_about_developer_lucka_url">https://lucka.moe</string>
+    <string name="pref_about_developer_lucka_url">https://zero-one.space</string>
 
     <string name="pref_about_dependency_category_title">依赖组件</string>
     <string name="pref_about_dependency_ACN_title">Apache Commons Net</string>

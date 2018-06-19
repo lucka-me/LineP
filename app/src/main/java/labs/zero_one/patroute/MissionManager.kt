@@ -184,31 +184,27 @@ class MissionManager(private var context: Context, private var missionListener: 
             val password: String
             val enableFTPS: Boolean
             try {
-                sharedPreference =
-                    PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL =
-                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort =
-                    sharedPreference
-                        .getString(
-                            context.getString(R.string.pref_server_port_key),
-                            context.getString(R.string.pref_server_port_default)
-                        )
-                        .toInt()
-                username =
-                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password =
-                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS =
-                    sharedPreference
-                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
-            } catch (error: Exception) {
-                val newError =
-                    Exception(
-                        context.getString(R.string.error_get_preference_failed)
-                            + "\n"
-                            + error.message
+                sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
+                serverURL = sharedPreference
+                    .getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_port_key),
+                        context.getString(R.string.pref_server_port_default)
                     )
+                    .toInt()
+                username = sharedPreference
+                    .getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference
+                    .getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference
+                    .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(
+                    context.getString(R.string.error_get_preference_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -226,8 +222,11 @@ class MissionManager(private var context: Context, private var missionListener: 
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError =
-                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError = Exception(
+                    context.getString(R.string.error_login_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -271,12 +270,11 @@ class MissionManager(private var context: Context, private var missionListener: 
                 fileOutputStream.close()
                 waypointList = decodeGPX(localGPXFile)
             } catch (error: Exception) {
-                val newError =
-                    Exception(
-                        context.getString(R.string.error_request_mission_failed)
-                            + "\n"
-                            + error.message
-                    )
+                val newError = Exception(
+                    context.getString(R.string.error_request_mission_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isLoading = false
                     missionListener.didStartedFailed(newError)
@@ -315,29 +313,26 @@ class MissionManager(private var context: Context, private var missionListener: 
             val enableFTPS: Boolean
             try {
                 sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL =
-                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort =
-                    sharedPreference
-                        .getString(
-                            context.getString(R.string.pref_server_port_key),
-                            context.getString(R.string.pref_server_port_default)
-                        )
-                        .toInt()
-                username =
-                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password =
-                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS =
-                    sharedPreference
-                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
-            } catch (error: Exception) {
-                val newError =
-                    Exception(
-                        context.getString(R.string.error_get_preference_failed)
-                            + "\n"
-                            + error.message
+                serverURL = sharedPreference
+                    .getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_port_key),
+                        context.getString(R.string.pref_server_port_default)
                     )
+                    .toInt()
+                username = sharedPreference
+                    .getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference
+                    .getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference
+                    .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(
+                    context.getString(R.string.error_get_preference_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isLoading = false
                     missionListener.didStoppedFailed(newError)
@@ -354,8 +349,11 @@ class MissionManager(private var context: Context, private var missionListener: 
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError =
-                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError = Exception(
+                    context.getString(R.string.error_login_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isStopping = false
                     missionListener.didStoppedFailed(newError)
@@ -382,8 +380,11 @@ class MissionManager(private var context: Context, private var missionListener: 
             } catch (error: Exception) {
                 isStopping = false
                 uiThread {
-                    val newError =
-                        Exception(context.getString(R.string.stop_failed) + "\n" + error.message)
+                    val newError = Exception(
+                        context.getString(R.string.stop_failed)
+                            + "\n"
+                            + error.message
+                    )
                     missionListener.didStartedFailed(newError)
                 }
                 return@doAsync
@@ -636,15 +637,16 @@ class MissionManager(private var context: Context, private var missionListener: 
                     String.format("%f", location.latitude)
             try {
                 // Create issue txt file
-                issueFile.writeText(context.getString(R.string.location)
-                    + " (" + longitudeText + " " + latitudeText + ")\n"
-                    + context.getString(R.string.time)
-                    + " "
-                    + DateFormat.getDateTimeInstance().format(time)
-                    + "\n"
-                    + context.getString(R.string.description)
-                    + " "
-                    + description
+                issueFile.writeText(
+                    context.getString(R.string.location)
+                        + " (" + longitudeText + " " + latitudeText + ")\n"
+                        + context.getString(R.string.time)
+                        + " "
+                        + DateFormat.getDateTimeInstance().format(time)
+                        + "\n"
+                        + context.getString(R.string.description)
+                        + " "
+                        + description
                 )
             } catch (error: Exception) {
                 val newError =
@@ -668,29 +670,26 @@ class MissionManager(private var context: Context, private var missionListener: 
             val enableFTPS: Boolean
             try {
                 sharedPreference = PreferenceManager.getDefaultSharedPreferences(context)
-                serverURL =
-                    sharedPreference.getString(context.getString(R.string.pref_server_url_key), "")
-                serverPort =
-                    sharedPreference
-                        .getString(
-                            context.getString(R.string.pref_server_port_key),
-                            context.getString(R.string.pref_server_port_default)
-                        )
-                        .toInt()
-                username =
-                    sharedPreference.getString(context.getString(R.string.pref_user_id_key), "")
-                password =
-                    sharedPreference.getString(context.getString(R.string.pref_user_token_key), "")
-                enableFTPS =
-                    sharedPreference
-                        .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
-            } catch (error: Exception) {
-                val newError =
-                    Exception(
-                        context.getString(R.string.error_get_preference_failed)
-                            + "\n"
-                            + error.message
+                serverURL = sharedPreference
+                    .getString(context.getString(R.string.pref_server_url_key), "")
+                serverPort = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_port_key),
+                        context.getString(R.string.pref_server_port_default)
                     )
+                    .toInt()
+                username = sharedPreference
+                    .getString(context.getString(R.string.pref_user_id_key), "")
+                password = sharedPreference
+                    .getString(context.getString(R.string.pref_user_token_key), "")
+                enableFTPS = sharedPreference
+                    .getBoolean(context.getString(R.string.pref_server_enableFTPS_key), false)
+            } catch (error: Exception) {
+                val newError = Exception(
+                    context.getString(R.string.error_get_preference_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     isLoading = false
                     missionListener.didReportedFailed(newError)
@@ -707,8 +706,11 @@ class MissionManager(private var context: Context, private var missionListener: 
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
             } catch (error: Exception) {
-                val newError =
-                    Exception(context.getString(R.string.error_login_failed) + "\n" + error.message)
+                val newError = Exception(
+                    context.getString(R.string.error_login_failed)
+                        + "\n"
+                        + error.message
+                )
                 uiThread {
                     missionListener.didReportedFailed(newError)
                 }
@@ -737,14 +739,13 @@ class MissionManager(private var context: Context, private var missionListener: 
                 ftpClient.logout()
                 issueFile.delete()
                 log(
-                    String
-                        .format(
-                            context.getString(R.string.log_issueSubmitted),
-                            "ISS_" + data.id + "_" + issueSN,
-                            longitudeText,
-                            latitudeText,
-                            description
-                        )
+                    String.format(
+                        context.getString(R.string.log_issueSubmitted),
+                        "ISS_" + data.id + "_" + issueSN,
+                        longitudeText,
+                        latitudeText,
+                        description
+                    )
                 )
             } catch (error: Exception) {
                 uiThread {
@@ -772,14 +773,12 @@ class MissionManager(private var context: Context, private var missionListener: 
      * @since 0.1
      */
     fun log(message: String) {
-        File(context.filesDir, data.id + ".log")
-            .appendText(
-                String
-                    .format(
-                        context.getString(R.string.log_lineFormat),
-                        DateFormat.getDateTimeInstance().format(Date()),
-                        message
-                    )
+        File(context.filesDir, data.id + ".log").appendText(
+            String.format(
+                context.getString(R.string.log_lineFormat),
+                DateFormat.getDateTimeInstance().format(Date()),
+                message
             )
+        )
     }
 }

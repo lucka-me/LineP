@@ -24,7 +24,8 @@ class PreferenceAboutActivity : AppCompatActivity() {
             val preferenceAboutFragment = PreferenceAboutFragment()
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.preferenceAboutFrame, preferenceAboutFragment).commit()
+                .add(R.id.preferenceAboutFrame, preferenceAboutFragment)
+                .commit()
         }
     }
 
