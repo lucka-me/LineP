@@ -3,13 +3,23 @@
 <h1 align=center><br/>更新日志</h1>
 
 ```markdown
+## [1.3.0] - 2018-07-10
+Main update.
+- 1.2.1(201806003) -> 1.3.0(201807001)
+
+### Changed
+- Rewrote the log function, logs can be reviewd with the web tool now
+- Optimized the location usage
+```
+
+```markdown
 ## [1.2.1] - 2018-06-19
 Main update.
 - 1.2.0(201806002) -> 1.2.1(201806003)
 
 ### Changed
 - Migrate from AMap 2D Map SDK to AMap 3D Map SDK
-- Clean code, the deprecated methods will not functional any more
+- Clean code, the deprecated methods won't be functional any more
 ```
 
 ```markdown

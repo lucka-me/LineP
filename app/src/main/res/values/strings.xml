@@ -20,6 +20,7 @@
     <!-- Alert -->
     <string name="alert_warning_title">警告</string>
     <string name="alert_location_service_unavailable">定位功能不可用</string>
+    <string name="alert_cant_get_location">无法获取位置</string>
     <!-- Permission -->
     <string name="alert_permission_title">请求权限</string>
     <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
@@ -52,7 +53,17 @@
     <string name="stop_failed">任务停止失败</string>
 
     <!-- Mission Log-->
+    <string name="iso_datatime">yyyy-MM-dd\'T\'HH:mm:ss\'Z\'</string>
     <string name="log_headline">任务日志\n</string>
+    <string name="log_ver">VER %s %d</string>
+    <string name="log_mid">MID %s</string>
+    <string name="log_uid">UID %s</string>
+    <string name="log_msg">%s %s %f %f %s</string>
+    <string name="log_head_loc">LOC</string>
+    <string name="log_head_sta">STA</string>
+    <string name="log_head_chk">CHK</string>
+    <string name="log_head_rep">REP</string>
+    <string name="log_head_wrn">WRN</string>
     <string name="log_lineFormat">[%s]: %s\n</string>
     <string name="log_mission_started">任务开始</string>
     <string name="log_mission_stopped">任务停止</string>

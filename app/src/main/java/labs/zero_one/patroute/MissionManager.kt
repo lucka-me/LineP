@@ -13,6 +13,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.*
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -33,13 +34,15 @@ import kotlin.collections.ArrayList
  * @property [isChecking] 是否正在检查 Waypoint
  * @property [issueSN] 问题序列号
  * @property [issueImagePath] 问题的照片文件路径
- * @property [lastLocationLogDate] 前次记录位置的时间
+ * @property [lastLocation] 最后记录的位置
+ * @property [isLocationAvailable] 位置是否可用
  *
  * 子类列表
  * [MissionListener] 任务消息监听器
  * [MissionData] 任务基本信息类
  *
  * 方法列表
+ * [update] 更新位置
  * [start] 开始任务
  * [stop] 停止任务
  * [pause] 暂停任务
@@ -49,6 +52,7 @@ import kotlin.collections.ArrayList
  * [checkAt] 指定 Waypoint 检查完成
  * [submitIssue] 提交报告
  * [log] 在日志中添加记录
+ * [logMissionInfo] 在日志中添加任务信息，包括 VER，MID 和 UID
  *
  * @author lucka
  * @since 0.1
@@ -64,8 +68,8 @@ class MissionManager(private var context: Context, private var missionListener: 
     var isChecking = false  // To avoid multi alert when reaching a waypoint
     var issueSN: Int = 0
     var issueImagePath: String = ""
-    var lastLocationLogDate: Date = Date()
-
+    var lastLocation: Location = Location("")
+    var isLocationAvailable: Boolean = false
 
     /**
      * 任务消息监听器
@@ -153,6 +157,33 @@ class MissionManager(private var context: Context, private var missionListener: 
      * @since 0.1
      */
     data class MissionData(val id: String, val description: String): Serializable
+
+    /**
+     * 更新位置
+     *
+     * 会将坐标系转换为 GCJ-02 并更新位置可用状态 [isLocationAvailable]
+     * 应用中所有对位置的调用均应从 MissionManager 实体而非直接从 LocationManager 实体中获得
+     *
+     * @param [location] WGS-84 坐标位置
+     *
+     * @author lucka
+     * @since 1.3.0
+     */
+    fun update(location: Location?) {
+        val fixedLocation = CoordinateKit.convert(
+            location,
+            CoordinateKit.CoordinateType.WGS84,
+            CoordinateKit.CoordinateType.GCJ02,
+            context
+        )
+        if (fixedLocation == null) {
+            isLocationAvailable = false
+        } else {
+            lastLocation = fixedLocation
+            isLocationAvailable = true
+            log(context.getString(R.string.log_head_loc), "")
+        }
+    }
 
     /**
      * 开始任务
@@ -285,8 +316,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                 isLoading = false
                 isStarted = true
                 File(context.filesDir, data.id + ".log")
-                    .writeText(context.getString(R.string.log_headline))
-                log(context.getString(R.string.log_mission_started))
+                logMissionInfo()
                 missionListener.didStartedSuccess(data)
             }
         }
@@ -595,6 +625,7 @@ class MissionManager(private var context: Context, private var missionListener: 
     fun checkAt(index: Int) {
         waypointList[index].isChecked = true
         log(String.format(context.getString(R.string.log_checked), waypointList[index].title))
+        log(context.getString(R.string.log_head_chk), waypointList[index].title)
         var isAllChecked = true
         for (waypoint in waypointList) {
             if (!waypoint.isChecked) {
@@ -621,20 +652,12 @@ class MissionManager(private var context: Context, private var missionListener: 
      * @author lucka
      * @since 0.1
      */
-    fun submitIssue(location: Location?, time: Date, description: String) {
+    fun submitIssue(location: Location, time: Date, description: String) {
         isReporting = true
         doAsync {
             val issueFile = File(context.filesDir, "ISS_" + data.id + "_" + issueSN + ".txt")
-            val longitudeText: String =
-                if (location == null)
-                    context.getString(R.string.unavailable)
-                else
-                    String.format("%f", location.longitude)
-            val latitudeText: String =
-                if (location == null)
-                    context.getString(R.string.unavailable)
-                else
-                    String.format("%f", location.latitude)
+            val longitudeText: String = String.format("%f", location.longitude)
+            val latitudeText: String = String.format("%f", location.latitude)
             try {
                 // Create issue txt file
                 issueFile.writeText(
@@ -657,6 +680,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                     )
                 uiThread {
                     isLoading = false
+
                     missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
@@ -738,15 +762,6 @@ class MissionManager(private var context: Context, private var missionListener: 
                 fileInputStream.close()
                 ftpClient.logout()
                 issueFile.delete()
-                log(
-                    String.format(
-                        context.getString(R.string.log_issueSubmitted),
-                        "ISS_" + data.id + "_" + issueSN,
-                        longitudeText,
-                        latitudeText,
-                        description
-                    )
-                )
             } catch (error: Exception) {
                 uiThread {
                     isReporting = false
@@ -754,29 +769,81 @@ class MissionManager(private var context: Context, private var missionListener: 
                 }
                 return@doAsync
             }
-            issueSN += 1
             File(issueImagePath).delete()
             uiThread {
+                log(
+                    context.getString(R.string.log_head_rep),
+                    "ISS_" + data.id + "_" + issueSN + " " + description
+                )
+                issueSN += 1
                 missionListener.didReportedSuccess()
             }
         }
     }
 
     /**
-     * 在日志中添加记录
+     * 在日志中添加一条记录，内部方法
      *
-     * 将会记录时间和信息
+     * 会将换行改为 <br/>
      *
-     * @param [message] 要记录的信息
+     * @param [line] 添加的新记录
+     *
+     * Changelog
+     * [1.3.0] - 2018-07-10
+     *  重写日志功能，本方法转为内部方法
+     *  处理换行
      *
      * @author lucka
      * @since 0.1
      */
-    fun log(message: String) {
-        File(context.filesDir, data.id + ".log").appendText(
+    private fun log(line: String) {
+        File(context.filesDir, data.id + ".log")
+            .appendText(line.replace("\n", "<br/>") + "\n")
+    }
+
+    /**
+     * 在日志中添加任务信息，包括 VER，MID 和 UID
+     *
+     * @author lucka
+     * @since 1.3.0
+     */
+    private fun logMissionInfo() {
+        log(
             String.format(
-                context.getString(R.string.log_lineFormat),
-                DateFormat.getDateTimeInstance().format(Date()),
+                context.getString(R.string.log_ver),
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName,
+                context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+            )
+        )
+        log(String.format(context.getString(R.string.log_mid), data.id))
+        log(
+            String.format(
+                context.getString(R.string.log_uid),
+                PreferenceManager
+                    .getDefaultSharedPreferences(context)
+                    .getString(context.getString(R.string.pref_user_id_key), "")
+            )
+        )
+    }
+
+    /**
+     * 在日志中添加记录
+     *
+     * @param [message] 消息
+     *
+     * @author lucka
+     * @since 1.3.0
+     */
+    fun log(head: String, message: String) {
+        val dateFormat = SimpleDateFormat(context.getString(R.string.iso_datatime), Locale.CHINA)
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+        log(
+            String.format(
+                context.getString(R.string.log_msg),
+                head,
+                dateFormat.format(Date()),
+                lastLocation.longitude,
+                lastLocation.latitude,
                 message
             )
         )

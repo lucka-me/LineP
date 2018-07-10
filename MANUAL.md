@@ -103,6 +103,8 @@
 ```
 其中坐标必须为 GCJ-02 坐标系下的坐标，文件编码应为 UTF-8。
 
+可以使用[任务制作工具](https://github.com/lucka-me/Patroute-web/tree/master/Mission%20Authoring%20Tool)生成这两个文件。
+
 最后在根目录下建立 `<用户名>/<任务 ID>/` 文件夹供用户上传照片、报告和日志。
 
 ### 获取任务
@@ -118,6 +120,21 @@
 
 ### 停止任务
 当全部检查点均检查完毕后，任务对话框将弹出，用户可以选择结束任务。结束任务时软件将生成并上传任务日志文件 `<任务 ID>.log`。用户亦可随时在主页面菜单及任务对话框中结束任务。
+
+### 任务审核
+见 [任务审核工具](https://github.com/lucka-me/Patroute-web/tree/master/Mission%20Review%20Tool)。
+
+#### 任务日志格式
+| 格式 | 说明
+| :--- | :---
+| `VER 版本名称 版本号` | 软件版本
+| `MID 任务编号` | 任务编号
+| `UID 巡线员用户名` | 巡线员用户名
+| `STA Time Lng Lat 状态` | 任务状态更新（开始，暂停，继续，结束）
+| `LOC Time Lng Lat` | 更新位置
+| `CHK Time Lng Lat 检查点名字` | 完成检查点
+| `REP Time Lng Lat 报告编号 报告内容` | 提交报告
+| `WRN Time Lng Lat 警告内容` | 软件问题警告
 
 ## 第三方组件列表
 本软件使用了大量第三方组件，大部分开放源代码且通过 Apache License 2.0 授权。

@@ -81,28 +81,12 @@ class MainActivity : AppCompatActivity() {
     private val locationListener: LocationListener = object : LocationListener {
 
         override fun onLocationChanged(location: Location?) {
-            val fixedLocation = CoordinateKit.convert(
-                location,
-                CoordinateKit.CoordinateType.WGS84,
-                CoordinateKit.CoordinateType.GCJ02,
-                this@MainActivity
-            )
-            mainRecyclerViewAdapter.refreshWith(fixedLocation)
-            if (fixedLocation == null) return
-            // Log Location per 10 seconds
-            if (mission.isStarted && (Date().time - mission.lastLocationLogDate.time >= 10000)) {
-                mission.log(
-                    String.format(
-                        getString(R.string.log_locationUpdate),
-                        fixedLocation.longitude,
-                        fixedLocation.latitude
-                    )
-                )
-                mission.lastLocationLogDate = Date()
-            }
+            mission.update(location)
+            if (!mission.isLocationAvailable) return
+
             if (mission.isStarted && !mission.isChecking) {
                 mission.isChecking = true
-                val reachedList = mission.reach(fixedLocation)
+                val reachedList = mission.reach(mission.lastLocation)
                 if (reachedList.isNotEmpty()) {
                     for (index: Int in reachedList) {
                         val alert = AlertDialog.Builder(this@MainActivity)
@@ -115,44 +99,42 @@ class MainActivity : AppCompatActivity() {
                         )
                         alert.setCancelable(false)
                         alert.setPositiveButton(
-                            getString(R.string.alert_reach_waypoint_checked),
-                            { _, _ ->
-                                mission.checkAt(index)
-                                mainRecyclerViewAdapter.refreshAt(
-                                    MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
-                                )
-                                mainRecyclerViewAdapter
-                                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                                var isAllChecked = true
-                                for (checkIndex: Int in reachedList) {
-                                    if (!mission.waypointList[checkIndex].isChecked) {
-                                        isAllChecked = false
-                                        break
-                                    }
+                            getString(R.string.alert_reach_waypoint_checked)
+                        ) { _, _ ->
+                            mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(
+                                MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
+                            )
+                            mainRecyclerViewAdapter
+                                .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                            var isAllChecked = true
+                            for (checkIndex: Int in reachedList) {
+                                if (!mission.waypointList[checkIndex].isChecked) {
+                                    isAllChecked = false
+                                    break
                                 }
-                                mission.isChecking = !isAllChecked
                             }
-                        )
+                            mission.isChecking = !isAllChecked
+                        }
                         alert.setNegativeButton(
-                            getString(R.string.alert_reach_waypoint_report),
-                            { _, _ ->
-                                mission.checkAt(index)
-                                mainRecyclerViewAdapter.refreshAt(
-                                    MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
-                                )
-                                mainRecyclerViewAdapter
-                                    .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                                var isAllChecked = true
-                                for (checkIndex: Int in reachedList) {
-                                    if (!mission.waypointList[checkIndex].isChecked) {
-                                        isAllChecked = false
-                                        break
-                                    }
+                            getString(R.string.alert_reach_waypoint_report)
+                        ) { _, _ ->
+                            mission.checkAt(index)
+                            mainRecyclerViewAdapter.refreshAt(
+                                MainRecyclerViewAdapter.ItemIndex.Waypoint.row + index
+                            )
+                            mainRecyclerViewAdapter
+                                .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                            var isAllChecked = true
+                            for (checkIndex: Int in reachedList) {
+                                if (!mission.waypointList[checkIndex].isChecked) {
+                                    isAllChecked = false
+                                    break
                                 }
-                                takeIssuePhoto()
-                                mission.isChecking = !isAllChecked
                             }
-                        )
+                            takeIssuePhoto()
+                            mission.isChecking = !isAllChecked
+                        }
                         alert.show()
                     }
                 } else {
@@ -168,14 +150,9 @@ class MainActivity : AppCompatActivity() {
                 ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
-                mainRecyclerViewAdapter.refreshWith(
-                    CoordinateKit.convert(
-                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                        CoordinateKit.CoordinateType.WGS84,
-                        CoordinateKit.CoordinateType.GCJ02,
-                        this@MainActivity
-                    )
-                )
+                mission.update(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+                mainRecyclerViewAdapter
+                    .refreshWith(if (mission.isLocationAvailable) mission.lastLocation else null)
             }
         }
 
@@ -186,18 +163,14 @@ class MainActivity : AppCompatActivity() {
                 ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
-                mainRecyclerViewAdapter.refreshWith(
-                    CoordinateKit.convert(
-                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                        CoordinateKit.CoordinateType.WGS84,
-                        CoordinateKit.CoordinateType.GCJ02,
-                        this@MainActivity
-                    )
-                )
+                mission.update(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+                mainRecyclerViewAdapter
+                    .refreshWith(if (mission.isLocationAvailable) mission.lastLocation else null)
             }
         }
 
         override fun onProviderDisabled(provider: String?) {
+            mission.update(null)
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(getString(R.string.alert_location_service_unavailable))
@@ -435,17 +408,14 @@ class MainActivity : AppCompatActivity() {
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_location))
                 alert.setCancelable(false)
-                alert.setNegativeButton(
-                    getString(R.string.system_settings),
-                    { _, _ ->
-                        // Open the application settings page
-                        val intent = Intent()
-                        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        val uri = Uri.fromParts("package", packageName, null)
-                        intent.data = uri
-                        startActivity(intent)
-                    }
-                )
+                alert.setNegativeButton(getString(R.string.system_settings)) { _, _ ->
+                    // Open the application settings page
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
@@ -461,14 +431,9 @@ class MainActivity : AppCompatActivity() {
             ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            mainRecyclerViewAdapter.refreshWith(
-                CoordinateKit.convert(
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                    CoordinateKit.CoordinateType.WGS84,
-                    CoordinateKit.CoordinateType.GCJ02,
-                    this
-                )
-            )
+            mission.update(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
+            mainRecyclerViewAdapter
+                .refreshWith(if (mission.isLocationAvailable) mission.lastLocation else null)
         }
         // Check the External Storage permission
         if (ActivityCompat.checkSelfPermission(
@@ -488,17 +453,14 @@ class MainActivity : AppCompatActivity() {
                 alert.setTitle(getString(R.string.alert_permission_title))
                 alert.setMessage(getString(R.string.alert_permission_storage))
                 alert.setCancelable(false)
-                alert.setNegativeButton(
-                    getString(R.string.system_settings),
-                    { _, _ ->
-                        // Open the application settings page
-                        val intent = Intent()
-                        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        val uri = Uri.fromParts("package", packageName, null)
-                        intent.data = uri
-                        startActivity(intent)
-                    }
-                )
+                alert.setNegativeButton(getString(R.string.system_settings)) { _, _ ->
+                    // Open the application settings page
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
             } else {
@@ -663,19 +625,16 @@ class MainActivity : AppCompatActivity() {
             PermissionRequest.LocationFine.code -> {
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    (ActivityCompat.checkSelfPermission(
+                    ActivityCompat.checkSelfPermission(
                         this@MainActivity,
                         PermissionRequest.LocationFine.permission
                     ) ==
-                        PackageManager.PERMISSION_GRANTED)
+                    PackageManager.PERMISSION_GRANTED
                 ) {
+                    mission
+                        .update(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER))
                     mainRecyclerViewAdapter.refreshWith(
-                        CoordinateKit.convert(
-                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                            CoordinateKit.CoordinateType.WGS84,
-                            CoordinateKit.CoordinateType.GCJ02,
-                            this
-                        )
+                        if (mission.isLocationAvailable) mission.lastLocation else null
                     )
                 } else {
                 }
@@ -754,23 +713,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("InflateParams")
     private fun submitIssue() {
         // Get Location and image
-        val location: Location? =
-            if ((ContextCompat.checkSelfPermission(
-                    this,
-                    PermissionRequest.LocationFine.permission
-                ) ==
-                    PackageManager.PERMISSION_GRANTED) &&
-                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            ) {
-                CoordinateKit.convert(
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                    CoordinateKit.CoordinateType.WGS84,
-                    CoordinateKit.CoordinateType.GCJ02,
-                    this
-                )
-            } else {
-                null
-            }
+        val location: Location = mission.lastLocation
         if (!File(mission.issueImagePath).exists()) {
             return
         }
@@ -787,16 +730,8 @@ class MainActivity : AppCompatActivity() {
         val latitudeTextView = dialogView.findViewById<TextView>(R.id.latitudeText)
         val timeTextView = dialogView.findViewById<TextView>(R.id.timeText)
         val imageView = dialogView.findViewById<ImageView>(R.id.imageView)
-        val longitudeText: String =
-            if (location == null)
-                getString(R.string.unavailable)
-            else
-                CoordinateKit.getDegreeString(location.longitude)
-        val latitudeText: String =
-            if (location == null)
-                getString(R.string.unavailable)
-            else
-                CoordinateKit.getDegreeString(location.latitude)
+        val longitudeText: String = CoordinateKit.getDegreeString(location.longitude)
+        val latitudeText: String = CoordinateKit.getDegreeString(location.latitude)
         val currentTime = Date()
         val timeText: String = DateFormat.getDateTimeInstance().format(currentTime)
         longitudeTextView.text = longitudeText
@@ -808,23 +743,17 @@ class MainActivity : AppCompatActivity() {
 
         dialog.setView(dialogView)
         dialog.setTitle(getString(R.string.submit))
-        dialog.setPositiveButton(
-            getString(R.string.confirm),
-            { _, _ ->
-                reportProgressCircle.show()
-                val description: String = dialogView
-                    .findViewById<TextView>(R.id.descriptionText)
-                    .text
-                    .toString()
-                mission.submitIssue(location, currentTime, description)
-            }
-        )
-        dialog.setNegativeButton(
-            getString(R.string.cancel),
-            { _, _ ->
-                File(mission.issueImagePath).delete()
-            }
-        )
+        dialog.setPositiveButton(getString(R.string.confirm)) { _, _ ->
+            reportProgressCircle.show()
+            val description: String = dialogView
+                .findViewById<TextView>(R.id.descriptionText)
+                .text
+                .toString()
+            mission.submitIssue(location, currentTime, description)
+        }
+        dialog.setNegativeButton(getString(R.string.cancel)) { _, _ ->
+            File(mission.issueImagePath).delete()
+        }
         dialog.show()
 
     }
@@ -865,14 +794,11 @@ class MainActivity : AppCompatActivity() {
 
         dialog.setPositiveButton(getString(R.string.confirm),null)
         if (!mission.isStopping) {
-            dialog.setNegativeButton(
-                getString(R.string.action_stop),
-                { _, _ ->
-                    mission.stop()
-                    buttonReportIssue.hide()
-                    invalidateOptionsMenu()
-                }
-            )
+            dialog.setNegativeButton(getString(R.string.action_stop)) { _, _ ->
+                mission.stop()
+                buttonReportIssue.hide()
+                invalidateOptionsMenu()
+            }
         }
         dialog.show()
     }
@@ -944,22 +870,16 @@ class MainActivity : AppCompatActivity() {
             longitudeText.text = CoordinateKit.getDegreeString(location.longitude)
             latitudeText.text = CoordinateKit.getDegreeString(location.latitude)
 
-            if ((ActivityCompat.checkSelfPermission(
+            if (ActivityCompat.checkSelfPermission(
                     this@MainActivity,
                     PermissionRequest.LocationFine.permission
                 ) ==
-                    PackageManager.PERMISSION_GRANTED
-                    ) &&
+                PackageManager.PERMISSION_GRANTED &&
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             ) {
-                val currentLocation = CoordinateKit.convert(
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),
-                    CoordinateKit.CoordinateType.WGS84,
-                    CoordinateKit.CoordinateType.GCJ02,
-                    this
-                )
+                val currentLocation = mission.lastLocation
                 distanceText.text = when {
-                    currentLocation == null ->
+                    !mission.isLocationAvailable ->
                         getString(R.string.unavailable)
                     currentLocation.distanceTo(location) < 1000.0 ->
                         String.format(
@@ -972,21 +892,20 @@ class MainActivity : AppCompatActivity() {
                             currentLocation.distanceTo(location) / 1000.0
                         )
                 }
-                if (currentLocation != null &&
+                if (!mission.isLocationAvailable &&
                     currentLocation.distanceTo(location) < 30.0 &&
                     !mission.waypointList[index].isChecked
                 ) {
                     dialog.setNegativeButton(
-                        getString(R.string.alert_reach_waypoint_checked),
-                        { _, _ ->
-                            mission.checkAt(index)
-                            mainRecyclerViewAdapter.refreshAt(
-                                index + MainRecyclerViewAdapter.ItemIndex.Waypoint.row
-                            )
-                            mainRecyclerViewAdapter
-                                .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
-                        }
-                    )
+                        getString(R.string.alert_reach_waypoint_checked)
+                    ) { _, _ ->
+                        mission.checkAt(index)
+                        mainRecyclerViewAdapter.refreshAt(
+                            index + MainRecyclerViewAdapter.ItemIndex.Waypoint.row
+                        )
+                        mainRecyclerViewAdapter
+                            .refreshAt(MainRecyclerViewAdapter.ItemIndex.Mission.row)
+                    }
                 }
             } else {
                 distanceText.text = getString(R.string.unavailable)
