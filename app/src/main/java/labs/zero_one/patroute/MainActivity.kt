@@ -217,6 +217,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun didStoppedFailed(error: Exception) {
+                mission.log(
+                    this@MainActivity.getString(R.string.log_head_wrn),
+                    error.message.toString()
+                )
                 buttonReportIssue.show()
                 invalidateOptionsMenu()
                 val alert = AlertDialog.Builder(this@MainActivity)
@@ -235,6 +239,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun didReportedFailed(error: Exception) {
+                mission.log(
+                    this@MainActivity.getString(R.string.log_head_wrn),
+                    error.message.toString()
+                )
                 val alert = AlertDialog.Builder(this@MainActivity)
                 alert.setTitle(getString(R.string.alert_warning_title))
                 alert.setMessage(error.message)

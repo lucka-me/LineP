@@ -51,8 +51,9 @@ import kotlin.collections.ArrayList
  * [reach] 抵达某位置时检查是否有需要检查的 Waypoint
  * [checkAt] 指定 Waypoint 检查完成
  * [submitIssue] 提交报告
- * [log] 在日志中添加记录
+ * [_log] 在日志中添加记录（幕后方法）
  * [logMissionInfo] 在日志中添加任务信息，包括 VER，MID 和 UID
+ * [log] 在日志中添加记录
  *
  * @author lucka
  * @since 0.1
@@ -317,6 +318,10 @@ class MissionManager(private var context: Context, private var missionListener: 
                 isStarted = true
                 File(context.filesDir, data.id + ".log")
                 logMissionInfo()
+                log(
+                    context.getString(R.string.log_head_sta),
+                    context.getString(R.string.log_mission_started)
+                )
                 missionListener.didStartedSuccess(data)
             }
         }
@@ -400,7 +405,10 @@ class MissionManager(private var context: Context, private var missionListener: 
                 ftpClient.changeWorkingDirectory(username)
                 ftpClient.changeWorkingDirectory(data.id)
                 // Upload log file
-                log(context.getString(R.string.log_mission_stopped))
+                log(
+                    context.getString(R.string.log_head_sta),
+                    context.getString(R.string.log_mission_stopped)
+                )
                 val logFile = File(context.filesDir, data.id + ".log")
                 val fileInputStream = FileInputStream(logFile)
                 ftpClient.storeFile(data.id + ".log", fileInputStream)
@@ -426,6 +434,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                 waypointList.clear()
                 isStarted = false
                 isStopping = false
+
                 missionListener.didStoppedSuccess(oldListSize)
             }
         }
@@ -459,7 +468,6 @@ class MissionManager(private var context: Context, private var missionListener: 
             objectOutputStream.writeObject(waypointList)
             objectOutputStream.close()
             fileOutputStream.close()
-            log(context.getString(R.string.log_mission_paused))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -503,7 +511,6 @@ class MissionManager(private var context: Context, private var missionListener: 
             objectInputStream.close()
             fileInputStream.close()
             isStarted = data.id != ""
-            log(context.getString(R.string.log_mission_resume))
         } catch (error: Exception) {
             val alert = AlertDialog.Builder(context)
             alert.setTitle(context.getString(R.string.alert_warning_title))
@@ -624,7 +631,6 @@ class MissionManager(private var context: Context, private var missionListener: 
      */
     fun checkAt(index: Int) {
         waypointList[index].isChecked = true
-        log(String.format(context.getString(R.string.log_checked), waypointList[index].title))
         log(context.getString(R.string.log_head_chk), waypointList[index].title)
         var isAllChecked = true
         for (waypoint in waypointList) {
@@ -782,7 +788,7 @@ class MissionManager(private var context: Context, private var missionListener: 
     }
 
     /**
-     * 在日志中添加一条记录，内部方法
+     * 在日志中添加一条记录，幕后方法
      *
      * 会将换行改为 <br/>
      *
@@ -790,13 +796,15 @@ class MissionManager(private var context: Context, private var missionListener: 
      *
      * Changelog
      * [1.3.0] - 2018-07-10
-     *  重写日志功能，本方法转为内部方法
+     *  重写日志功能，本方法转为幕后方法
      *  处理换行
+     * [1.3.1] - 2018-07-29
+     *  改名为 _log，作为幕后方法与 [log] 区别
      *
      * @author lucka
      * @since 0.1
      */
-    private fun log(line: String) {
+    private fun _log(line: String) {
         File(context.filesDir, data.id + ".log")
             .appendText(line.replace("\n", "<br/>") + "\n")
     }
@@ -808,15 +816,15 @@ class MissionManager(private var context: Context, private var missionListener: 
      * @since 1.3.0
      */
     private fun logMissionInfo() {
-        log(
+        _log(
             String.format(
                 context.getString(R.string.log_ver),
                 context.packageManager.getPackageInfo(context.packageName, 0).versionName,
                 context.packageManager.getPackageInfo(context.packageName, 0).versionCode
             )
         )
-        log(String.format(context.getString(R.string.log_mid), data.id))
-        log(
+        _log(String.format(context.getString(R.string.log_mid), data.id))
+        _log(
             String.format(
                 context.getString(R.string.log_uid),
                 PreferenceManager
@@ -837,7 +845,7 @@ class MissionManager(private var context: Context, private var missionListener: 
     fun log(head: String, message: String) {
         val dateFormat = SimpleDateFormat(context.getString(R.string.iso_datatime), Locale.CHINA)
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-        log(
+        _log(
             String.format(
                 context.getString(R.string.log_msg),
                 head,

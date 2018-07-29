@@ -3,6 +3,14 @@
 <h1 align=center><br/>更新日志</h1>
 
 ```markdown
+## [1.3.1] - 2018-07-29
+- 1.3.0(201807001) -> 1.3.1(201807002)
+
+### Changed
+- Log function improved, add logging when stop failed and report failed
+```
+
+```markdown
 ## [1.3.0] - 2018-07-10
 Main update.
 - 1.2.1(201806003) -> 1.3.0(201807001)
