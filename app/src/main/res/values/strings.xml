@@ -8,6 +8,7 @@
 
     <!-- Path -->
     <string name="imageProviderAuthority">labs.zero_one.patroute.fileprovider</string>
+    <string name="internetTimeHost">ntp7.aliyun.com</string>
 
     <!-- Dialog -->
     <string name="success">成功</string>
@@ -21,6 +22,8 @@
     <string name="alert_warning_title">警告</string>
     <string name="alert_location_service_unavailable">定位功能不可用</string>
     <string name="alert_cant_get_location">无法获取位置</string>
+    <string name="alert_mock_location">位置模拟已开启，请关闭此功能</string>
+    <string name="alert_emulator">检测到模拟器</string>
     <!-- Permission -->
     <string name="alert_permission_title">请求权限</string>
     <string name="alert_permission_location">本应用需要访问您的位置以提供服务。</string>
@@ -72,5 +75,7 @@
     <string name="log_locationUpdate">位置更新 (%f, %f)</string>
     <string name="log_issueSubmitted">提交报告 %s (%s, %s) %s</string>
     <string name="log_checked">已检查 %s</string>
+    <string name="log_trume_mock_location">检测到模拟位置开启</string>
+    <string name="log_trume_time_trick">检测到时间错误\n网络时间：%s\n设备时间：%s</string>
 
 </resources>

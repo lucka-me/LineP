@@ -1,6 +1,23 @@
 <div align=center><a href="https://github.com/lucka-me/Patroute-android"><img src="./Resource/banner.svg" alt="Banner"></a></div>
 
-<h1 align=center><br/>更新日志</h1>
+<h1 align=center>更新日志</h1>
+
+```markdown
+## [1.4.0] - 2018-07-20
+- 1.3.1(201807002) -> 1.4.0(201807003)
+
+### Added
+- TrumeKit to detect cheating, including mock location, emulation and time trick
+
+### Changed
+- Upgrade AMap API to v6.3.1
+
+### Fixed
+- App crashes when open About page
+- App crashed when open -> exit Preference page during starting, stopping and
+  reporting
+- Some logical issues
+```
 
 ```markdown
 ## [1.3.1] - 2018-07-29

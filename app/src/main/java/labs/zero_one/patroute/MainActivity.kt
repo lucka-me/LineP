@@ -14,6 +14,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Process
 import android.provider.MediaStore
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
@@ -34,16 +35,20 @@ import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 /**
  * 主页面 Activity
  *
+ * 属性列表
  * @property [mainRecyclerView] 主页面的 Recycler View
  * @property [mainRecyclerViewAdapter] 主页面 Recycler View 的适配器
  * @property [locationManager] 位置管理器
  * @property [locationListener] 位置消息监听器
  * @property [mission] 任务管理器
  * @property [missionListener] 任务消息监听器
+ * @property [trumeListener] 反作弊工具消息监听器
+ * @property [trumeKit] 反作弊工具
  * @property [onPreferenceChangedListener] 首选项更改监听器
  *
  * 子类列表
@@ -81,6 +86,34 @@ class MainActivity : AppCompatActivity() {
     private val locationListener: LocationListener = object : LocationListener {
 
         override fun onLocationChanged(location: Location?) {
+            // Check Mock Location
+            if (trumeKit.checkMock(location)) {
+                if (mission.isStarted) {
+                    mission.log(
+                        getString(R.string.log_head_wrn),
+                        getString(R.string.log_trume_mock_location))
+                }
+                locationManager.removeUpdates(this)
+                val alert = AlertDialog.Builder(this@MainActivity)
+                alert.setTitle(getString(R.string.alert_warning_title))
+                alert.setMessage(getString(R.string.alert_mock_location))
+                alert.setCancelable(false)
+                alert.setNegativeButton(getString(R.string.confirm)) { _, _ ->
+                    if (ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            PermissionRequest.LocationFine.permission
+                        ) ==
+                        PackageManager.PERMISSION_GRANTED
+                    ) {
+                        locationManager.requestLocationUpdates(
+                            LocationManager.GPS_PROVIDER,
+                            1000.toLong(), 5.toFloat(),
+                            this
+                        )
+                    }
+                }
+                alert.show()
+            }
             mission.update(location)
             if (!mission.isLocationAvailable) return
 
@@ -233,9 +266,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun didReportedSuccess() {
                 reportProgressCircle.attachListener {
-                    mission.isReporting = false
                 }
                 reportProgressCircle.beginFinalAnimation()
+                invalidateOptionsMenu()
             }
 
             override fun didReportedFailed(error: Exception) {
@@ -250,9 +283,56 @@ class MainActivity : AppCompatActivity() {
                 alert.setPositiveButton(getString(R.string.confirm), null)
                 alert.show()
                 reportProgressCircle.hide()
+                invalidateOptionsMenu()
             }
     }
     var mission: MissionManager = MissionManager(this, missionListener)
+
+    // TrumeKit
+    private val trumeListener: TrumeKit.TrumeListener = object : TrumeKit.TrumeListener {
+
+        override fun onTimeTrickDetected(internetTime: Long, deviceTime: Long) {
+            val dateFormat = SimpleDateFormat(
+                this@MainActivity.getString(R.string.iso_datatime),
+                Locale.CHINA
+            )
+            dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+            val message = String.format(
+                this@MainActivity.getString(R.string.log_trume_time_trick),
+                dateFormat.format(Date(internetTime)),
+                dateFormat.format(Date(deviceTime))
+            )
+            if (mission.isStarted) {
+                mission.log(
+                    this@MainActivity.getString(R.string.log_head_wrn),
+                    message
+                )
+            }
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
+        }
+
+        override fun onException(error: Exception) {
+            if (mission.isStarted) {
+                mission.log(
+                    this@MainActivity.getString(R.string.log_head_wrn),
+                    error.message.toString()
+                )
+            }
+            val alert = AlertDialog.Builder(this@MainActivity)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(error.message)
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm), null)
+            alert.show()
+        }
+
+    }
+    val trumeKit: TrumeKit = TrumeKit(this, trumeListener)
 
     // Preference Change Listener
     private var onPreferenceChangedListener: SharedPreferences.OnSharedPreferenceChangeListener =
@@ -337,6 +417,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        // Check emulator
+        if (trumeKit.checkEmulator()) {
+            val alert = AlertDialog.Builder(this)
+            alert.setTitle(getString(R.string.alert_warning_title))
+            alert.setMessage(getString(R.string.alert_emulator))
+            alert.setCancelable(false)
+            alert.setPositiveButton(getString(R.string.confirm)) { _, _ ->
+                // Exit the app
+                Process.killProcess(Process.myPid())
+                System.exit(0)
+            }
+            alert.show()
+        }
 
         // Handel the Main List View
         mainRecyclerView = findViewById(R.id.mainRecyclerView)
@@ -578,16 +672,24 @@ class MainActivity : AppCompatActivity() {
                 mission.isStarted && !mission.isStopping -> {
                     menu.getItem(MainMenu.StartStop.index).isEnabled = true
                     menu.getItem(MainMenu.StartStop.index).title = getString(R.string.action_stop)
+                    menu.getItem(MainMenu.Preference.index).isEnabled = true
                 }
-                mission.isStarted && mission.isStopping ->
+                mission.isStarted && mission.isStopping -> {
                     menu.getItem(MainMenu.StartStop.index).isEnabled = false
-                !mission.isStarted && mission.isLoading ->
+                    menu.getItem(MainMenu.Preference.index).isEnabled = false
+                }
+                !mission.isStarted && mission.isLoading -> {
                     menu.getItem(MainMenu.StartStop.index).isEnabled = false
+                    menu.getItem(MainMenu.Preference.index).isEnabled = false
+                }
                 !mission.isStarted && !mission.isLoading -> {
                     menu.getItem(MainMenu.StartStop.index).isEnabled = true
                     menu.getItem(MainMenu.StartStop.index).title = getString(R.string.action_start)
+                    menu.getItem(MainMenu.Preference.index).isEnabled = true
                 }
             }
+            menu.getItem(MainMenu.Preference.index).isEnabled =
+                if (mission.isReporting) false else true
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -757,6 +859,7 @@ class MainActivity : AppCompatActivity() {
                 .findViewById<TextView>(R.id.descriptionText)
                 .text
                 .toString()
+            invalidateOptionsMenu()
             mission.submitIssue(location, currentTime, description)
         }
         dialog.setNegativeButton(getString(R.string.cancel)) { _, _ ->

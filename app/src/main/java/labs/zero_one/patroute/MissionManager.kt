@@ -23,6 +23,7 @@ import kotlin.collections.ArrayList
  *
  * 用于存取、管理任务信息、状态和提交报告
  *
+ * 属性列表
  * @property [context] 主页面的 Context
  * @property [missionListener] 任务消息监听器
  * @property [waypointList] 任务 Waypoint 列表
@@ -685,8 +686,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                             + error.message
                     )
                 uiThread {
-                    isLoading = false
-
+                    isReporting = false
                     missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
@@ -721,7 +721,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                         + error.message
                 )
                 uiThread {
-                    isLoading = false
+                    isReporting = false
                     missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
@@ -742,6 +742,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                         + error.message
                 )
                 uiThread {
+                    isReporting = false
                     missionListener.didReportedFailed(newError)
                 }
                 return@doAsync
@@ -782,6 +783,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                     "ISS_" + data.id + "_" + issueSN + " " + description
                 )
                 issueSN += 1
+                isReporting = false
                 missionListener.didReportedSuccess()
             }
         }
