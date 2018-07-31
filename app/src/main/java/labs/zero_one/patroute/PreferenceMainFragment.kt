@@ -49,6 +49,7 @@ class PreferenceMainFragment : PreferenceFragmentCompat() {
                         val sharedPreference: SharedPreferences
                         val serverURL: String
                         val serverPort: Int
+                        val serverTimeout: Int
                         val username: String
                         val password: String
                         val enableFTPS: Boolean
@@ -62,6 +63,12 @@ class PreferenceMainFragment : PreferenceFragmentCompat() {
                                 .getString(
                                     getString(R.string.pref_server_port_key),
                                     getString(R.string.pref_server_port_default)
+                                )
+                                .toInt()
+                            serverTimeout = sharedPreference
+                                .getString(
+                                    getString(R.string.pref_server_timeout_key),
+                                    getString(R.string.pref_server_timeout_default)
                                 )
                                 .toInt()
                             username = sharedPreference
@@ -97,6 +104,7 @@ class PreferenceMainFragment : PreferenceFragmentCompat() {
 
                         // Connect to FTP Server via Apache Commons Net API
                         try {
+                            ftpClient.connectTimeout = serverTimeout
                             ftpClient.connect(serverURL, serverPort)
                         } catch (error: Exception) {
                             message = getString(R.string.error_connect_failed) + "\n" + error.message

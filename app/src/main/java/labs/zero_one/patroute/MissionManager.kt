@@ -213,6 +213,7 @@ class MissionManager(private var context: Context, private var missionListener: 
             val sharedPreference: SharedPreferences
             val serverURL: String
             val serverPort: Int
+            val serverTimeout: Int
             val username: String
             val password: String
             val enableFTPS: Boolean
@@ -224,6 +225,12 @@ class MissionManager(private var context: Context, private var missionListener: 
                     .getString(
                         context.getString(R.string.pref_server_port_key),
                         context.getString(R.string.pref_server_port_default)
+                    )
+                    .toInt()
+                serverTimeout = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_timeout_key),
+                        context.getString(R.string.pref_server_timeout_default)
                     )
                     .toInt()
                 username = sharedPreference
@@ -251,6 +258,7 @@ class MissionManager(private var context: Context, private var missionListener: 
             }
             try {
                 // Connect to FTP Server via Apache Commons Net API
+                ftpClient.connectTimeout = serverTimeout
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
@@ -344,6 +352,7 @@ class MissionManager(private var context: Context, private var missionListener: 
             val sharedPreference: SharedPreferences
             val serverURL: String
             val serverPort: Int
+            val serverTimeout: Int
             val username: String
             val password: String
             val enableFTPS: Boolean
@@ -355,6 +364,12 @@ class MissionManager(private var context: Context, private var missionListener: 
                     .getString(
                         context.getString(R.string.pref_server_port_key),
                         context.getString(R.string.pref_server_port_default)
+                    )
+                    .toInt()
+                serverTimeout = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_timeout_key),
+                        context.getString(R.string.pref_server_timeout_default)
                     )
                     .toInt()
                 username = sharedPreference
@@ -370,7 +385,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                         + error.message
                 )
                 uiThread {
-                    isLoading = false
+                    isStopping = false
                     missionListener.didStoppedFailed(newError)
                 }
                 return@doAsync
@@ -381,6 +396,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                 FTPClient()
             }
             try {
+                ftpClient.connectTimeout = serverTimeout
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)
@@ -695,6 +711,7 @@ class MissionManager(private var context: Context, private var missionListener: 
             val sharedPreference: SharedPreferences
             val serverURL: String
             val serverPort: Int
+            val serverTimeout: Int
             val username: String
             val password: String
             val enableFTPS: Boolean
@@ -706,6 +723,12 @@ class MissionManager(private var context: Context, private var missionListener: 
                     .getString(
                         context.getString(R.string.pref_server_port_key),
                         context.getString(R.string.pref_server_port_default)
+                    )
+                    .toInt()
+                serverTimeout = sharedPreference
+                    .getString(
+                        context.getString(R.string.pref_server_timeout_key),
+                        context.getString(R.string.pref_server_timeout_default)
                     )
                     .toInt()
                 username = sharedPreference
@@ -732,6 +755,7 @@ class MissionManager(private var context: Context, private var missionListener: 
                 FTPClient()
             }
             try {
+                ftpClient.connectTimeout = serverTimeout
                 ftpClient.connect(serverURL, serverPort)
                 ftpClient.enterLocalPassiveMode()
                 ftpClient.login(username, password)

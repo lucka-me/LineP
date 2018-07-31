@@ -10,8 +10,8 @@ android {
         applicationId "labs.zero_one.patroute"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 201807003
-        versionName "1.4.0"
+        versionCode 201807004
+        versionName "1.4.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

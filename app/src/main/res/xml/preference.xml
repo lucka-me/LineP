@@ -42,6 +42,15 @@
             android:inputType="number"
             android:key="@string/pref_server_port_key" />
 
+        <EditTextPreference
+            android:title="@string/pref_server_timeout_title"
+            android:summary="@string/pref_server_timeout_summary"
+            android:defaultValue="@string/pref_server_timeout_default"
+            android:icon="@drawable/ic_pref_server_timeout"
+            android:dialogIcon="@drawable/ic_pref_server_timeout"
+            android:inputType="number"
+            android:key="@string/pref_server_timeout_key" />
+
         <SwitchPreference
             android:key="@string/pref_server_enableFTPS_key"
             android:title="@string/pref_server_enableFTPS_title"

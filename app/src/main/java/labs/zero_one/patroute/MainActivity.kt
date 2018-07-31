@@ -670,9 +670,9 @@ class MainActivity : AppCompatActivity() {
         if (menu != null) {
             when {
                 mission.isStarted && !mission.isStopping -> {
-                    menu.getItem(MainMenu.StartStop.index).isEnabled = true
+                    menu.getItem(MainMenu.StartStop.index).isEnabled = !mission.isReporting
                     menu.getItem(MainMenu.StartStop.index).title = getString(R.string.action_stop)
-                    menu.getItem(MainMenu.Preference.index).isEnabled = true
+                    menu.getItem(MainMenu.Preference.index).isEnabled = !mission.isReporting
                 }
                 mission.isStarted && mission.isStopping -> {
                     menu.getItem(MainMenu.StartStop.index).isEnabled = false
@@ -688,8 +688,6 @@ class MainActivity : AppCompatActivity() {
                     menu.getItem(MainMenu.Preference.index).isEnabled = true
                 }
             }
-            menu.getItem(MainMenu.Preference.index).isEnabled =
-                if (mission.isReporting) false else true
         }
         return super.onPrepareOptionsMenu(menu)
     }

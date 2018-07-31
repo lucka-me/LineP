@@ -3,7 +3,18 @@
 <h1 align=center>更新日志</h1>
 
 ```markdown
-## [1.4.0] - 2018-07-20
+## [1.4.1] - 2018-07-31
+- 1.4.0(201807003) -> 1.4.1(201807004)
+
+### Added
+- Set connect timeout
+
+### Fixed
+- App crashed when open -> exit Preference during starting and stopping
+```
+
+```markdown
+## [1.4.0] - 2018-07-30
 - 1.3.1(201807002) -> 1.4.0(201807003)
 
 ### Added
