@@ -332,7 +332,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    val trumeKit: TrumeKit = TrumeKit(this, trumeListener)
+    lateinit var trumeKit: TrumeKit
 
     // Preference Change Listener
     private var onPreferenceChangedListener: SharedPreferences.OnSharedPreferenceChangeListener =
@@ -417,6 +417,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        // Setup the TrumeKit
+        trumeKit = TrumeKit(this, trumeListener)
 
         // Check emulator
         if (trumeKit.checkEmulator()) {

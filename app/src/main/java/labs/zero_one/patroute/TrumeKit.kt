@@ -7,6 +7,7 @@ import android.os.CountDownTimer
 import org.apache.commons.net.time.TimeTCPClient
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import java.io.IOException
 import java.util.*
 
 /**
@@ -91,7 +92,7 @@ class TrumeKit(private val context: Context, private val trumeListener: TrumeLis
                     timeClient.defaultTimeout = 60000
                     timeClient.connect(context.getString(R.string.internetTimeHost))
                     // 10+ min diff between device and internet time could be regarded as time trick
-                    val internetTime = timeClient.time
+                    val internetTime = timeClient.date.time
                     val deviceTime = Date().time
                     if (Math.abs(deviceTime - internetTime) > 10 * 60000) {
                         uiThread {
@@ -99,13 +100,17 @@ class TrumeKit(private val context: Context, private val trumeListener: TrumeLis
                         }
                     }
                 } catch (error: Exception) {
-                    trumeListener.onException(error)
+                    uiThread {
+                        trumeListener.onException(error)
+                    }
                     return@doAsync
                 } finally {
                     timeClient.disconnect()
                 }
-            } catch (error: Exception) {
-                trumeListener.onException(error)
+            } catch (error: IOException) {
+                uiThread {
+                    trumeListener.onException(error)
+                }
                 return@doAsync
             }
         }

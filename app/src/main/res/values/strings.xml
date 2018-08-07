@@ -8,7 +8,7 @@
 
     <!-- Path -->
     <string name="imageProviderAuthority">labs.zero_one.patroute.fileprovider</string>
-    <string name="internetTimeHost">ntp7.aliyun.com</string>
+    <string name="internetTimeHost">time.nist.gov</string>
 
     <!-- Dialog -->
     <string name="success">成功</string>
