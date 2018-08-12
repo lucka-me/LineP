@@ -115,6 +115,8 @@ class MainActivity : AppCompatActivity() {
                 alert.show()
             }
             mission.update(location)
+            mainRecyclerViewAdapter
+                .refreshWith(if (mission.isLocationAvailable) mission.lastLocation else null)
             if (!mission.isLocationAvailable) return
 
             if (mission.isStarted && !mission.isChecking) {
@@ -204,6 +206,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onProviderDisabled(provider: String?) {
             mission.update(null)
+            mainRecyclerViewAdapter.refreshWith(null)
             val alert = AlertDialog.Builder(this@MainActivity)
             alert.setTitle(getString(R.string.alert_warning_title))
             alert.setMessage(getString(R.string.alert_location_service_unavailable))

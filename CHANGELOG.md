@@ -3,6 +3,14 @@
 <h1 align=center>更新日志</h1>
 
 ```markdown
+## [1.4.3] - 2018-08-12
+- 1.4.2(201808010) -> 1.4.3(20180813)
+
+### Fixed
+- Distances on cards don't update when location updated
+```
+
+```markdown
 ## [1.4.2] - 2018-08-07
 - 1.4.1(201807004) -> 1.4.2(201808010)
 
