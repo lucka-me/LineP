@@ -1,4 +1,4 @@
-<div align=center><a href="https://github.com/lucka-me/Patroute-android"><img src="./Resource/banner.svg" alt="Banner"></a></div>
+<div align=center><a href="https://github.com/lucka-me/Patroute-android"><img src="./Resource/Banner.svg" alt="Banner"></a></div>
 
 <h1 align=center>更新日志</h1>
 
