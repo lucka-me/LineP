@@ -29,7 +29,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/longitudeTitle"
+            android:id="@+id/ticketLongitudeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -46,11 +46,11 @@
             android:layout_marginEnd="16dp"
             android:text="@string/unavailable"
             android:textAppearance="@android:style/TextAppearance.Material.Body1"
-            app:layout_constraintBottom_toBottomOf="@+id/longitudeTitle"
+            app:layout_constraintBottom_toBottomOf="@+id/ticketLongitudeTitle"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/latitudeTitle"
+            android:id="@+id/ticketLatitudeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
@@ -60,7 +60,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/longitudeTitle" />
+            app:layout_constraintTop_toBottomOf="@+id/ticketLongitudeTitle" />
 
         <TextView
             android:id="@+id/mainCardLocationLatitudeText"
@@ -69,7 +69,7 @@
             android:layout_marginEnd="16dp"
             android:text="@string/unavailable"
             android:textAppearance="@android:style/TextAppearance.Material.Body1"
-            app:layout_constraintBottom_toBottomOf="@+id/latitudeTitle"
+            app:layout_constraintBottom_toBottomOf="@+id/ticketLatitudeTitle"
             app:layout_constraintEnd_toEndOf="parent" />
 
     </android.support.constraint.ConstraintLayout>

@@ -1,6 +1,7 @@
 package labs.zero_one.patroute
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.RecyclerView
@@ -18,48 +19,69 @@ import com.amap.api.maps.model.MyLocationStyle
 /**
  * 主页面的 Recycler View 适配器
  *
- * @property [context] 主页面的 Context
- * @property [waypointList] 任务的 Waypoint 列表
- * @property [onItemClickListener] 点击监听器 [OnItemClickListener]
- * @property [location] 刷新时传入的位置
- * @property [isLoading] 是否在载入任务
- * @property [aMap] 位置地图卡片中的高德地图控制器
+ * ## Changelog
+ * ### 1.5.0
+ * - 接入 [missionManager] 和 [locationKit] 以直接利用数据
+ * - 优化各个方法
  *
- * 子类列表
- * [ItemIndex]
- * [OnItemClickListener]
- * [MainRecyclerViewHolderLocation]
- * [MainRecyclerViewHolderLocationWithMap]
- * [MainRecyclerViewHolderMission]
- * [MainRecyclerViewHolderWaypoint]
+ * ## 子类列表
+ * - [CardIndex]
+ * - [OnItemClickListener]
+ * - [MainRecyclerViewHolderLocation]
+ * - [MainRecyclerViewHolderLocationWithMap]
+ * - [MainRecyclerViewHolderMission]
+ * - [MainRecyclerViewHolderWaypoint]
  *
- * 重写方法列表
- * [onCreateViewHolder]
- * [onBindViewHolder]
- * [getItemCount]
- * [getItemViewType]
- * [onClick]
+ * ## 重写方法列表
+ * - [onCreateViewHolder]
+ * - [onBindViewHolder]
+ * - [getItemCount]
+ * - [getItemViewType]
+ * - [onClick]
  *
- * 自定义方法列表
- * [refreshWith] 以位置信息刷新视图
- * [refreshAt] 刷新指定位置的卡片
- * [clearList] 清空 Waypoint 卡片
- * [startLoading] 开始显示载入动画
- * [finishLoading] 结束载入动画
+ * ## 自定义方法列表
+ * - [notifyRefreshLocation]
+ * - [notifyRefreshAt]
+ * - [notifyMissionStopped]
+ * - [notifyMissionStarted]
+ *
+ * @param [context] 环境
+ * @param [missionManager] 任务管理器
+ * @param [locationKit] 位置工具
+ * @param [onItemClickListener] 点击监听器 [OnItemClickListener]
  *
  * @author lucka
  * @since 0.1
+ *
+ * @property [aMap] 位置地图卡片中的高德地图控制器
+ * @property [isMapEnabled] 地图是否开启
  */
 class MainRecyclerViewAdapter(
     val context: Context,
-    private var waypointList: ArrayList<Waypoint>,
+    private val missionManager: MissionManager,
+    private val locationKit: LocationKit,
     private var onItemClickListener: OnItemClickListener
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     View.OnClickListener {
 
-    private var location: Location? = null
-    private var isLoading: Boolean = false
     private var aMap: AMap? = null
+    private var isMapEnabled: Boolean = PreferenceManager
+        .getDefaultSharedPreferences(context)
+        .getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
+    private val onSharedPreferenceChangeListener:
+        SharedPreferences.OnSharedPreferenceChangeListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (sharedPreferences == null || key == null)
+                return@OnSharedPreferenceChangeListener
+            if (key == context.getString(R.string.pref_geo_mapType_key) ||
+                key == context.getString(R.string.pref_geo_mapEnable_key)) {
+
+                notifyMapEnabled(sharedPreferences.getBoolean(
+                    context.getString(R.string.pref_geo_mapEnable_key),
+                        false
+                ))
+            }
+        }
 
     /**
      * 卡片类型
@@ -76,7 +98,7 @@ class MainRecyclerViewAdapter(
      * @author lucka
      * @since 0.1
      */
-    enum class ItemIndex(val row: Int, val viewType: Int, val resource: Int) {
+    enum class CardIndex(val row: Int, val viewType: Int, val resource: Int) {
         Location(0, 0, R.layout.main_card_location),
         LocationWithMap(0, 1, R.layout.main_card_location_map),
         Mission(1, 2, R.layout.main_card_mission),
@@ -104,7 +126,7 @@ class MainRecyclerViewAdapter(
 
     // View Holders
     /**
-     * [ItemIndex.Location] 的 Holder
+     * [CardIndex.Location] 的 Holder
      *
      * @property [longitudeText] 经度文本视图
      * @property [latitudeText] 纬度文本视图
@@ -120,7 +142,7 @@ class MainRecyclerViewAdapter(
     }
 
     /**
-     * [ItemIndex.LocationWithMap] 的 Holder
+     * [CardIndex.LocationWithMap] 的 Holder
      *
      * @property [mapView] 地图视图
      *
@@ -135,7 +157,7 @@ class MainRecyclerViewAdapter(
     }
 
     /**
-     * [ItemIndex.Mission] 的 Holder
+     * [CardIndex.Mission] 的 Holder
      *
      * @property [progressBar] 进度条视图
      * @property [progressText] 进度文本视图
@@ -153,7 +175,7 @@ class MainRecyclerViewAdapter(
     }
 
     /**
-     * [ItemIndex.Waypoint] 的 Holder
+     * [CardIndex.Waypoint] 的 Holder
      *
      * @property [title] Waypoint 标题文本视图
      * @property [distanceText] Waypoint 距离文本视图
@@ -170,26 +192,32 @@ class MainRecyclerViewAdapter(
 
     }
 
+    init {
+        PreferenceManager
+            .getDefaultSharedPreferences(context)
+            .registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(context)
         val view: View = when(viewType) {
-            ItemIndex.Location.viewType ->
-                layoutInflater.inflate(ItemIndex.Location.resource, parent, false)
-            ItemIndex.LocationWithMap.viewType ->
+            CardIndex.Location.viewType ->
+                layoutInflater.inflate(CardIndex.Location.resource, parent, false)
+            CardIndex.LocationWithMap.viewType ->
                 layoutInflater
-                    .inflate(ItemIndex.LocationWithMap.resource, parent, false)
-            ItemIndex.Mission.viewType ->
-                layoutInflater.inflate(ItemIndex.Mission.resource, parent, false)
-            ItemIndex.Waypoint.viewType ->
-                layoutInflater.inflate(ItemIndex.Waypoint.resource, parent, false)
+                    .inflate(CardIndex.LocationWithMap.resource, parent, false)
+            CardIndex.Mission.viewType ->
+                layoutInflater.inflate(CardIndex.Mission.resource, parent, false)
+            CardIndex.Waypoint.viewType ->
+                layoutInflater.inflate(CardIndex.Waypoint.resource, parent, false)
             else ->
                 layoutInflater.inflate(R.layout.main_card_location, parent, false)
         }
         val viewHolder = when(viewType) {
-            ItemIndex.Location.viewType -> MainRecyclerViewHolderLocation(view)
-            ItemIndex.LocationWithMap.viewType -> MainRecyclerViewHolderLocationWithMap(view)
-            ItemIndex.Mission.viewType -> MainRecyclerViewHolderMission(view)
-            ItemIndex.Waypoint.viewType -> MainRecyclerViewHolderWaypoint(view)
+            CardIndex.Location.viewType -> MainRecyclerViewHolderLocation(view)
+            CardIndex.LocationWithMap.viewType -> MainRecyclerViewHolderLocationWithMap(view)
+            CardIndex.Mission.viewType -> MainRecyclerViewHolderMission(view)
+            CardIndex.Waypoint.viewType -> MainRecyclerViewHolderWaypoint(view)
             else -> MainRecyclerViewHolderLocation(view)
         }
         view.setOnClickListener(this)
@@ -200,25 +228,26 @@ class MainRecyclerViewAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder.itemViewType) {
 
-            ItemIndex.Location.viewType -> {
+            CardIndex.Location.viewType -> {
                 holder as MainRecyclerViewHolderLocation
-                if (location == null) {
+                if (locationKit.isLocationAvailable) {
+                    holder.longitudeText.text =
+                        Location.convert(locationKit.lastLocation.longitude, Location.FORMAT_SECONDS)
+                    holder.latitudeText.text =
+                        Location.convert(locationKit.lastLocation.latitude, Location.FORMAT_SECONDS)
+                } else {
                     holder.longitudeText.text = context.getString(R.string.unavailable)
                     holder.latitudeText.text = context.getString(R.string.unavailable)
-                } else {
-                    val location: Location = this.location as Location
-                    holder.longitudeText.text = CoordinateKit.getDegreeString(location.longitude)
-                    holder.latitudeText.text = CoordinateKit.getDegreeString(location.latitude)
                 }
             }
 
-            ItemIndex.LocationWithMap.viewType -> {
+            CardIndex.LocationWithMap.viewType -> {
                 holder as MainRecyclerViewHolderLocationWithMap
                 holder.mapView.onCreate(null)
-                this.aMap = holder.mapView.map
-                this.aMap!!.uiSettings.isScrollGesturesEnabled = false
+                aMap = holder.mapView.map
+                aMap!!.uiSettings.isScrollGesturesEnabled = false
 
-                this.aMap!!.mapType =
+                aMap!!.mapType =
                     when (PreferenceManager
                         .getDefaultSharedPreferences(context)
                         .getString(
@@ -237,57 +266,62 @@ class MainRecyclerViewAdapter(
 
                 // Setup My Location
                 val myLocationStyle = MyLocationStyle()
-                this.aMap!!.myLocationStyle = myLocationStyle
-                this.aMap!!.isMyLocationEnabled = true
-                this.aMap!!.moveCamera(CameraUpdateFactory.zoomTo(17.toFloat()))
+                aMap!!.myLocationStyle = myLocationStyle
+                aMap!!.isMyLocationEnabled = true
+                aMap!!.moveCamera(CameraUpdateFactory.zoomTo(17.toFloat()))
             }
 
-            ItemIndex.Mission.viewType -> {
+            CardIndex.Mission.viewType -> {
                 holder as MainRecyclerViewHolderMission
-                if (waypointList.isEmpty() && isLoading) {
+                if (missionManager.state == MissionManager.MissionState.Starting ||
+                    missionManager.state == MissionManager.MissionState.Stopping
+                ) {
                     holder.progressBar.isIndeterminate = true
                     holder.progressText.text = context.getString(R.string.loading)
                     holder.percentText.text = ""
                 } else {
                     holder.progressBar.isIndeterminate = false
                     var finishedCount = 0
-                    for (waypoint in waypointList) {
-                        finishedCount += if (waypoint.isChecked) 1 else 0
+                    for (waypoint in missionManager.waypointList) {
+                        finishedCount += if (waypoint.checked) 1 else 0
                     }
 
-                    holder.progressBar.max = waypointList.size
+                    holder.progressBar.max = missionManager.waypointList.size
                     holder
                         .progressBar
                         .incrementProgressBy(finishedCount - holder.progressBar.progress)
-                    holder.progressText.text = String.format("%d/%d", finishedCount, waypointList.size)
+                    holder.progressText.text =
+                        String.format("%d / %d", finishedCount, missionManager.waypointList.size)
                     holder.percentText.text = String.format(
                         "%.2f%%",
-                        (finishedCount.toDouble() / waypointList.size.toDouble()) * 100.0
+                        100.0 * finishedCount / missionManager.waypointList.size
                     )
                 }
             }
 
-            ItemIndex.Waypoint.viewType -> {
+            CardIndex.Waypoint.viewType -> {
                 holder as MainRecyclerViewHolderWaypoint
-                holder.title.text = waypointList[position - ItemIndex.Waypoint.row].title
-                val waypointLocation = waypointList[position - ItemIndex.Waypoint.row].location
-                holder.distanceText.text = if (waypointLocation != null && location != null) {
-                    if (waypointLocation.distanceTo(location) < 1000.0) {
+                holder.title.text =
+                    missionManager.waypointList[position - CardIndex.Waypoint.row].title
+                val waypointLocation =
+                    missionManager.waypointList[position - CardIndex.Waypoint.row].location
+                holder.distanceText.text = if (locationKit.isLocationAvailable) {
+                    if (waypointLocation.distanceTo(locationKit.lastLocation) < 1000.0) {
                         String.format(
                             context.getString(R.string.distanceMetre),
-                            waypointLocation.distanceTo(location)
+                            waypointLocation.distanceTo(locationKit.lastLocation)
                         )
                     } else {
                         String.format(
                             context.getString(R.string.distanceKM),
-                            waypointLocation.distanceTo(location) / 1000.0
+                            waypointLocation.distanceTo(locationKit.lastLocation) / 1000.0
                         )
                     }
                 } else {
                     context.getString(R.string.unavailable)
                 }
                 holder.checkBox.isChecked =
-                    waypointList[position - ItemIndex.Waypoint.row].isChecked
+                    missionManager.waypointList[position - CardIndex.Waypoint.row].checked
             }
 
             else -> return
@@ -297,20 +331,19 @@ class MainRecyclerViewAdapter(
 
     override fun getItemCount(): Int {
         var itemCount = 1
-        itemCount += if (waypointList.isEmpty() && isLoading) 1 else 0
-        itemCount += if (waypointList.isNotEmpty()) waypointList.size + 1 else 0
+        itemCount += if (missionManager.state == MissionManager.MissionState.Stopped) 0 else 1
+        itemCount += missionManager.waypointList.size
         return itemCount
     }
 
     override fun getItemViewType(position: Int): Int {
-        val isMapEnable: Boolean = PreferenceManager
-            .getDefaultSharedPreferences(context)
-            .getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
         return when {
-            position == ItemIndex.Location.row ->
-                if (isMapEnable) ItemIndex.LocationWithMap.viewType else ItemIndex.Location.viewType
-            position == ItemIndex.Mission.row  -> ItemIndex.Mission.viewType
-            position >= ItemIndex.Waypoint.row -> ItemIndex.Waypoint.viewType
+            position == CardIndex.Location.row -> {
+                if (isMapEnabled) CardIndex.LocationWithMap.viewType
+                else CardIndex.Location.viewType
+            }
+            position == CardIndex.Mission.row  -> CardIndex.Mission.viewType
+            position >= CardIndex.Waypoint.row -> CardIndex.Waypoint.viewType
             else -> -1
         }
     }
@@ -322,149 +355,58 @@ class MainRecyclerViewAdapter(
     }
 
     /**
-     * 以位置信息刷新视图
-     *
-     * 刷新位置卡片的坐标，如果有 Waypoint 列表不为空则会刷新 Waypoint 卡片，更新距离。
-     *
-     * @param [location] 用以刷新的位置
+     * 通知刷新卡片的位置信息，刷新位置卡片显示的坐标，如果任务进行中则会更新卡片的距离。
      *
      * @author lucka
      * @since 0.1
      */
-    fun refreshWith(location: Location?) {
+    fun notifyRefreshLocation() {
 
-        this.location = location
-        if (!PreferenceManager
-                .getDefaultSharedPreferences(context)
-                .getBoolean(context.getString(R.string.pref_geo_mapEnable_key), false)
-        ) {
-            this.refreshAt(ItemIndex.Location.row)
+        if (!isMapEnabled) {
+            notifyRefreshAt(CardIndex.Location.row)
         }
-        if (waypointList.isNotEmpty()) {
-            this.notifyItemRangeChanged(ItemIndex.Waypoint.row, waypointList.size)
+        if (missionManager.state == MissionManager.MissionState.Started) {
+            notifyItemRangeChanged(CardIndex.Waypoint.row, missionManager.waypointList.size)
         }
     }
 
     /**
-     * 以 Waypoint 列表刷新视图
-     *
-     * 刷新任务卡片和 Waypoint 卡片的内容
-     * [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大多数情况下为同一实例
-     * （引用），不必要刷新。
-     *
-     * Changelog
-     * [0.1] - 2018-03-09
-     *   废弃，由 [refreshAt] 代替
-     * [1.2.1] - 2018-06-19
-     *   彻底无效化
-     *
-     * @param [waypointList] 用以刷新的 Waypoint 列表
-     *
-     * @author lucka
-     * @since 0.1
-     */
-    @Deprecated("This method should be replaced with \"refreshAt()\" or \"clearList()\"",
-        ReplaceWith("refreshAt()"))
-    fun refreshWith(waypointList: ArrayList<Waypoint>) {
-        /*
-        this.waypointList = waypointList
-        this.notifyDataSetChanged()
-        */
-    }
-
-    /**
-     * 刷新指定位置的卡片
+     * 通知刷新指定位置的卡片
      *
      * @param [position] 要刷新的卡片位置
      *
      * @author lucka
      * @since 0.1
      */
-    fun refreshAt(position: Int) {
-        this.notifyItemChanged(position)
+    fun notifyRefreshAt(position: Int) {
+        notifyItemChanged(position)
     }
 
     /**
-     * 刷新指定位置的卡片同时更新 Waypoint 列表
+     * 通知任务停止，移除任务卡片和检查点卡片
      *
-     * [MainRecyclerViewAdapter.waypointList] 与 [MissionManager.waypointList] 在大多数情况下为同一实例
-     * （引用），不必要刷新。
-     *
-     * Changelog
-     * [0.1] - 2018-03-09
-     *   废弃，不再需要刷新 [waypointList]
-     * [1.2.1] - 2018-06-19
-     *   彻底无效化
-     *
-     * @param [position] 要刷新的卡片位置
+     * @param [oldWaypointListSize] 检查点卡片数量
      *
      * @author lucka
      * @since 0.1
      */
-    @Deprecated("This method should be replaced with \"refreshAt(position: Int)\"",
-        ReplaceWith("refreshAt()"))
-    fun refreshAt(position: Int, waypointList: ArrayList<Waypoint>) {
-        /*
-        this.waypointList = waypointList
-        this.notifyItemChanged(ItemIndex.Mission.row)
-        this.notifyItemChanged(position)
-        */
+    fun notifyMissionStopped(oldWaypointListSize: Int) {
+        notifyItemRangeRemoved(CardIndex.Mission.row, oldWaypointListSize + 1)
     }
 
     /**
-     * 清空 Waypoint 卡片
-     *
-     * 通常在任务停止并清空 [MissionManager.waypointList] 后调用
-     *
-     * @param [oldListSize] Waypoint 卡片数量
+     * 通知任务开始，结束任务卡片的载入动画并加入新的任务点卡片
      *
      * @author lucka
      * @since 0.1
      */
-    fun clearList(oldListSize: Int) {
-        this.notifyItemRangeRemoved(ItemIndex.Mission.row, oldListSize + 1)
+    fun notifyMissionStarted() {
+        notifyItemChanged(CardIndex.Mission.row)
+        notifyItemRangeInserted(CardIndex.Waypoint.row, missionManager.waypointList.size)
     }
 
-    /**
-     * 开始显示载入动画
-     *
-     * 显示任务卡片并让进度条显示载入动画
-     *
-     * @author lucka
-     * @since 0.1
-     */
-    fun startLoading() {
-        isLoading = true
-        if (waypointList.size > 0) {
-            this.notifyItemChanged(ItemIndex.Mission.row)
-        } else {
-            this.notifyItemInserted(ItemIndex.Mission.row)
-        }
-    }
-
-    /**
-     * 结束载入动画
-     *
-     * 结束任务卡片的载入动画并加载新的 [waypointList]
-     *
-     * @param [waypointList] 新的 Waypoint 列表
-     * @param [oldListSize] 旧 Waypoint 列表的大小，默认为0
-     *
-     * @author lucka
-     * @since 0.1
-     */
-    fun finishLoading(waypointList: ArrayList<Waypoint>, oldListSize: Int = 0) {
-        this.waypointList = waypointList
-        isLoading = false
-        if (waypointList.size > 0) {
-            this.notifyItemChanged(ItemIndex.Mission.row)
-            if (oldListSize == 0) {
-                this.notifyItemRangeInserted(ItemIndex.Waypoint.row, waypointList.size)
-            } else {
-                this.notifyItemRangeChanged(ItemIndex.Waypoint.row, waypointList.size)
-            }
-        } else {
-            this.notifyItemRemoved(ItemIndex.Mission.row)
-        }
+    fun notifyMapEnabled(enabled: Boolean) {
+        isMapEnabled = enabled
+        notifyRefreshAt(MainRecyclerViewAdapter.CardIndex.LocationWithMap.row)
     }
 }

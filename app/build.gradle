@@ -6,12 +6,13 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 27
+    def newVersionCode = getVersionCode()
     defaultConfig {
         applicationId "labs.zero_one.patroute"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 201808013
-        versionName "1.4.3"
+        versionCode newVersionCode
+        versionName "1.5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -51,4 +52,33 @@ dependencies {
     implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
     // AMap API
     implementation 'com.amap.api:3dmap:6.3.1'
+}
+
+def getVersionCode() {
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
+        def versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionFile))
+        def versionCodeYear = versionProps['VERSION_CODE_YEAR'].toInteger()
+        def versionCodeMonth = versionProps['VERSION_CODE_MONTH'].toInteger()
+        def versionCodeBuild = versionProps['VERSION_CODE_BUILD'].toInteger()
+        def date = new Date()
+        if (date.format('MM').toInteger() != versionCodeMonth) {
+            versionCodeMonth = date.format('MM').toInteger()
+            versionCodeBuild = 0
+        }
+        if (date.format('yyyy').toInteger() != versionCodeYear) {
+            versionCodeYear = date.format('yyyy').toInteger()
+            versionCodeBuild = 0
+        }
+        versionCodeBuild++
+        def versionCode = versionCodeYear * 100000 + versionCodeMonth * 1000 + versionCodeBuild
+        versionProps['VERSION_CODE_YEAR'] = versionCodeYear.toString()
+        versionProps['VERSION_CODE_MONTH'] = versionCodeMonth.toString()
+        versionProps['VERSION_CODE_BUILD'] = versionCodeBuild.toString()
+        versionProps.store(versionFile.newWriter(), null)
+        return versionCode
+    } else {
+        throw new GradleException("Could not find version.properties!")
+    }
 }

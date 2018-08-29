@@ -49,7 +49,7 @@
         app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
     <TextView
-        android:id="@+id/descriptionTitle"
+        android:id="@+id/missionDescriptionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -60,7 +60,7 @@
         app:layout_constraintTop_toBottomOf="@+id/progressText" />
 
     <TextView
-        android:id="@+id/descriptionText"
+        android:id="@+id/missionDescriptionText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
@@ -70,6 +70,6 @@
         android:textAppearance="@android:style/TextAppearance.Material.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/descriptionTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/missionDescriptionTitle" />
 
 </android.support.constraint.ConstraintLayout>

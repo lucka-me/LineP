@@ -37,7 +37,7 @@
         </activity>
 
         <activity
-            android:name="labs.zero_one.patroute.PreferenceActivity"
+            android:name="labs.zero_one.patroute.PreferenceMainActivity"
             android:label="@string/pref_title"
             android:screenOrientation="portrait"
             android:parentActivityName="labs.zero_one.patroute.MainActivity" />
@@ -46,7 +46,7 @@
             android:name="labs.zero_one.patroute.PreferenceAboutActivity"
             android:label="@string/pref_about_title"
             android:screenOrientation="portrait"
-            android:parentActivityName="labs.zero_one.patroute.PreferenceActivity" />
+            android:parentActivityName="labs.zero_one.patroute.PreferenceMainActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

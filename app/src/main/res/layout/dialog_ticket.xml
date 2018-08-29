@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/longitudeTitle"
+        android:id="@+id/ticketLongitudeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/longitudeText"
+        android:id="@+id/ticketLongitudeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -26,10 +26,10 @@
         android:text="@string/unavailable"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/longitudeTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketLongitudeTitle" />
 
     <TextView
-        android:id="@+id/latitudeTitle"
+        android:id="@+id/ticketLatitudeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -37,10 +37,10 @@
         android:text="@string/latitude"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/longitudeText" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketLongitudeText" />
 
     <TextView
-        android:id="@+id/latitudeText"
+        android:id="@+id/ticketLatitudeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -48,14 +48,14 @@
         android:text="@string/unavailable"
         android:textAppearance="@android:style/TextAppearance.Material.Body1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/latitudeTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketLatitudeTitle" />
 
     <!--
     Set the image to right side with scaleType
       Reference: http://blog.csdn.net/thinan/article/details/51729445
     -->
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/ticketImageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -63,15 +63,15 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:scaleType="fitEnd"
-        app:layout_constraintBottom_toTopOf="@+id/timeText"
+        app:layout_constraintBottom_toTopOf="@+id/ticketTimeText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/longitudeText"
+        app:layout_constraintStart_toEndOf="@+id/ticketLongitudeText"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_launcher_background"
         tools:ignore="ContentDescription" />
 
     <EditText
-        android:id="@+id/descriptionText"
+        android:id="@+id/ticketDescriptionText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
@@ -82,10 +82,10 @@
         android:inputType="textMultiLine"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/descriptionTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketDescriptionTitle" />
 
     <TextView
-        android:id="@+id/descriptionTitle"
+        android:id="@+id/ticketDescriptionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -93,10 +93,10 @@
         android:text="@string/description"
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeText" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketTimeText" />
 
     <TextView
-        android:id="@+id/timeTitle"
+        android:id="@+id/ticketTimeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -104,10 +104,10 @@
         android:text="@string/time"
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/latitudeText" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketLatitudeText" />
 
     <TextView
-        android:id="@+id/timeText"
+        android:id="@+id/ticketTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -115,5 +115,5 @@
         android:text="@string/unavailable"
         android:textAppearance="@android:style/TextAppearance.Material.Body1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/ticketTimeTitle" />
 </android.support.constraint.ConstraintLayout>

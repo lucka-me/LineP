@@ -15,17 +15,22 @@ import java.util.*
  *
  * 提供一些反作弊功能
  *
- * 属性列表
- * @property [timer] 计时器，用于时间篡改检测
+ * ## 属性列表
+ * - [timer]
  *
- * 子类列表
- * [TrumeListener] 工具监听器
+ * ## 子类列表
+ * - [TrumeListener]
  *
- * 方法列表
- * [checkMock] 检测位置是否来自模拟
+ * ## 方法列表
+ * - [checkMock]
+ *
+ * @param [context] 环境
+ * @param [trumeListener] 消息监听器
  *
  * @author lucka
  * @since 1.4.0
+ *
+ * @property [timer] 计时器，用于时间篡改检测
  */
 class TrumeKit(private val context: Context, private val trumeListener: TrumeListener) {
 
@@ -45,6 +50,10 @@ class TrumeKit(private val context: Context, private val trumeListener: TrumeLis
 
     /**
      * 反作弊工具消息监听器
+     *
+     * ## 消息列表
+     * - [onTimeTrickDetected]
+     * - [onException]
      *
      * @author lucka
      * @since 1.4.0
@@ -78,7 +87,6 @@ class TrumeKit(private val context: Context, private val trumeListener: TrumeLis
      *
      * 对比网络时间和设备时间
      *
-     * 注释参考
      * @see <a href="https://stackoverflow.com/a/13066268">Stack Overflow</a>
      *
      * @author lucka
@@ -116,43 +124,44 @@ class TrumeKit(private val context: Context, private val trumeListener: TrumeLis
         }
     }
 
-    /**
-     * 模拟器检测
-     *
-     * @return [Boolean] 是否为模拟器
-     *
-     * 注释参考
-     * @see <a href="https://stackoverflow.com/a/21505193">Stack Overflow</a>
-     *
-     * @author lucka
-     * @since 1.4.0
-     */
-    fun checkEmulator(): Boolean {
-        return Build.FINGERPRINT.startsWith("generic") ||
-            Build.FINGERPRINT.startsWith("unknown") ||
-            Build.MODEL.contains("google_sdk") ||
-            Build.MODEL.contains("Emulator") ||
-            Build.MODEL.contains("Android SDK built for x86") ||
-            Build.MANUFACTURER.contains("Genymotion") ||
-            (
-                Build.BRAND.startsWith("generic") &&
-                Build.DEVICE.startsWith("generic")
-            ) ||
-            "google_sdk" == Build.PRODUCT
-    }
+    companion object {
+        /**
+         * 模拟器检测
+         *
+         * @return [Boolean] 是否为模拟器
+         *
+         * @see <a href="https://stackoverflow.com/a/21505193">Detect emulator | Stack Overflow</a>
+         *
+         * @author lucka
+         * @since 1.4.0
+         */
+        fun checkEmulator(): Boolean {
+            return Build.FINGERPRINT.startsWith("generic") ||
+                Build.FINGERPRINT.startsWith("unknown") ||
+                Build.MODEL.contains("google_sdk") ||
+                Build.MODEL.contains("Emulator") ||
+                Build.MODEL.contains("Android SDK built for x86") ||
+                Build.MANUFACTURER.contains("Genymotion") ||
+                (
+                    Build.BRAND.startsWith("generic") &&
+                        Build.DEVICE.startsWith("generic")
+                    ) ||
+                "google_sdk" == Build.PRODUCT
+        }
 
-    /**
-     * 模拟位置检测
-     *
-     * @param [location] 待检测位置
-     *
-     * @return [Boolean] 是否为模拟位置
-     *
-     * @author lucka
-     * @since 1.4.0
-     */
-    fun checkMock(location: Location?): Boolean {
-        if (location == null) return false
-        return location.isFromMockProvider
+        /**
+         * 模拟位置检测
+         *
+         * @param [location] 待检测位置
+         *
+         * @return [Boolean] 是否为模拟位置
+         *
+         * @author lucka
+         * @since 1.4.0
+         */
+        fun checkMock(location: Location?): Boolean {
+            if (location == null) return false
+            return location.isFromMockProvider
+        }
     }
 }

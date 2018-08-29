@@ -3,6 +3,18 @@
 <h1 align=center>更新日志</h1>
 
 ```markdown
+## [1.5.0] - 2018-08-29
+- 1.4.3(20180813) -> 1.5.0(20180835)
+- Structure and code refreshed
+
+### Added
+- LocationKit, which can switch between GPS and Network provider automatically
+
+### Changed
+- Structure and code refreshed, based on the work of RoundO-android
+```
+
+```markdown
 ## [1.4.3] - 2018-08-12
 - 1.4.2(201808010) -> 1.4.3(20180813)
 
